@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -155,7 +154,7 @@ fun GameModeSelectionScreen(
                             ) {
                                 Text(option.icon, color = option.accent, fontSize = 23.sp)
                             }
-                            Spacer(Modifier.padding(start = 12.dp))
+                            Spacer(Modifier.width(12.dp))
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(option.title, color = option.accent, fontSize = 14.sp, fontWeight = FontWeight.Black, letterSpacing = 1.2.sp)
                                 Text(option.subtitle, color = MaterialTheme.colorScheme.onBackground, fontSize = 11.sp, fontWeight = FontWeight.Bold)
