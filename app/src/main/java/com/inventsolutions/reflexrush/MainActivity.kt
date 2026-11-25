@@ -46,6 +46,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.inventsolutions.reflexrush.game.GameMode
 import com.inventsolutions.reflexrush.ui.theme.ReflexRushTheme
 
 class MainActivity : ComponentActivity() {
@@ -55,24 +56,35 @@ class MainActivity : ComponentActivity() {
         setContent {
             ReflexRushTheme {
                 val highScoreStore = remember { HighScoreStore(applicationContext) }
-                var bestScore by remember { mutableStateOf(highScoreStore.load()) }
+                var classicBestScore by remember { mutableStateOf(highScoreStore.load(GameMode.CLASSIC)) }
+                var showModeSelection by remember { mutableStateOf(false) }
                 var showGame by remember { mutableStateOf(false) }
-                BackHandler(enabled = showGame) {
-                    showGame = false
+                var selectedMode by remember { mutableStateOf(GameMode.CLASSIC) }
+                BackHandler(enabled = showGame || showModeSelection) {
+                    if (showGame) showGame = false else showModeSelection = false
                 }
-                if (showGame) {
-                    GameScreen(
+                when {
+                    showGame -> GameScreen(
                         onHome = { showGame = false },
                         lifecycleOwner = this,
-                        bestScore = bestScore,
+                        bestScore = highScoreStore.load(selectedMode),
                         onNewBestScore = { score ->
-                            bestScore = highScoreStore.saveIfHigher(score)
-                        }
+                            val saved = highScoreStore.saveIfHigher(score, selectedMode)
+                            if (selectedMode == GameMode.CLASSIC) classicBestScore = saved
+                        },
+                        mode = selectedMode
                     )
-                } else {
-                    ReflexRushHome(
-                        onPlayClick = { showGame = true },
-                        bestScore = bestScore
+                    showModeSelection -> GameModeSelectionScreen(
+                        onModeSelected = { mode ->
+                            selectedMode = mode
+                            showModeSelection = false
+                            showGame = true
+                        },
+                        onBack = { showModeSelection = false }
+                    )
+                    else -> ReflexRushHome(
+                        onPlayClick = { showModeSelection = true },
+                        bestScore = classicBestScore
                     )
                 }
             }
