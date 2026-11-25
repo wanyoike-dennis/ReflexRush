@@ -87,6 +87,29 @@ class PlayerProgressionTest {
     }
 
     @Test
+    fun dailyComboProgressResetsWithoutResettingLifetimeBestCombo() {
+        val firstDay = PlayerProgression().include(summary(combo = 5), "day-one")
+        val nextDay = firstDay.include(summary(combo = 2), "day-two")
+
+        assertEquals(5, firstDay.dailyBestCombo)
+        assertEquals(2, nextDay.dailyBestCombo)
+        assertEquals(5, nextDay.bestCombo)
+        assertFalse(nextDay.completedDailyMissionIds.contains(DailyMission.COMBO_MASTER.id))
+    }
+
+    @Test
+    fun modeExplorerUnlocksOnlyAfterEveryModeHasBeenPlayed() {
+        var progression = PlayerProgression()
+        GameMode.entries.dropLast(1).forEach { mode ->
+            progression = progression.include(summary(mode = mode), "same-day")
+        }
+        assertFalse(progression.unlockedAchievements.contains(PlayerAchievement.MODE_EXPLORER.id))
+
+        progression = progression.include(summary(mode = GameMode.PRECISION), "same-day")
+        assertTrue(progression.unlockedAchievements.contains(PlayerAchievement.MODE_EXPLORER.id))
+    }
+
+    @Test
     fun dangerDodgerRequiresNoDangerHitsInTheCompletedRound() {
         val failed = PlayerProgression().include(summary(dangerHits = 1), "day")
         val passed = failed.include(summary(dangerHits = 0), "day")
