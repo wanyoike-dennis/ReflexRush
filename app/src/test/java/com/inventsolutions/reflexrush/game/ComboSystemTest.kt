@@ -40,19 +40,22 @@ class ComboSystemTest {
     fun multiplierMilestonesEmitTypedEvents() {
         val engine = engineWith(GameConfig(dangerTargetChance = 0f))
         engine.start()
-        repeat(3) { hitNextGoodTarget(engine) }
-
+        val firstMilestoneEvents = buildList {
+            repeat(3) { addAll(hitNextGoodTarget(engine)) }
+        }
         assertTrue(
-            engine.drainEvents().any {
-                it == GameplayEvent.ComboMilestone(comboCount = 3, multiplier = 2)
-            }
+            firstMilestoneEvents.contains(
+                GameplayEvent.ComboMilestone(comboCount = 3, multiplier = 2)
+            )
         )
 
-        repeat(2) { hitNextGoodTarget(engine) }
+        val secondMilestoneEvents = buildList {
+            repeat(2) { addAll(hitNextGoodTarget(engine)) }
+        }
         assertTrue(
-            engine.drainEvents().any {
-                it == GameplayEvent.ComboMilestone(comboCount = 5, multiplier = 3)
-            }
+            secondMilestoneEvents.contains(
+                GameplayEvent.ComboMilestone(comboCount = 5, multiplier = 3)
+            )
         )
     }
 
@@ -152,12 +155,12 @@ class ComboSystemTest {
         assertEquals(0, engine.state.bestCombo)
     }
 
-    private fun hitNextGoodTarget(engine: GameEngine) {
+    private fun hitNextGoodTarget(engine: GameEngine): List<GameplayEvent> {
         engine.advanceTime(engine.config.spawnIntervalMs)
         val target = engine.state.targets.single()
         assertEquals(TargetType.GOOD, target.type)
         engine.tapTarget(target.id)
-        engine.drainEvents()
+        return engine.drainEvents()
     }
 
     private fun engineWith(config: GameConfig) = GameEngine(config, Random(123))
