@@ -3,6 +3,27 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 }
 
+val releaseStoreFile = providers.environmentVariable("REFLEX_RUSH_RELEASE_STORE_FILE").orNull
+val releaseStorePassword = providers.environmentVariable("REFLEX_RUSH_RELEASE_STORE_PASSWORD").orNull
+val releaseKeyAlias = providers.environmentVariable("REFLEX_RUSH_RELEASE_KEY_ALIAS").orNull
+val releaseKeyPassword = providers.environmentVariable("REFLEX_RUSH_RELEASE_KEY_PASSWORD").orNull
+
+val releaseSigningValues = listOf(
+    releaseStoreFile,
+    releaseStorePassword,
+    releaseKeyAlias,
+    releaseKeyPassword
+)
+val releaseSigningConfigured = releaseSigningValues.all { !it.isNullOrBlank() }
+val releaseSigningPartiallyConfigured =
+    releaseSigningValues.any { !it.isNullOrBlank() } && !releaseSigningConfigured
+
+if (releaseSigningPartiallyConfigured) {
+    throw GradleException(
+        "Release signing is only partially configured. Set all four REFLEX_RUSH_RELEASE_* environment variables, or leave all of them unset for an unsigned CI build."
+    )
+}
+
 android {
     namespace = "com.inventsolutions.reflexrush"
     compileSdk {
@@ -19,17 +40,34 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
-    buildTypes {
-        release {
-            optimization {
-                enable = false
+    signingConfigs {
+        if (releaseSigningConfigured) {
+            create("release") {
+                storeFile = file(requireNotNull(releaseStoreFile))
+                storePassword = requireNotNull(releaseStorePassword)
+                keyAlias = requireNotNull(releaseKeyAlias)
+                keyPassword = requireNotNull(releaseKeyPassword)
             }
         }
     }
+
+    buildTypes {
+        release {
+            optimization {
+                enable = true
+            }
+
+            if (releaseSigningConfigured) {
+                signingConfig = signingConfigs.getByName("release")
+            }
+        }
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+
     buildFeatures {
         compose = true
     }
