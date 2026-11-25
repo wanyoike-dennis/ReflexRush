@@ -52,15 +52,28 @@ class GameEngineTest {
 
     @Test
     fun dangerTargetSubtractsPointsButNeverBelowZero() {
-        val engine = GameEngine(testConfig(dangerTargetChance = 1f), Random(3))
+        val random = ScriptedRandom(
+            0.1f, 0.5f, 0.5f,
+            0.9f, 0.5f, 0.5f
+        )
+        val engine = GameEngine(
+            testConfig(
+                maxActiveTargets = 2,
+                targetLifetimeMs = 1_000L,
+                dangerTargetChance = 0.5f
+            ),
+            random
+        )
         engine.start()
-        val firstDanger = spawnOne(engine)
-        engine.tapTarget(firstDanger.id)
-        assertEquals(0, engine.state.score)
 
         engine.advanceTime(100L)
-        val secondDanger = engine.state.targets.single()
-        engine.tapTarget(secondDanger.id)
+        val goodTarget = engine.state.targets.single()
+        engine.tapTarget(goodTarget.id)
+        assertEquals(10, engine.state.score)
+
+        engine.advanceTime(100L)
+        val dangerTarget = engine.state.targets.single()
+        engine.tapTarget(dangerTarget.id)
 
         assertEquals(0, engine.state.score)
         assertEquals(3, engine.state.lives)
@@ -138,6 +151,14 @@ class GameEngineTest {
         assertEquals(initial, engine.advanceTime(1_000L))
         assertEquals(initial, engine.tapTarget(1L))
         assertFalse(engine.state.status == GameStatus.RUNNING)
+    }
+
+    private class ScriptedRandom(vararg values: Float) : Random() {
+        private val sequence = values.iterator()
+
+        override fun nextBits(bitCount: Int): Int = 0
+
+        override fun nextFloat(): Float = sequence.next()
     }
 
     private fun spawnOne(engine: GameEngine): GameTarget {
