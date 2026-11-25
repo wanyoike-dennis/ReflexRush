@@ -423,20 +423,23 @@ class GameEngine(
     private fun createTarget(difficulty: DifficultyProfile): GameTarget {
         val roll = random.nextFloat()
         val canSpawnTimedPowerup = state.activeTimedPowerup == null
-        val powerupChance = if (canSpawnTimedPowerup) config.powerupSpawnChance
-            else config.powerupSpawnChance * 0.5f
+        val availablePowerups = PowerupType.entries.filter { powerup ->
+            powerup in sessionConfig.enabledPowerups &&
+                (canSpawnTimedPowerup || powerup == PowerupType.GOLDEN_STAR || powerup == PowerupType.SHIELD)
+        }
+        val powerupChance = when {
+            availablePowerups.isEmpty() -> 0f
+            canSpawnTimedPowerup -> config.powerupSpawnChance
+            else -> config.powerupSpawnChance * 0.5f
+        }
         val type = when {
             roll < difficulty.dangerTargetChance -> TargetType.DANGER
             roll < difficulty.dangerTargetChance + powerupChance -> TargetType.POWERUP
             else -> TargetType.GOOD
         }
         val powerupType = if (type == TargetType.POWERUP) {
-            val choices = if (canSpawnTimedPowerup) {
-                PowerupType.entries.toList()
-            } else {
-                listOf(PowerupType.GOLDEN_STAR, PowerupType.SHIELD)
-            }
-            choices[(random.nextFloat() * choices.size).toInt().coerceIn(0, choices.lastIndex)]
+            availablePowerups[(random.nextFloat() * availablePowerups.size).toInt()
+                .coerceIn(0, availablePowerups.lastIndex)]
         } else null
         val positionRange = config.minTargetPosition..config.maxTargetPosition
 
