@@ -88,8 +88,17 @@ data class GameSessionConfig(
         dangerHitPenalty = gameConfig.dangerHitPenalty
     ),
     val comboRules: ComboRules = ComboRules(),
-    val enabledPowerups: Set<PowerupType> = PowerupType.entries.toSet()
-)
+    val enabledPowerups: Set<PowerupType> = PowerupType.entries.toSet(),
+    val timeAttackDurationMs: Long = 60_000L,
+    val precisionTargetCount: Int = 30,
+    val precisionMissPenalty: Int = 5
+) {
+    init {
+        require(timeAttackDurationMs > 0L) { "Time Attack duration must be greater than zero." }
+        require(precisionTargetCount > 0) { "Precision target count must be greater than zero." }
+        require(precisionMissPenalty >= 0) { "Precision miss penalty cannot be negative." }
+    }
+}
 
 /**
  * A completed round snapshot. It contains only engine-owned facts and is safe
