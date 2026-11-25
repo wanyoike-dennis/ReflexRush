@@ -16,11 +16,11 @@ data class GameConfig(
     val spawnIntervalMs: Long = 750L,
     val maxActiveTargets: Int = 3,
     val dangerTargetChance: Float = 0.22f,
+    val minTargetPosition: Float = 0.08f,
+    val maxTargetPosition: Float = 0.92f,
     val powerupSpawnChance: Float = 0.06f,
     val powerupDurationMs: Long = 5_000L,
-    val slowTimeFactor: Float = 0.5f,
-    val minTargetPosition: Float = 0.08f,
-    val maxTargetPosition: Float = 0.92f
+    val slowTimeFactor: Float = 0.5f
 ) {
     init {
         require(startingLives > 0) { "Starting lives must be greater than zero." }
