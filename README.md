@@ -297,14 +297,18 @@ Implementation requirements:
 
 ### 8.6 Stage 4 — Sound and audio settings
 
-- Add a small Android audio manager outside the game engine.
-- Use short sound effects for target hits, danger penalties, combo milestones, powerup collection, life loss, game over, and new personal best.
-- Add independent sound-effects and background-music on/off settings.
-- Persist audio preferences locally.
-- Respect app lifecycle transitions and release or pause audio resources appropriately.
-- Start with sound effects; introduce optional background music only after effects and lifecycle handling are reliable.
+**Implementation pushed; local build and device verification pending.**
 
-**Exit criteria:** Audio controls persist across app restarts, sounds correspond to gameplay events, and audio does not continue unexpectedly when the app is backgrounded.
+- Added `GameAudioManager`, a small Android audio layer outside the pure Kotlin game engine.
+- Uses Android `SoundPool` with short, locally synthesised WAV samples for good hits, danger hits, combo milestones, powerup collection, missed lives, shield consumption, game over, and a new personal best.
+- Added a soft looping ambient game track, with music disabled by default.
+- Added independent `SFX ON/OFF` and `MUSIC ON/OFF` controls to the gameplay screen.
+- Persisted both preferences locally with SharedPreferences; settings are restored when a new game screen is opened.
+- Background music starts only during active, resumed gameplay and stops when the round ends, the app is paused, or the screen is disposed.
+- Audio is driven by the existing typed gameplay events; the game engine remains free of Android audio dependencies.
+- No Gradle files, dependency versions, or external audio libraries were changed.
+
+**Verification still required:** Build and run the app, check each sound cue, toggle SFX and music independently, close/reopen the game screen to confirm preferences persist, and background/resume the app to confirm music stops and resumes correctly.
 
 ### 8.7 Stage 5 — Multiple game modes
 
@@ -408,7 +412,8 @@ Online leaderboards, multiplayer, cloud synchronisation, monetisation, and socia
 | Phase 7 regression and release validation | In progress; the existing `testDebugUnitTest` baseline passed locally; release/build/device checks remain pending |
 | Hybrid expansion Stage 1 | Implemented, built, and unit-tested successfully by the user |
 | Hybrid expansion Stage 2 | Implemented, built, and unit-tested successfully by the user |
-| Hybrid expansion Stage 3 | Powerup engine, events, UI, and deterministic tests pushed; local verification pending |
+| Hybrid expansion Stage 4 | Audio manager, sound effects, looping music, persistent controls, and lifecycle handling pushed; local verification pending |
+| Hybrid expansion Stage 3 | Powerups and special targets implemented and tested by the user |
 | Hybrid expansion roadmap | Defined; architecture-first implementation underway |
 
 ---
