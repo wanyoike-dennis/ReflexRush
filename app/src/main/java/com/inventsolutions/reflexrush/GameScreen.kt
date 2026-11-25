@@ -194,7 +194,7 @@ fun GameScreen(
                         letterSpacing = 2.sp
                     )
                     Text(
-                        "STAY SHARP. MOVE FAST.",
+                        "SCORE UP. THE CHALLENGE RISES.",
                         color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.48f),
                         fontSize = 9.sp,
                         fontWeight = FontWeight.Bold,
@@ -242,7 +242,7 @@ fun GameScreen(
                         }
                     }
                 }
-                GameStat(label = "TARGETS", value = gameState.targets.size.toString(), tint = RushGreen)
+                GameStat(label = "LEVEL", value = gameState.difficultyLevel.toString(), tint = RushGreen)
             }
 
             Spacer(Modifier.height(16.dp))
