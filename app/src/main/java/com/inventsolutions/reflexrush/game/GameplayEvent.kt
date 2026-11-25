@@ -26,6 +26,11 @@ sealed interface GameplayEvent {
 
     data class LifeLost(val livesRemaining: Int) : GameplayEvent
 
+    data class PrecisionMissPenalty(
+        val pointsDeducted: Int,
+        val totalScore: Int
+    ) : GameplayEvent
+
     data class ComboChanged(
         val previousCount: Int,
         val newCount: Int,
