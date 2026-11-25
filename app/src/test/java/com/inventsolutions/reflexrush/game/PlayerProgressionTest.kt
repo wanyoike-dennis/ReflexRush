@@ -11,7 +11,7 @@ class PlayerProgressionTest {
         score: Int = 100,
         level: Int = 2,
         hits: Int = 5,
-        dangerHits: Int = 0,
+        dangerHits: Int = 1,
         combo: Int = 1,
         powerups: Int = 0
     ) = GameSessionSummary(
@@ -35,8 +35,8 @@ class PlayerProgressionTest {
         val repeated = second.include(summary(hits = 4), "2026-11-25")
 
         assertTrue(second.completedDailyMissionIds.contains(DailyMission.FIRST_STRIKE.id))
-        assertEquals(50, second.experiencePoints)
-        assertEquals(50, repeated.experiencePoints)
+        assertEquals(150, second.experiencePoints)
+        assertEquals(150, repeated.experiencePoints)
         assertEquals(24, repeated.dailyGoodTargetsHit)
     }
 
