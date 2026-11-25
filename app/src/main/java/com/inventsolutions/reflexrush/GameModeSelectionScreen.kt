@@ -13,19 +13,18 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.layout.width
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -33,12 +32,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.inventsolutions.reflexrush.game.GameMode
 import com.inventsolutions.reflexrush.ui.theme.RushAmber
-import com.inventsolutions.reflexrush.ui.theme.RushBackground
 import com.inventsolutions.reflexrush.ui.theme.RushGreen
 import com.inventsolutions.reflexrush.ui.theme.RushMint
 import com.inventsolutions.reflexrush.ui.theme.RushRed
-import com.inventsolutions.reflexrush.ui.theme.RushSurface
-import com.inventsolutions.reflexrush.ui.theme.RushSurfaceVariant
 
 @Composable
 fun GameModeSelectionScreen(
@@ -46,90 +42,35 @@ fun GameModeSelectionScreen(
     onBack: () -> Unit
 ) {
     val modes = listOf(
-        ModeOption(
-            mode = GameMode.CLASSIC,
-            icon = "⚡",
-            title = "CLASSIC",
-            subtitle = "The original Reflex Rush",
-            description = "Three lives. Build combos, collect powerups and beat your personal best.",
-            accent = RushGreen,
-            rule = "3 LIVES • ENDLESS ROUND"
-        ),
-        ModeOption(
-            mode = GameMode.TIME_ATTACK,
-            icon = "⏱",
-            title = "TIME ATTACK",
-            subtitle = "Score as much as you can",
-            description = "You have 60 seconds. Every good hit counts before the clock reaches zero.",
-            accent = RushAmber,
-            rule = "60 SECONDS • POWERUPS"
-        ),
-        ModeOption(
-            mode = GameMode.SURVIVAL,
-            icon = "🔥",
-            title = "SURVIVAL",
-            subtitle = "Can you handle the pressure?",
-            description = "Start with three lives. Targets arrive faster and danger becomes more frequent as you score.",
-            accent = RushRed,
-            rule = "3 LIVES • RISING INTENSITY"
-        ),
-        ModeOption(
-            mode = GameMode.PRECISION,
-            icon = "◎",
-            title = "PRECISION",
-            subtitle = "Accuracy over speed",
-            description = "Face 30 targets. Missed good targets and danger taps reduce your score. Misses do not cost lives.",
-            accent = RushMint,
-            rule = "30 TARGETS • ACCURACY CHALLENGE"
-        )
+        ModeOption(GameMode.CLASSIC, "01", "⚡", "CLASSIC", "THE ORIGINAL TEST", "Three lives. Build combos, collect powerups and beat your personal best.", RushGreen, "3 LIVES  •  ENDLESS ROUND"),
+        ModeOption(GameMode.TIME_ATTACK, "02", "⏱", "TIME ATTACK", "RACE THE CLOCK", "You have 60 seconds. Every good hit counts before time runs out.", RushAmber, "60 SECONDS  •  POWERUPS"),
+        ModeOption(GameMode.SURVIVAL, "03", "🔥", "SURVIVAL", "NO ROOM FOR ERROR", "Start with three lives. Targets arrive faster and danger gets more frequent.", RushRed, "3 LIVES  •  RISING INTENSITY"),
+        ModeOption(GameMode.PRECISION, "04", "◎", "PRECISION", "MAKE EVERY TAP COUNT", "Face 30 targets. Misses reduce your score, but do not cost lives.", RushMint, "30 TARGETS  •  ACCURACY CHALLENGE")
     )
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                Brush.verticalGradient(listOf(RushBackground, Color(0xFF101B2C), RushBackground))
-            )
-            .safeDrawingPadding()
-            .padding(horizontal = 22.dp, vertical = 18.dp)
-    ) {
+    Box(Modifier.fillMaxSize()) {
+        ArcadeBackdrop(Modifier.fillMaxSize(), RushMint)
         Column(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize().safeDrawingPadding().padding(horizontal = 20.dp, vertical = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Column {
-                    Text("REFLEX RUSH", color = RushMint, fontSize = 12.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 2.sp)
-                    Text("CHOOSE YOUR CHALLENGE", color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.55f), fontSize = 9.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.2.sp)
+                    Text("REFLEX RUSH", color = RushMint, fontSize = 11.sp, fontWeight = FontWeight.Black, letterSpacing = 2.2.sp)
+                    Text("SELECT YOUR ARENA", color = Color.White.copy(alpha = 0.55f), fontSize = 8.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.4.sp)
                 }
                 OutlinedButton(
                     onClick = onBack,
+                    shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = RushMint)
-                ) {
-                    Text("BACK", fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                }
+                ) { Text("EXIT", fontSize = 9.sp, fontWeight = FontWeight.Black, letterSpacing = 1.sp) }
             }
 
-            Spacer(Modifier.height(18.dp))
-            Text(
-                "PICK YOUR MODE",
-                color = MaterialTheme.colorScheme.onBackground,
-                fontSize = 25.sp,
-                fontWeight = FontWeight.Black,
-                letterSpacing = 1.4.sp,
-                textAlign = TextAlign.Center
-            )
-            Text(
-                "Every mode tests your reflexes in a different way.",
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.55f),
-                fontSize = 11.sp,
-                textAlign = TextAlign.Center
-            )
-            Spacer(Modifier.height(18.dp))
+            Spacer(Modifier.height(22.dp))
+            Text("CHOOSE YOUR", color = RushMint, fontSize = 11.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 3.sp)
+            Text("CHALLENGE", color = Color.White, fontSize = 31.sp, fontWeight = FontWeight.Black, letterSpacing = 1.5.sp, textAlign = TextAlign.Center)
+            Text("Four ways to test your reaction speed.", color = Color.White.copy(alpha = 0.6f), fontSize = 11.sp)
+            Spacer(Modifier.height(20.dp))
 
             Column(
                 modifier = Modifier.weight(1f).verticalScroll(rememberScrollState()),
@@ -137,58 +78,53 @@ fun GameModeSelectionScreen(
             ) {
                 modes.forEach { option ->
                     Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(18.dp))
-                            .background(RushSurface)
-                            .border(1.dp, RushSurfaceVariant, RoundedCornerShape(18.dp))
+                        modifier = Modifier.fillMaxWidth()
+                            .clip(RoundedCornerShape(22.dp))
+                            .background(Color(0xD90A1525))
+                            .border(1.dp, option.accent.copy(alpha = 0.52f), RoundedCornerShape(22.dp))
                             .clickable { onModeSelected(option.mode) }
-                            .padding(16.dp)
+                            .padding(horizontal = 17.dp, vertical = 15.dp)
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Box(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .background(option.accent.copy(alpha = 0.14f))
-                                    .padding(horizontal = 12.dp, vertical = 9.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(option.icon, color = option.accent, fontSize = 23.sp)
-                            }
+                            Text(option.number, color = option.accent.copy(alpha = 0.55f), fontSize = 10.sp, fontWeight = FontWeight.Black)
                             Spacer(Modifier.width(12.dp))
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(option.title, color = option.accent, fontSize = 14.sp, fontWeight = FontWeight.Black, letterSpacing = 1.2.sp)
-                                Text(option.subtitle, color = MaterialTheme.colorScheme.onBackground, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            Box(
+                                modifier = Modifier.clip(RoundedCornerShape(13.dp))
+                                    .background(option.accent.copy(alpha = 0.14f))
+                                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                                contentAlignment = Alignment.Center
+                            ) { Text(option.icon, color = option.accent, fontSize = 24.sp) }
+                            Spacer(Modifier.width(13.dp))
+                            Column(Modifier.weight(1f)) {
+                                Text(option.title, color = option.accent, fontSize = 15.sp, fontWeight = FontWeight.Black, letterSpacing = 1.4.sp)
+                                Text(option.subtitle, color = Color.White.copy(alpha = 0.75f), fontSize = 8.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
                             }
-                            Text("›", color = option.accent, fontSize = 28.sp, fontWeight = FontWeight.Light)
+                            Text("›", color = option.accent, fontSize = 30.sp, fontWeight = FontWeight.Light)
                         }
-                        Spacer(Modifier.height(10.dp))
-                        Text(
-                            option.description,
-                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.66f),
-                            fontSize = 11.sp,
-                            lineHeight = 16.sp
-                        )
-                        Spacer(Modifier.height(10.dp))
-                        Text(option.rule, color = option.accent.copy(alpha = 0.9f), fontSize = 9.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 0.8.sp)
+                        Spacer(Modifier.height(12.dp))
+                        Text(option.description, color = Color.White.copy(alpha = 0.68f), fontSize = 10.sp, lineHeight = 15.sp)
+                        Spacer(Modifier.height(12.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp))
+                                .background(option.accent.copy(alpha = 0.09f)).padding(horizontal = 10.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("▶", color = option.accent, fontSize = 8.sp)
+                            Spacer(Modifier.width(8.dp))
+                            Text(option.rule, color = option.accent, fontSize = 8.sp, fontWeight = FontWeight.Black, letterSpacing = 0.8.sp)
+                        }
                     }
                 }
             }
             Spacer(Modifier.height(12.dp))
-            Text(
-                "YOUR RECORDS ARE SAVED SEPARATELY FOR EACH MODE",
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
-                fontSize = 8.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 0.7.sp,
-                textAlign = TextAlign.Center
-            )
+            Text("YOUR RECORDS ARE SAVED SEPARATELY FOR EACH MODE", color = Color.White.copy(alpha = 0.38f), fontSize = 7.sp, fontWeight = FontWeight.Bold, letterSpacing = 0.8.sp, textAlign = TextAlign.Center)
         }
     }
 }
 
 private data class ModeOption(
     val mode: GameMode,
+    val number: String,
     val icon: String,
     val title: String,
     val subtitle: String,
