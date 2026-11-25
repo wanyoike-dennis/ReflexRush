@@ -243,6 +243,8 @@ Before implementing combos, establish the engine contracts that later features w
 - Confirm current gameplay, high-score persistence, difficulty progression, replay, and lifecycle pause/resume behaviour.
 - Record the passing test and build baseline before extending the engine.
 
+**Progress:** The existing `testDebugUnitTest` baseline passed locally before the architecture work. The remaining Phase 7 release/build/device checks are still pending.
+
 **Exit criteria:** Existing feature branch is clean, current regression checks pass, and the verified Classic game remains a stable reference point.
 
 ### 8.3 Stage 1 — Engine foundation and gameplay events
@@ -251,6 +253,8 @@ Before implementing combos, establish the engine contracts that later features w
 - Adapt the current Classic flow to use these contracts without changing its visible rules.
 - Keep the current high-score store working; do not migrate persistence unnecessarily.
 - Add unit tests that prove existing Classic scoring, lives, difficulty, replay, and high-score integration remain compatible.
+
+**Implementation pushed; local verification pending.** Added `GameMode` and `GameSessionConfig`, central `ScoreRules`, typed `GameplayEvent` values, and immutable `GameSessionSummary`. The Classic engine now emits and buffers events for round start, target hits, misses, life loss, level changes, and round completion. The gameplay screen consumes hit/life events for its existing feedback, and personal-best saving reads the completed session summary. Existing `GameConfig` construction remains supported for current tests and callers. Eight focused architecture tests were added.
 
 **Exit criteria:** Classic still behaves as before, while the engine provides the shared contracts required by combos, modes, statistics, and missions.
 
@@ -398,7 +402,7 @@ Online leaderboards, multiplayer, cloud synchronisation, monetisation, and socia
 | High-score persistence | Implemented and verified on a testing device |
 | Phase 5 gameplay polish | User tested; feedback improvements confirmed |
 | Phase 6 progressive difficulty | Implemented and user-verified on a testing device |
-| Phase 7 regression and release validation | In progress; expanded engine edge-case tests added, local execution pending |\n| Hybrid expansion roadmap | Defined; incremental architecture-first implementation planned after the Phase 7 baseline |
+| Phase 7 regression and release validation | In progress; the existing `testDebugUnitTest` baseline passed locally; release/build/device checks remain pending |\n| Hybrid expansion Stage 1 | Implemented and pushed; eight new architecture tests are awaiting local execution |\n| Hybrid expansion roadmap | Defined; architecture-first implementation underway |
 
 ---
 
