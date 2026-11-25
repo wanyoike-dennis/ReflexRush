@@ -159,7 +159,7 @@ Work through these phases in order. Each phase should be reviewed and verified b
 - Review typography, contrast, touch target sizes, and layout behaviour.
 - Consider sound only if it improves play and can be implemented without destabilising the core game.
 
-**Implementation status:** Target entrance animation, score/penalty/life feedback, native haptic feedback, and game-over entrance animation are implemented. Local build and device verification are pending.
+**Implementation status:** Target entrance animation, score/penalty/life feedback, explicit Android vibrator feedback with the required manifest permission, and a more pronounced game-over entrance transition are implemented. Local build and device verification are pending.
 
 ### Phase 6 — Testing and release readiness
 - Add or update unit tests for scoring, lives, target expiry, danger-target penalties, round completion, and high-score rules.
