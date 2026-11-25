@@ -1,8 +1,8 @@
 package com.inventsolutions.reflexrush
 
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Canvas
@@ -28,6 +28,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -50,15 +54,18 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             ReflexRushTheme {
-                ReflexRushHome(
-                    onPlayClick = {
-                        Toast.makeText(
-                            this,
-                            "Gameplay is coming in Phase 2.",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                )
+                var showGame by rememberSaveable { mutableStateOf(false) }
+                BackHandler(enabled = showGame) {
+                    showGame = false
+                }
+                if (showGame) {
+                    GameScreen(
+                        onHome = { showGame = false },
+                        lifecycleOwner = this
+                    )
+                } else {
+                    ReflexRushHome(onPlayClick = { showGame = true })
+                }
             }
         }
     }
