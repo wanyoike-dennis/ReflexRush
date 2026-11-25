@@ -54,6 +54,8 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             ReflexRushTheme {
+                val highScoreStore = remember { HighScoreStore(applicationContext) }
+                var bestScore by remember { mutableStateOf(highScoreStore.load()) }
                 var showGame by remember { mutableStateOf(false) }
                 BackHandler(enabled = showGame) {
                     showGame = false
@@ -61,10 +63,17 @@ class MainActivity : ComponentActivity() {
                 if (showGame) {
                     GameScreen(
                         onHome = { showGame = false },
-                        lifecycleOwner = this
+                        lifecycleOwner = this,
+                        bestScore = bestScore,
+                        onNewBestScore = { score ->
+                            bestScore = highScoreStore.saveIfHigher(score)
+                        }
                     )
                 } else {
-                    ReflexRushHome(onPlayClick = { showGame = true })
+                    ReflexRushHome(
+                        onPlayClick = { showGame = true },
+                        bestScore = bestScore
+                    )
                 }
             }
         }
@@ -72,7 +81,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun ReflexRushHome(onPlayClick: () -> Unit = {}) {
+fun ReflexRushHome(onPlayClick: () -> Unit = {}, bestScore: Int = 0) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -291,7 +300,7 @@ fun ReflexRushHome(onPlayClick: () -> Unit = {}) {
                 )
                 Spacer(Modifier.width(8.dp))
                 Text(
-                    "—",
+                    if (bestScore > 0) bestScore.toString() else "—",
                     color = MaterialTheme.colorScheme.primary,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
