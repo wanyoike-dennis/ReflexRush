@@ -2,7 +2,7 @@
 
 **Reflex Rush** is an Android reflex and reaction-time arcade game by Invent Solutions. The game challenges players to spot and tap positive targets quickly while avoiding dangerous targets. It is designed to be fast, easy to understand, satisfying to replay, and playable offline.
 
-> **Project status:** The home screen, core gameplay engine, playable game screen, and local personal-best persistence are implemented and verified on a testing device. Phase 5 gameplay polish is in progress.
+> **Project status:** The home screen, core gameplay engine, playable game screen, and local personal-best persistence are implemented and verified on a testing device. Phase 5 gameplay polish has been tested by the user. Phase 6 score-based difficulty progression is implemented remotely and awaiting local verification.
 
 ## 1. Project objectives
 
@@ -153,19 +153,28 @@ Work through these phases in order. Each phase should be reviewed and verified b
 **Verified:** Local SharedPreferences storage, home-screen display, game-over personal-best display, and persistence after closing/reopening the app were tested successfully on the user's device.
 
 ### Phase 5 — Feedback, polish, and accessibility
-- Add restrained target entrance animations and game-over presentation.
+- Add restrained target entrance animations and a more noticeable game-over presentation.
 - Show brief, colour-coded feedback for successful hits, danger penalties, and missed-life events.
-- Use Android's native haptic feedback for gameplay actions without adding a dependency or manifest permission.
+- Provide Android vibrator feedback for gameplay actions.
 - Review typography, contrast, touch target sizes, and layout behaviour.
-- Consider sound only if it improves play and can be implemented without destabilising the core game.
 
-**Implementation status:** Target entrance animation, score/penalty/life feedback, explicit Android vibrator feedback with the required manifest permission, and a more pronounced game-over entrance transition are implemented. Local build and device verification are pending.
+**Verified by user:** Target animations, score/penalty/life feedback, vibration feedback, and the improved game-over transition were tested on the user's device.
 
-### Phase 6 — Testing and release readiness
-- Add or update unit tests for scoring, lives, target expiry, danger-target penalties, round completion, and high-score rules.
-- Run the available unit tests and Android build.
+### Phase 6 — Progressive difficulty
+- Introduce five score-based difficulty levels, beginning at Level 1.
+- Reduce the target spawn interval gradually as the score increases.
+- Shorten new targets' visible lifetime at higher levels.
+- Increase danger-target probability gradually, with a hard cap to keep the game fair.
+- Show the current difficulty level during gameplay.
+- Keep scoring, lives, target types, and the maximum active-target limit unchanged.
+- Add unit tests for score thresholds, timing progression, danger probability, and level updates.
+
+**Implementation status:** Score-based progression and the live level indicator are implemented on the feature branch. Local unit-test, Android build, and device verification are pending.
+
+### Phase 7 — Testing and release readiness
+- Run the complete unit-test suite and Android build.
 - Install and play on an emulator or physical Android device.
-- Check lifecycle behaviour, repeated play, and persistence after force-closing/reopening.
+- Check every difficulty transition, lifecycle behaviour, repeated play, and high-score persistence.
 - Fix verified issues before considering V1 complete.
 
 **Exit criteria:** Build succeeds, relevant tests pass, and the complete V1 flow has been manually exercised on Android.
