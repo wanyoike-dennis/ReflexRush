@@ -180,7 +180,21 @@ fun ReflexRushHome(
                         Text("ARCADE REACTION CHALLENGE", color = RushMint, fontSize = 8.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 1.4.sp)
                     }
                 }
-                Text("V 1.0", color = RushMint.copy(alpha = 0.65f), fontSize = 9.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.2.sp)
+                androidx.compose.material3.IconButton(
+                    onClick = onSettingsClick,
+                    modifier = Modifier
+                        .size(42.dp)
+                        .clip(CircleShape)
+                        .background(Color(0xFF172438))
+                        .border(1.dp, RushMint.copy(alpha = 0.55f), CircleShape)
+                ) {
+                    Text(
+                        "⚙",
+                        color = RushMint,
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
 
             Spacer(Modifier.height(22.dp))
@@ -305,17 +319,6 @@ fun ReflexRushHome(
                         Text("STATS", fontSize = 9.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 1.sp)
                     }
                 }
-            }
-
-            Spacer(Modifier.height(10.dp))
-            androidx.compose.material3.OutlinedButton(
-                onClick = onSettingsClick,
-                modifier = Modifier.fillMaxWidth().height(48.dp),
-                shape = RoundedCornerShape(15.dp),
-                border = androidx.compose.foundation.BorderStroke(1.dp, RushAmber.copy(alpha = 0.55f)),
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = RushAmber)
-            ) {
-                Text("⚙  GAME SETTINGS", fontSize = 10.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 1.2.sp)
             }
 
             Spacer(Modifier.height(18.dp))
