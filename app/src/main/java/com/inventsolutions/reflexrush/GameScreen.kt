@@ -490,7 +490,13 @@ private fun GameTargetButton(
     val isPowerup = target.type == TargetType.POWERUP
     val targetColor = when {
         isDanger -> RushRed
-        isPowerup -> RushAmber
+        isPowerup -> when (target.powerupType) {
+            PowerupType.GOLDEN_STAR -> RushAmber
+            PowerupType.DOUBLE_POINTS -> Color(0xFF67B7FF)
+            PowerupType.SLOW_TIME -> Color(0xFF9B9DFF)
+            PowerupType.SHIELD -> RushMint
+            null -> RushAmber
+        }
         else -> RushGreen
     }
     var hasAppeared by remember(target.id) { mutableStateOf(false) }
@@ -531,11 +537,14 @@ private fun GameTargetButton(
         Text(
             when {
                 isDanger -> "!"
-                isPowerup -> "★"
+                target.powerupType == PowerupType.GOLDEN_STAR -> "★"
+                target.powerupType == PowerupType.DOUBLE_POINTS -> "2×"
+                target.powerupType == PowerupType.SLOW_TIME -> "⌛"
+                target.powerupType == PowerupType.SHIELD -> "◇"
                 else -> "＋"
             },
             color = if (isDanger) Color.White else Color(0xFF062116),
-            fontSize = 29.sp,
+            fontSize = if (target.powerupType == PowerupType.DOUBLE_POINTS) 22.sp else 29.sp,
             fontWeight = FontWeight.Black
         )
     }
