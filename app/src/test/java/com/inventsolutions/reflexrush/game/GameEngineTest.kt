@@ -153,6 +153,65 @@ class GameEngineTest {
         assertFalse(engine.state.status == GameStatus.RUNNING)
     }
 
+
+    @Test
+    fun nonPositiveElapsedTimeDoesNotAdvanceRound() {
+        val engine = GameEngine(testConfig())
+        val initial = engine.start()
+
+        assertEquals(initial, engine.advanceTime(0L))
+        assertEquals(initial, engine.advanceTime(-10L))
+    }
+
+    @Test
+    fun multipleMissedGoodTargetsCanEndRoundInOneUpdate() {
+        val engine = GameEngine(
+            testConfig(
+                startingLives = 3,
+                maxActiveTargets = 3,
+                targetLifetimeMs = 50L,
+                spawnIntervalMs = 100L,
+                dangerTargetChance = 0f
+            ),
+            Random(18)
+        )
+        engine.start()
+        engine.advanceTime(300L)
+
+        assertEquals(3, engine.state.targets.size)
+
+        val state = engine.advanceTime(50L)
+
+        assertEquals(GameStatus.GAME_OVER, state.status)
+        assertEquals(0, state.lives)
+        assertTrue(state.targets.isEmpty())
+    }
+
+    @Test
+    fun restartingAfterLevelUpResetsDifficultyAndRoundState() {
+        val engine = GameEngine(
+            testConfig(
+                pointsPerGoodHit = 100,
+                targetLifetimeMs = 2_000L,
+                spawnIntervalMs = 100L,
+                dangerTargetChance = 0f
+            ),
+            Random(19)
+        )
+        engine.start()
+        engine.advanceTime(100L)
+        engine.tapTarget(engine.state.targets.single().id)
+
+        assertEquals(2, engine.state.difficultyLevel)
+
+        val restarted = engine.start()
+
+        assertEquals(1, restarted.difficultyLevel)
+        assertEquals(0, restarted.score)
+        assertEquals(3, restarted.lives)
+        assertTrue(restarted.targets.isEmpty())
+    }
+
     private class ScriptedRandom(vararg values: Float) : Random() {
         private val sequence = values.iterator()
 
