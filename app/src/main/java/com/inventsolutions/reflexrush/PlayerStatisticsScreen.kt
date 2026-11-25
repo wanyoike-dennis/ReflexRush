@@ -20,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -42,7 +43,7 @@ fun PlayerStatisticsScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(RushBackground)
+            .background(Brush.verticalGradient(listOf(Color(0xFF050914), Color(0xFF0B1727), RushBackground)))
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 20.dp, vertical = 22.dp),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -53,13 +54,13 @@ fun PlayerStatisticsScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column {
-                Text("PLAYER", color = RushMint, fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
-                Text("STATISTICS", color = MaterialTheme.colorScheme.onBackground, fontSize = 27.sp, fontWeight = FontWeight.Black)
+                Text("PLAYER PROFILE", color = RushMint, fontSize = 9.sp, fontWeight = FontWeight.Black, letterSpacing = 2.2.sp)
+                Text("YOUR RECORDS", color = Color.White, fontSize = 25.sp, fontWeight = FontWeight.Black, letterSpacing = 1.sp)
             }
             OutlinedButton(onClick = onBack) { Text("BACK") }
         }
         Spacer(Modifier.height(20.dp))
-        Text("LIFETIME OVERVIEW", modifier = Modifier.fillMaxWidth(), color = RushAmber, fontSize = 11.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 1.5.sp)
+        Text("◈  LIFETIME OVERVIEW", modifier = Modifier.fillMaxWidth(), color = RushMint, fontSize = 10.sp, fontWeight = FontWeight.Black, letterSpacing = 1.6.sp)
         Spacer(Modifier.height(10.dp))
         StatsPanel {
             StatsRow("Games played", statistics.totalGamesPlayed.toString(), RushMint)
@@ -70,7 +71,7 @@ fun PlayerStatisticsScreen(
             StatsRow("Best combo", "${statistics.bestCombo}×", RushAmber)
         }
         Spacer(Modifier.height(18.dp))
-        Text("GAMEPLAY TOTALS", modifier = Modifier.fillMaxWidth(), color = RushAmber, fontSize = 11.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 1.5.sp)
+        Text("⚡  GAMEPLAY TOTALS", modifier = Modifier.fillMaxWidth(), color = RushAmber, fontSize = 10.sp, fontWeight = FontWeight.Black, letterSpacing = 1.6.sp)
         Spacer(Modifier.height(10.dp))
         StatsPanel {
             StatsRow("Good targets hit", statistics.totalGoodTargetsHit.toString(), RushGreen)
@@ -79,7 +80,7 @@ fun PlayerStatisticsScreen(
             StatsRow("Powerups collected", statistics.totalPowerupsCollected.toString(), RushAmber)
         }
         Spacer(Modifier.height(18.dp))
-        Text("MODE RECORDS", modifier = Modifier.fillMaxWidth(), color = RushAmber, fontSize = 11.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 1.5.sp)
+        Text("▣  MODE RECORDS", modifier = Modifier.fillMaxWidth(), color = RushAmber, fontSize = 10.sp, fontWeight = FontWeight.Black, letterSpacing = 1.6.sp)
         Spacer(Modifier.height(10.dp))
         GameMode.entries.forEach { mode ->
             ModeStatsCard(mode, statistics.forMode(mode))
@@ -99,12 +100,13 @@ fun PlayerStatisticsScreen(
 
 @Composable
 private fun StatsPanel(content: @Composable () -> Unit) {
-    Column(
-        modifier = Modifier.fillMaxWidth()
-            .background(RushSurface, RoundedCornerShape(18.dp))
-            .border(1.dp, RushSurfaceVariant, RoundedCornerShape(18.dp))
-            .padding(horizontal = 16.dp, vertical = 10.dp)
-    ) { content() }
+    ArcadePanel(
+        modifier = Modifier.fillMaxWidth(),
+        accent = RushMint,
+        radius = 20.dp
+    ) {
+        Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp)) { content() }
+    }
 }
 
 @Composable
@@ -121,24 +123,21 @@ private fun StatsRow(label: String, value: String, tint: Color) {
 
 @Composable
 private fun ModeStatsCard(mode: GameMode, stats: ModeStatistics) {
-    Column(
-        modifier = Modifier.fillMaxWidth()
-            .background(RushSurface, RoundedCornerShape(16.dp))
-            .border(1.dp, RushSurfaceVariant, RoundedCornerShape(16.dp))
-            .padding(15.dp)
-    ) {
-        Text(mode.name.replace('_', ' '), color = RushMint, fontSize = 13.sp, fontWeight = FontWeight.Black, letterSpacing = 1.sp)
-        Spacer(Modifier.height(7.dp))
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            MiniStat("GAMES", stats.gamesPlayed.toString())
-            MiniStat("BEST SCORE", stats.highestScore.toString())
-            MiniStat("ACCURACY", "${stats.accuracyPercent}%")
-        }
-        Spacer(Modifier.height(8.dp))
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            MiniStat("LEVEL", stats.highestLevel.toString())
-            MiniStat("BEST COMBO", "${stats.bestCombo}×")
-            MiniStat("POWERUPS", stats.powerupsCollected.toString())
+    ArcadePanel(modifier = Modifier.fillMaxWidth(), accent = RushAmber, radius = 18.dp) {
+        Column(Modifier.fillMaxWidth().padding(15.dp)) {
+            Text(mode.name.replace('_', ' '), color = RushMint, fontSize = 13.sp, fontWeight = FontWeight.Black, letterSpacing = 1.4.sp)
+            Spacer(Modifier.height(7.dp))
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                MiniStat("GAMES", stats.gamesPlayed.toString())
+                MiniStat("BEST SCORE", stats.highestScore.toString())
+                MiniStat("ACCURACY", "${stats.accuracyPercent}%")
+            }
+            Spacer(Modifier.height(8.dp))
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                MiniStat("LEVEL", stats.highestLevel.toString())
+                MiniStat("BEST COMBO", "${stats.bestCombo}×")
+                MiniStat("POWERUPS", stats.powerupsCollected.toString())
+            }
         }
     }
 }
