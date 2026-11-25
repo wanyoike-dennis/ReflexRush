@@ -38,7 +38,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -46,10 +45,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.runtime.withFrameNanos
 import com.inventsolutions.reflexrush.game.GameEngine
-import com.inventsolutions.reflexrush.game.GameState
 import com.inventsolutions.reflexrush.game.GameStatus
 import com.inventsolutions.reflexrush.game.GameTarget
 import com.inventsolutions.reflexrush.game.TargetType
@@ -63,10 +60,9 @@ import com.inventsolutions.reflexrush.ui.theme.RushSurfaceVariant
 import kotlinx.coroutines.isActive
 
 @Composable
-fun GameScreen(onHome: () -> Unit) {
+fun GameScreen(onHome: () -> Unit, lifecycleOwner: LifecycleOwner) {
     val engine = remember { GameEngine() }
     var gameState by remember { mutableStateOf(engine.start()) }
-    val lifecycleOwner = LocalLifecycleOwner.current
     var isResumed by remember {
         mutableStateOf(lifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED))
     }
@@ -207,8 +203,8 @@ fun GameScreen(onHome: () -> Unit) {
                     GameTargetButton(
                         target = target,
                         modifier = Modifier.offset(
-                            x = maxWidth * target.x - targetSize / 2,
-                            y = maxHeight * target.y - targetSize / 2
+                            x = (maxWidth * target.x - targetSize / 2).coerceIn(0.dp, maxWidth - targetSize),
+                            y = (maxHeight * target.y - targetSize / 2).coerceIn(0.dp, maxHeight - targetSize)
                         ),
                         onClick = {
                             gameState = engine.tapTarget(target.id)
