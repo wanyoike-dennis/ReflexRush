@@ -30,7 +30,7 @@ class GameAudioManager(context: Context) {
     }
 
     private val appContext = context.applicationContext
-    private val preferences = appContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
+    private val settingsStore = AudioSettingsStore(appContext)
 
     var soundEffectsEnabled: Boolean
         private set
@@ -55,8 +55,8 @@ class GameAudioManager(context: Context) {
         .build()
 
     init {
-        soundEffectsEnabled = preferences.getBoolean(KEY_SOUND_EFFECTS, true)
-        musicEnabled = preferences.getBoolean(KEY_MUSIC, false)
+        soundEffectsEnabled = settingsStore.soundEffectsEnabled
+        musicEnabled = settingsStore.musicEnabled
 
         soundPool.setOnLoadCompleteListener { _, sampleId, status ->
             if (status == 0) {
@@ -75,12 +75,12 @@ class GameAudioManager(context: Context) {
 
     fun setSoundEffectsEnabled(enabled: Boolean) {
         soundEffectsEnabled = enabled
-        preferences.edit().putBoolean(KEY_SOUND_EFFECTS, enabled).apply()
+        settingsStore.setSoundEffectsEnabled(enabled)
     }
 
     fun setMusicEnabled(enabled: Boolean) {
         musicEnabled = enabled
-        preferences.edit().putBoolean(KEY_MUSIC, enabled).apply()
+        settingsStore.setMusicEnabled(enabled)
         if (enabled) startMusicIfAllowed() else stopMusic()
     }
 
@@ -210,9 +210,6 @@ class GameAudioManager(context: Context) {
     }
 
     private companion object {
-        const val PREFERENCES_NAME = "reflex_rush_audio"
-        const val KEY_SOUND_EFFECTS = "sound_effects_enabled"
-        const val KEY_MUSIC = "music_enabled"
         const val SAMPLE_RATE = 22_050
     }
 }
