@@ -431,9 +431,33 @@ Online leaderboards, multiplayer, cloud synchronisation, monetisation, and socia
 | Hybrid expansion Stage 3 | Powerups and special targets implemented and tested by the user |
 | Hybrid expansion Stage 7 | Daily missions, permanent achievements, XP levels, cosmetic unlock milestones, offline persistence, and progression screen pushed; CI and device verification pending |
 | Hybrid expansion roadmap | Defined; architecture-first implementation underway |
+| Android automatic backup | Configured for the four SharedPreferences stores through legacy full-backup and Android 12+ data-extraction rules; actual cloud/device restore still requires device verification |
+| Manual backup and restore | Versioned JSON export/import added to Game Settings; local build and file round-trip verification pending |
 
 ---
 
 **Project:** Reflex Rush  
 **Publisher / developer:** Invent Solutions  
 **Repository:** [wanyoike-dennis/ReflexRush](https://github.com/wanyoike-dennis/ReflexRush)
+
+
+## 11. Player backup and restore
+
+Reflex Rush supports two complementary backup paths:
+
+### Android automatic backup
+
+- The manifest enables Android backup and references both legacy full-backup rules and Android 12+ data-extraction rules.
+- The rules include the app's SharedPreferences domain, which contains personal bests, per-mode statistics, player progression, missions, achievements, XP, and audio preferences.
+- Android automatic backup depends on the player's Android backup settings, Google account/device-transfer support, network availability, and platform policy. The app cannot guarantee when Android performs a backup or whether a particular device/vendor will offer restore.
+
+### Manual backup
+
+- Game Settings provides **Export** and **Restore** actions using Android's system document picker.
+- Export creates a portable JSON file with a format version, application identifier, export timestamp, and typed values from the four app preference stores.
+- Restore validates the app identifier, format version, required stores, and value types before replacing local player data.
+- A confirmation dialog warns that restore replaces the current local progress. Players should export their current progress first if they want to retain it.
+- Manual backup files can be copied to another device or stored in a location chosen by the player.
+- The backup format is versioned so future app releases can add migration support deliberately.
+
+**Verification still required:** Build the feature branch, export a backup, clear or change test progress, restore the exported file, and verify high scores, statistics, progression, achievements, and audio preferences. Also verify Android automatic backup/restore on a supported device; the XML configuration alone does not prove a real cloud or device-transfer restore.
