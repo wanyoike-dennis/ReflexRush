@@ -3,6 +3,7 @@ package com.inventsolutions.reflexrush.game
 import kotlin.random.Random
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -46,7 +47,7 @@ class PowerupSystemTest {
         assertEquals(5_000L, engine.state.powerupRemainingMs)
         engine.advanceTime(5_000L)
 
-        assertEquals(null, engine.state.activeTimedPowerup)
+        assertNull(engine.state.activeTimedPowerup)
         assertTrue(engine.drainEvents().contains(GameplayEvent.PowerupExpired(PowerupType.DOUBLE_POINTS)))
     }
 
@@ -159,7 +160,7 @@ class PowerupSystemTest {
 
         val restarted = engine.start()
 
-        assertEquals(null, restarted.activeTimedPowerup)
+        assertNull(restarted.activeTimedPowerup)
         assertEquals(0L, restarted.powerupRemainingMs)
         assertFalse(restarted.shieldAvailable)
     }
