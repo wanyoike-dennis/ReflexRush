@@ -359,6 +359,7 @@ class GameEngine(
 
     private fun collectPowerup(target: GameTarget) {
         val powerup = target.powerupType ?: return
+        state = state.copy(targets = state.targets.filterNot { it.id == target.id })
         pendingEvents += GameplayEvent.PowerupCollected(powerup)
         when (powerup) {
             PowerupType.GOLDEN_STAR -> {
@@ -379,13 +380,11 @@ class GameEngine(
                 pendingEvents += GameplayEvent.PowerupActivated(powerup)
             }
             PowerupType.DOUBLE_POINTS, PowerupType.SLOW_TIME -> {
-                if (state.activeTimedPowerup == null) {
-                    state = state.copy(
-                        activeTimedPowerup = powerup,
-                        powerupRemainingMs = config.powerupDurationMs
-                    )
-                    pendingEvents += GameplayEvent.PowerupActivated(powerup)
-                }
+                state = state.copy(
+                    activeTimedPowerup = powerup,
+                    powerupRemainingMs = config.powerupDurationMs
+                )
+                pendingEvents += GameplayEvent.PowerupActivated(powerup)
             }
         }
     }
