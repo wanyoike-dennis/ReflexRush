@@ -239,6 +239,7 @@ class GameEngineTest {
         targetLifetimeMs = targetLifetimeMs,
         spawnIntervalMs = spawnIntervalMs,
         maxActiveTargets = maxActiveTargets,
-        dangerTargetChance = dangerTargetChance
+        dangerTargetChance = dangerTargetChance,
+        powerupSpawnChance = 0f
     )
 }
