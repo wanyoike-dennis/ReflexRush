@@ -24,7 +24,10 @@ class PowerupSystemTest {
 
         assertEquals(50, engine.state.score)
         assertEquals(0, engine.state.comboCount)
-        assertTrue(engine.drainEvents().contains(GameplayEvent.PowerupActivated(PowerupType.GOLDEN_STAR)))
+        val events = engine.drainEvents()
+        assertTrue(events.contains(GameplayEvent.PowerupSpawned(PowerupType.GOLDEN_STAR)))
+        assertTrue(events.contains(GameplayEvent.PowerupCollected(PowerupType.GOLDEN_STAR)))
+        assertTrue(events.contains(GameplayEvent.PowerupActivated(PowerupType.GOLDEN_STAR)))
     }
 
     @Test
