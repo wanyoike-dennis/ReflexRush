@@ -103,7 +103,7 @@ class GameAudioManager(context: Context) {
                 is GameplayEvent.DangerTargetHit -> play(Cue.DANGER_HIT)
                 is GameplayEvent.ComboMilestone -> play(Cue.COMBO)
                 is GameplayEvent.PowerupCollected -> play(Cue.POWERUP)
-                is GameplayEvent.LifeLost -> play(Cue.LIFE_LOST)
+                is GameplayEvent.LifeLost, is GameplayEvent.PrecisionMissPenalty -> play(Cue.LIFE_LOST)
                 GameplayEvent.ShieldConsumed -> play(Cue.SHIELD)
                 is GameplayEvent.RoundCompleted -> play(Cue.GAME_OVER)
                 else -> Unit
