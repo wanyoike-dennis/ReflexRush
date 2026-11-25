@@ -29,7 +29,12 @@ class GameBackupManager(context: Context) {
             appContext.getSharedPreferences(name, Context.MODE_PRIVATE)
                 .all
                 .toSortedMap()
-                .forEach { (key, value) -> entries.put(key, encodeValue(value)) }
+                .forEach { (key, value) ->
+                    entries.put(
+                        key,
+                        encodeValue(requireNotNull(value) { "A stored preference value cannot be null." })
+                    )
+                }
             allPreferences.put(name, entries)
         }
 
@@ -78,9 +83,13 @@ class GameBackupManager(context: Context) {
         }
 
         val previous = preferenceFiles.associateWith { name ->
-            appContext.getSharedPreferences(name, Context.MODE_PRIVATE).all.mapValues { (_, value) ->
-                if (value is Set<*>) value.toSet() else value
-            }
+            appContext.getSharedPreferences(name, Context.MODE_PRIVATE).all
+                .mapNotNull { (key, value) ->
+                    value?.let { stored ->
+                        key to if (stored is Set<*>) stored.toSet() else stored
+                    }
+                }
+                .toMap()
         }
 
         try {
