@@ -21,7 +21,7 @@ class PlayerStatisticsStore(context: Context) {
                 targetsMissed = preferences.getInt(key(prefix, "missed"), 0),
                 powerupsCollected = preferences.getInt(key(prefix, "powerups"), 0),
                 highestScore = preferences.getInt(key(prefix, "score"), 0),
-                highestLevel = preferences.getInt(key(prefix, "level"), 1),
+                highestLevel = preferences.getInt(key(prefix, "level"), 0),
                 bestCombo = preferences.getInt(key(prefix, "combo"), 0)
             )
         }
