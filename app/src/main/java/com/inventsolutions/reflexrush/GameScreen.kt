@@ -5,6 +5,7 @@ import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -195,19 +196,10 @@ fun GameScreen(
         }
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    listOf(RushBackground, Color(0xFF101B2C), RushBackground)
-                )
-            )
-            .safeDrawingPadding()
-            .padding(horizontal = 20.dp, vertical = 18.dp)
-    ) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        ArcadeBackdrop(Modifier.fillMaxSize(), RushGreen)
         Column(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize().safeDrawingPadding().padding(horizontal = 16.dp, vertical = 12.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Row(
@@ -217,9 +209,9 @@ fun GameScreen(
             ) {
                 Column {
                     Text(
-                        "REFLEX RUSH",
+                        "REFLEX RUSH  /  ARENA",
                         color = RushMint,
-                        fontSize = 12.sp,
+                        fontSize = 11.sp,
                         fontWeight = FontWeight.ExtraBold,
                         letterSpacing = 2.sp
                     )
@@ -238,10 +230,11 @@ fun GameScreen(
                 }
                 OutlinedButton(
                     onClick = onHome,
-                    border = BorderStroke(1.dp, RushSurfaceVariant),
+                    border = BorderStroke(1.dp, RushMint.copy(alpha = 0.55f)),
+                    shape = RoundedCornerShape(11.dp),
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = RushMint)
                 ) {
-                    Text("HOME", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    Text("EXIT", fontSize = 9.sp, fontWeight = FontWeight.Black, letterSpacing = 1.sp)
                 }
             }
 
@@ -258,7 +251,7 @@ fun GameScreen(
                     border = BorderStroke(1.dp, if (soundEffectsEnabled) RushGreen.copy(alpha = 0.65f) else RushSurfaceVariant),
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = if (soundEffectsEnabled) RushMint else RushSurfaceVariant)
                 ) {
-                    Text(if (soundEffectsEnabled) "SFX ON" else "SFX OFF", fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                    Text(if (soundEffectsEnabled) "♫ SFX" else "SFX OFF", fontSize = 8.sp, fontWeight = FontWeight.Black, letterSpacing = 0.6.sp)
                 }
                 Spacer(Modifier.width(8.dp))
                 OutlinedButton(
@@ -269,7 +262,7 @@ fun GameScreen(
                     border = BorderStroke(1.dp, if (musicEnabled) RushAmber.copy(alpha = 0.65f) else RushSurfaceVariant),
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = if (musicEnabled) RushAmber else RushSurfaceVariant)
                 ) {
-                    Text(if (musicEnabled) "MUSIC ON" else "MUSIC OFF", fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                    Text(if (musicEnabled) "♪ MUSIC" else "MUSIC OFF", fontSize = 8.sp, fontWeight = FontWeight.Black, letterSpacing = 0.4.sp)
                 }
             }
 
@@ -279,8 +272,8 @@ fun GameScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(18.dp))
-                    .background(RushSurface)
-                    .border(1.dp, RushSurfaceVariant, RoundedCornerShape(18.dp))
+                    .background(Color(0xCC0A1728))
+                    .border(1.dp, RushGreen.copy(alpha = 0.42f), RoundedCornerShape(18.dp))
                     .padding(horizontal = 18.dp, vertical = 14.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
@@ -330,7 +323,7 @@ fun GameScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(14.dp))
-                    .background(if (gameState.comboCount >= 3) Color(0xFF30291B) else RushSurface.copy(alpha = 0.72f))
+                    .background(if (gameState.comboCount >= 3) Color(0xFF30291B) else Color(0xCC0A1728))
                     .border(
                         1.dp,
                         if (gameState.comboCount >= 3) RushAmber.copy(alpha = 0.72f) else RushSurfaceVariant,
@@ -422,11 +415,33 @@ fun GameScreen(
                     .clip(RoundedCornerShape(26.dp))
                     .background(
                         Brush.verticalGradient(
-                            listOf(Color(0xFF142238), Color(0xFF0D1727))
+                            listOf(Color(0xFF071322), Color(0xFF0B1B2D), Color(0xFF07111F))
                         )
                     )
-                    .border(1.dp, RushSurfaceVariant, RoundedCornerShape(26.dp))
+                    .border(1.5.dp, RushGreen.copy(alpha = 0.48f), RoundedCornerShape(26.dp))
             ) {
+                Canvas(Modifier.fillMaxSize()) {
+                    val step = 38.dp.toPx()
+                    var gridX = 0f
+                    while (gridX < size.width) {
+                        drawLine(Color(0x1427E6A1), androidx.compose.ui.geometry.Offset(gridX, 0f), androidx.compose.ui.geometry.Offset(gridX, size.height), 1.dp.toPx())
+                        gridX += step
+                    }
+                    var gridY = 0f
+                    while (gridY < size.height) {
+                        drawLine(Color(0x1427E6A1), androidx.compose.ui.geometry.Offset(0f, gridY), androidx.compose.ui.geometry.Offset(size.width, gridY), 1.dp.toPx())
+                        gridY += step
+                    }
+                    drawCircle(
+                        brush = Brush.radialGradient(
+                            listOf(Color(0x2227E6A1), Color.Transparent),
+                            center = androidx.compose.ui.geometry.Offset(size.width / 2f, size.height / 2f),
+                            radius = size.minDimension * 0.7f
+                        ),
+                        radius = size.minDimension * 0.7f,
+                        center = androidx.compose.ui.geometry.Offset(size.width / 2f, size.height / 2f)
+                    )
+                }
                 val targetSize = 66.dp
                 gameState.targets.forEach { target ->
                     key(target.id) {
@@ -527,6 +542,11 @@ fun GameScreen(
                 score = gameState.score,
                 bestScore = bestScore,
                 newBestAchieved = newBestAchieved,
+                bestCombo = engine.completedSessionSummary?.bestCombo ?: 0,
+                hits = engine.completedSessionSummary?.goodTargetsHit ?: 0,
+                misses = engine.completedSessionSummary?.targetsMissed ?: 0,
+                level = engine.completedSessionSummary?.levelReached ?: gameState.difficultyLevel,
+                mode = mode,
                 onPlayAgain = {
                     newBestAchieved = false
                     gameState = engine.start()
@@ -628,6 +648,11 @@ private fun GameOverOverlay(
     score: Int,
     bestScore: Int,
     newBestAchieved: Boolean,
+    bestCombo: Int,
+    hits: Int,
+    misses: Int,
+    level: Int,
+    mode: GameMode,
     onPlayAgain: () -> Unit,
     onHome: () -> Unit
 ) {
@@ -669,7 +694,7 @@ private fun GameOverOverlay(
                 .padding(horizontal = 12.dp),
             shape = RoundedCornerShape(28.dp),
             color = RushSurface,
-            border = BorderStroke(1.5.dp, RushRed.copy(alpha = 0.72f)),
+            border = BorderStroke(1.5.dp, RushGreen.copy(alpha = 0.72f)),
             shadowElevation = 28.dp
         ) {
             Column(
@@ -677,17 +702,17 @@ private fun GameOverOverlay(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    "ROUND OVER",
-                    color = RushRed,
+                    "RUN COMPLETE",
+                    color = RushGreen,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.ExtraBold,
                     letterSpacing = 2.5.sp
                 )
                 Spacer(Modifier.height(10.dp))
                 Text(
-                    "Nice try!",
+                    "RUN IT BACK",
                     color = Color.White,
-                    fontSize = 32.sp,
+                    fontSize = 30.sp,
                     fontWeight = FontWeight.Black
                 )
                 Spacer(Modifier.height(8.dp))
@@ -721,7 +746,28 @@ private fun GameOverOverlay(
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 1.sp
                 )
-                Spacer(Modifier.height(20.dp))
+                Spacer(Modifier.height(16.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp))
+                        .background(Color(0xFF0A1A2B)).padding(vertical = 12.dp, horizontal = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("HITS", color = RushMint.copy(alpha = 0.62f), fontSize = 8.sp, fontWeight = FontWeight.Bold)
+                        Text(hits.toString(), color = RushGreen, fontSize = 18.sp, fontWeight = FontWeight.Black)
+                    }
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("BEST COMBO", color = RushMint.copy(alpha = 0.62f), fontSize = 8.sp, fontWeight = FontWeight.Bold)
+                        Text("${bestCombo}×", color = RushAmber, fontSize = 18.sp, fontWeight = FontWeight.Black)
+                    }
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("LEVEL", color = RushMint.copy(alpha = 0.62f), fontSize = 8.sp, fontWeight = FontWeight.Bold)
+                        Text(level.toString(), color = RushMint, fontSize = 18.sp, fontWeight = FontWeight.Black)
+                    }
+                }
+                Spacer(Modifier.height(8.dp))
+                Text("${mode.name.replace('_', ' ')}  •  ${misses} MISSES", color = RushMint.copy(alpha = 0.62f), fontSize = 8.sp, fontWeight = FontWeight.Bold, letterSpacing = 0.8.sp)
+                Spacer(Modifier.height(18.dp))
                 Button(
                     onClick = onPlayAgain,
                     modifier = Modifier.fillMaxWidth().height(54.dp),
