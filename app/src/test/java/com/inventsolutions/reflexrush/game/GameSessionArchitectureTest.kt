@@ -160,13 +160,12 @@ class GameSessionArchitectureTest {
     }
 
     @Test
-    fun nonClassicModesCannotAccidentallyRunClassicRules() {
-        val session = GameSessionConfig(mode = GameMode.TIME_ATTACK)
-
-        val error = runCatching { GameEngine(session) }.exceptionOrNull()
-
-        assertTrue(error is IllegalArgumentException)
-        assertFalse(error?.message.isNullOrBlank())
+    fun everyDeclaredModeCanCreateTheSharedEngine() {
+        GameMode.entries.forEach { mode ->
+            val engine = GameEngine(GameSessionConfig.forMode(mode), Random(7))
+            assertEquals(mode, engine.sessionConfig.mode)
+            assertEquals(GameStatus.RUNNING, engine.start().status)
+        }
     }
 
     private fun engineWith(config: GameConfig) = GameEngine(
