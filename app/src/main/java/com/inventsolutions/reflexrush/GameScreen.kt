@@ -1,5 +1,9 @@
 package com.inventsolutions.reflexrush
 
+import android.content.Context
+import android.os.Build
+import android.os.VibrationEffect
+import android.os.Vibrator
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -22,6 +26,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
@@ -43,8 +48,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -68,6 +72,25 @@ import com.inventsolutions.reflexrush.ui.theme.RushSurfaceVariant
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 
+/**
+ * Uses the device vibrator directly so gameplay feedback is not dependent on
+ * the Compose view's haptic-feedback setting. The permission is declared in
+ * the app manifest; devices without a vibrator safely skip this effect.
+ */
+@Suppress("DEPRECATION")
+private fun performGameVibration(context: Context, missedLife: Boolean = false) {
+    val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator ?: return
+    if (!vibrator.hasVibrator()) return
+
+    val timings = if (missedLife) longArrayOf(0L, 70L, 55L, 100L) else longArrayOf(0L, 45L)
+
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        vibrator.vibrate(VibrationEffect.createWaveform(timings, -1))
+    } else {
+        vibrator.vibrate(timings, -1)
+    }
+}
+
 @Composable
 fun GameScreen(
     onHome: () -> Unit,
@@ -76,7 +99,7 @@ fun GameScreen(
     onNewBestScore: (Int) -> Unit
 ) {
     val engine = remember { GameEngine() }
-    val hapticFeedback = LocalHapticFeedback.current
+    val context = LocalContext.current
     var actionFeedback by remember { mutableStateOf<String?>(null) }
     var actionFeedbackColor by remember { mutableStateOf(RushGreen) }
     var feedbackToken by remember { mutableStateOf(0) }
@@ -132,7 +155,7 @@ fun GameScreen(
                             actionFeedback = if (livesLost == 1) "−1 LIFE" else "−$livesLost LIVES"
                             actionFeedbackColor = RushRed
                             feedbackToken++
-                            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                            performGameVibration(context, missedLife = true)
                         }
                         gameState = nextState
                     }
@@ -259,7 +282,7 @@ fun GameScreen(
                             actionFeedback = if (target.type == TargetType.GOOD) "+${engine.config.pointsPerGoodHit}" else "−${engine.config.dangerHitPenalty}"
                             actionFeedbackColor = if (target.type == TargetType.GOOD) RushGreen else RushRed
                             feedbackToken++
-                            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                            performGameVibration(context)
                             gameState = engine.tapTarget(target.id)
                         }
                     )
@@ -400,32 +423,45 @@ private fun GameOverOverlay(
     onHome: () -> Unit
 ) {
     var overlayVisible by remember { mutableStateOf(false) }
-    LaunchedEffect(Unit) { overlayVisible = true }
+    LaunchedEffect(Unit) {
+        delay(60L)
+        overlayVisible = true
+    }
     val overlayScale by animateFloatAsState(
-        targetValue = if (overlayVisible) 1f else 0.92f,
-        animationSpec = spring(dampingRatio = 0.72f, stiffness = 360f),
+        targetValue = if (overlayVisible) 1f else 0.68f,
+        animationSpec = tween(durationMillis = 520),
         label = "gameOverScale"
     )
     val overlayAlpha by animateFloatAsState(
         targetValue = if (overlayVisible) 1f else 0f,
-        animationSpec = spring(stiffness = 360f),
+        animationSpec = tween(durationMillis = 420),
         label = "gameOverAlpha"
+    )
+    val scrimAlpha by animateFloatAsState(
+        targetValue = if (overlayVisible) 0.82f else 0f,
+        animationSpec = tween(durationMillis = 360),
+        label = "gameOverScrim"
     )
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xCC050A12)),
+            .background(Color(0xFF050A12).copy(alpha = scrimAlpha)),
         contentAlignment = Alignment.Center
     ) {
         Surface(
             modifier = Modifier
-                .graphicsLayer { scaleX = overlayScale; scaleY = overlayScale; alpha = overlayAlpha }
+                .graphicsLayer {
+                    scaleX = overlayScale
+                    scaleY = overlayScale
+                    alpha = overlayAlpha
+                    translationY = (1f - overlayAlpha) * 72.dp.toPx()
+                }
                 .fillMaxWidth()
                 .padding(horizontal = 12.dp),
             shape = RoundedCornerShape(28.dp),
             color = RushSurface,
-            border = BorderStroke(1.dp, RushSurfaceVariant),
-            shadowElevation = 20.dp
+            border = BorderStroke(1.5.dp, RushRed.copy(alpha = 0.72f)),
+            shadowElevation = 28.dp
         ) {
             Column(
                 modifier = Modifier.padding(horizontal = 26.dp, vertical = 30.dp),
