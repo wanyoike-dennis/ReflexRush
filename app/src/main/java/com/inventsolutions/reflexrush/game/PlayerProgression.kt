@@ -33,6 +33,7 @@ data class PlayerProgression(
     val dailyDateKey: String = "",
     val dailyGoodTargetsHit: Int = 0,
     val dailyPowerupsCollected: Int = 0,
+    val dailyBestCombo: Int = 0,
     val completedDailyMissionIds: Set<String> = emptySet()
 ) {
     val level: Int get() = experiencePoints / XP_PER_LEVEL + 1
@@ -52,6 +53,7 @@ data class PlayerProgression(
             dailyDateKey = todayKey,
             dailyGoodTargetsHit = 0,
             dailyPowerupsCollected = 0,
+            dailyBestCombo = 0,
             completedDailyMissionIds = emptySet()
         )
         val updated = dayBase.copy(
@@ -62,7 +64,8 @@ data class PlayerProgression(
             highestScore = maxOf(dayBase.highestScore, summary.finalScore),
             playedModes = dayBase.playedModes + summary.mode,
             dailyGoodTargetsHit = dayBase.dailyGoodTargetsHit + summary.goodTargetsHit,
-            dailyPowerupsCollected = dayBase.dailyPowerupsCollected + summary.powerupsCollected
+            dailyPowerupsCollected = dayBase.dailyPowerupsCollected + summary.powerupsCollected,
+            dailyBestCombo = maxOf(dayBase.dailyBestCombo, summary.bestCombo)
         )
 
         val newlyCompletedMissions = DailyMission.entries.filter { mission ->
@@ -84,14 +87,17 @@ data class PlayerProgression(
         )
     }
 
-    fun missionProgress(mission: DailyMission, latest: GameSessionSummary? = null): Int = when (mission) {
+    fun missionProgress(mission: DailyMission, latest: GameSessionSummary? = null): Int {
+        if (mission.id in completedDailyMissionIds) return mission.target
+        return when (mission) {
         DailyMission.FIRST_STRIKE -> dailyGoodTargetsHit
-        DailyMission.COMBO_MASTER -> maxOf(bestCombo, latest?.bestCombo ?: 0)
+        DailyMission.COMBO_MASTER -> dailyBestCombo
         DailyMission.DANGER_DODGER -> if (latest != null && latest.dangerTargetsHit == 0) 1 else 0
         DailyMission.SPEED_DEMON -> if (latest?.mode == GameMode.TIME_ATTACK) latest.finalScore else 0
         DailyMission.SURVIVOR -> if (latest?.mode == GameMode.CLASSIC) latest.levelReached else 0
         DailyMission.POWER_COLLECTOR -> dailyPowerupsCollected
-    }.coerceAtMost(mission.target)
+        }.coerceAtMost(mission.target)
+    }
 
     private fun meets(achievement: PlayerAchievement): Boolean = when (achievement) {
         PlayerAchievement.FIRST_ROUND -> totalGamesPlayed >= 1
