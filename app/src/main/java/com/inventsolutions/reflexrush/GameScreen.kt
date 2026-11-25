@@ -45,6 +45,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -373,7 +374,11 @@ private fun GameTargetButton(
                 )
             )
             .border(3.dp, Color.White.copy(alpha = 0.72f), CircleShape)
-            .clickable(onClick = onClick),
+            .clickable(
+                onClickLabel = if (isDanger) "Danger target. Avoid tapping." else "Good target. Tap to score points.",
+                role = Role.Button,
+                onClick = onClick
+            ),
         contentAlignment = Alignment.Center
     ) {
         Text(
