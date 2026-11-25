@@ -21,6 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -41,7 +42,7 @@ fun PlayerProgressionScreen(
     onBack: () -> Unit
 ) {
     Column(
-        modifier = Modifier.fillMaxSize().background(RushBackground)
+        modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(Color(0xFF050914), Color(0xFF0B1727), RushBackground)))
             .verticalScroll(rememberScrollState()).padding(horizontal = 20.dp, vertical = 22.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -51,14 +52,14 @@ fun PlayerProgressionScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column {
-                Text("MISSIONS &", color = RushMint, fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
-                Text("ACHIEVEMENTS", color = MaterialTheme.colorScheme.onBackground, fontSize = 25.sp, fontWeight = FontWeight.Black)
+                Text("PLAYER PROGRESSION", color = RushMint, fontSize = 9.sp, fontWeight = FontWeight.Black, letterSpacing = 2.sp)
+                Text("QUEST BOARD", color = Color.White, fontSize = 26.sp, fontWeight = FontWeight.Black, letterSpacing = 1.2.sp)
             }
             OutlinedButton(onClick = onBack) { Text("BACK") }
         }
         Spacer(Modifier.height(18.dp))
         ProgressPanel {
-            Text("LEVEL ${progression.level}", color = RushGreen, fontSize = 28.sp, fontWeight = FontWeight.Black)
+            Text("LEVEL ${progression.level}", color = RushGreen, fontSize = 32.sp, fontWeight = FontWeight.Black, letterSpacing = 1.sp)
             Text("${progression.experiencePoints} XP  •  ${progression.xpIntoLevel}/${progression.xpForNextLevel} XP TO NEXT LEVEL",
                 color = RushMint, fontSize = 10.sp, fontWeight = FontWeight.Bold)
             Spacer(Modifier.height(8.dp))
@@ -66,7 +67,7 @@ fun PlayerProgressionScreen(
                 color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.65f), fontSize = 11.sp)
         }
         Spacer(Modifier.height(18.dp))
-        SectionTitle("DAILY MISSIONS", "Refresh each local calendar day")
+        SectionTitle("⚡  DAILY MISSIONS", "New challenges every day")
         DailyMission.entries.forEach { mission ->
             val progress = progression.missionProgress(mission)
             val complete = mission.id in progression.completedDailyMissionIds
@@ -81,7 +82,7 @@ fun PlayerProgressionScreen(
             Spacer(Modifier.height(8.dp))
         }
         Spacer(Modifier.height(12.dp))
-        SectionTitle("ACHIEVEMENTS", "${progression.unlockedAchievements.size}/${PlayerAchievement.entries.size} unlocked")
+        SectionTitle("🏆  ACHIEVEMENTS", "${progression.unlockedAchievements.size}/${PlayerAchievement.entries.size} unlocked")
         PlayerAchievement.entries.forEach { achievement ->
             val unlocked = achievement.id in progression.unlockedAchievements
             AchievementItem(
@@ -93,7 +94,7 @@ fun PlayerProgressionScreen(
             Spacer(Modifier.height(8.dp))
         }
         Spacer(Modifier.height(12.dp))
-        SectionTitle("COSMETIC REWARDS", "Unlocked by reaching XP levels")
+        SectionTitle("✦  COSMETIC REWARDS", "Unlock target themes as you level up")
         val cosmetics = listOf("Neon Lime" to 3, "Electric Violet" to 5, "Solar Gold" to 10)
         cosmetics.forEach { (name, level) ->
             AchievementItem(
@@ -110,10 +111,9 @@ fun PlayerProgressionScreen(
 
 @Composable
 private fun ProgressPanel(content: @Composable () -> Unit) {
-    Column(
-        modifier = Modifier.fillMaxWidth().background(RushSurface, RoundedCornerShape(18.dp))
-            .border(1.dp, RushSurfaceVariant, RoundedCornerShape(18.dp)).padding(16.dp)
-    ) { content() }
+    ArcadePanel(modifier = Modifier.fillMaxWidth(), accent = RushMint, radius = 20.dp) {
+        Column(Modifier.fillMaxWidth().padding(16.dp)) { content() }
+    }
 }
 
 @Composable
@@ -145,6 +145,18 @@ private fun ProgressItem(
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Text("$progress / $target", color = RushMint, fontSize = 10.sp, fontWeight = FontWeight.Bold)
             Text(if (complete) "DONE" else "IN PROGRESS", color = if (complete) RushGreen else RushAmber, fontSize = 9.sp)
+        }
+        Spacer(Modifier.height(7.dp))
+        val progressFraction = if (target > 0) (progress.toFloat() / target.toFloat()).coerceIn(0f, 1f) else 0f
+        Box(
+            Modifier.fillMaxWidth().height(6.dp).clip(RoundedCornerShape(50))
+                .background(Color.White.copy(alpha = 0.09f))
+        ) {
+            Box(
+                Modifier.fillMaxWidth(progressFraction).height(6.dp)
+                    .clip(RoundedCornerShape(50))
+                    .background(Brush.horizontalGradient(listOf(RushGreen, RushMint)))
+            )
         }
     }
 }
