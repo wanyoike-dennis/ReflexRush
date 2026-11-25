@@ -328,6 +328,7 @@ class GameEngine(
                     totalScore = scoreChange.newScore
                 )
             }
+            TargetType.POWERUP -> error("Powerup targets are handled before normal scoring.")
         }
 
         val newLevel = DifficultyProgression.forScore(scoreChange.newScore, config).level
@@ -439,6 +440,10 @@ class GameEngine(
             choices[(random.nextFloat() * choices.size).toInt().coerceIn(0, choices.lastIndex)]
         } else null
         val positionRange = config.minTargetPosition..config.maxTargetPosition
+
+        if (powerupType != null) {
+            pendingEvents += GameplayEvent.PowerupSpawned(powerupType)
+        }
 
         return GameTarget(
             id = nextTargetId++,
