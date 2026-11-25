@@ -348,6 +348,15 @@ fun ReflexRushHome(
                 Text("PLAYER STATISTICS", fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.4.sp)
             }
 
+            Spacer(Modifier.height(8.dp))
+            androidx.compose.material3.OutlinedButton(
+                onClick = onProgressionClick,
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFFFC45C))
+            ) {
+                Text("MISSIONS & ACHIEVEMENTS", fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.2.sp)
+            }
+
             Spacer(Modifier.height(16.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
