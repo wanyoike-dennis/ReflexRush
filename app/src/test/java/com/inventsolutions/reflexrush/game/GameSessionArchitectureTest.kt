@@ -170,7 +170,7 @@ class GameSessionArchitectureTest {
     }
 
     private fun engineWith(config: GameConfig) = GameEngine(
-        sessionConfig = GameSessionConfig(gameConfig = config),
+        sessionConfig = GameSessionConfig(gameConfig = config.copy(powerupSpawnChance = 0f)),
         random = Random(42)
     )
 }
