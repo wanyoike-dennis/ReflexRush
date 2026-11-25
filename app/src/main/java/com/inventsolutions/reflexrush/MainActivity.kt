@@ -61,9 +61,16 @@ class MainActivity : ComponentActivity() {
                 }
                 var showModeSelection by remember { mutableStateOf(false) }
                 var showGame by remember { mutableStateOf(false) }
+                var showStatistics by remember { mutableStateOf(false) }
+                val statisticsStore = remember { PlayerStatisticsStore(applicationContext) }
+                var playerStatistics by remember { mutableStateOf(statisticsStore.load()) }
                 var selectedMode by remember { mutableStateOf(GameMode.CLASSIC) }
-                BackHandler(enabled = showGame || showModeSelection) {
-                    if (showGame) showGame = false else showModeSelection = false
+                BackHandler(enabled = showGame || showModeSelection || showStatistics) {
+                    when {
+                        showGame -> showGame = false
+                        showModeSelection -> showModeSelection = false
+                        showStatistics -> showStatistics = false
+                    }
                 }
                 when {
                     showGame -> GameScreen(
@@ -74,7 +81,14 @@ class MainActivity : ComponentActivity() {
                             val saved = highScoreStore.saveIfHigher(score, selectedMode)
                             bestScores = bestScores + (selectedMode to saved)
                         },
-                        mode = selectedMode
+                        mode = selectedMode,
+                        onSessionCompleted = { summary ->
+                            playerStatistics = statisticsStore.record(summary)
+                        }
+                    )
+                    showStatistics -> PlayerStatisticsScreen(
+                        statistics = playerStatistics,
+                        onBack = { showStatistics = false }
                     )
                     showModeSelection -> GameModeSelectionScreen(
                         onModeSelected = { mode ->
@@ -86,6 +100,10 @@ class MainActivity : ComponentActivity() {
                     )
                     else -> ReflexRushHome(
                         onPlayClick = { showModeSelection = true },
+                        onStatisticsClick = {
+                            playerStatistics = statisticsStore.load()
+                            showStatistics = true
+                        },
                         bestScore = bestScores[GameMode.CLASSIC] ?: 0
                     )
                 }
@@ -95,7 +113,11 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun ReflexRushHome(onPlayClick: () -> Unit = {}, bestScore: Int = 0) {
+fun ReflexRushHome(
+    onPlayClick: () -> Unit = {},
+    onStatisticsClick: () -> Unit = {},
+    bestScore: Int = 0
+) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -301,6 +323,15 @@ fun ReflexRushHome(onPlayClick: () -> Unit = {}, bestScore: Int = 0) {
                 )
                 Spacer(Modifier.width(10.dp))
                 Text("→", fontSize = 21.sp, fontWeight = FontWeight.Bold)
+            }
+
+            Spacer(Modifier.height(10.dp))
+            androidx.compose.material3.OutlinedButton(
+                onClick = onStatisticsClick,
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.primary)
+            ) {
+                Text("PLAYER STATISTICS", fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.4.sp)
             }
 
             Spacer(Modifier.height(16.dp))
