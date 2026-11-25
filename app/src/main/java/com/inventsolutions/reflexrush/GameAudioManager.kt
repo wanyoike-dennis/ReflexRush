@@ -6,6 +6,7 @@ import android.media.SoundPool
 import com.inventsolutions.reflexrush.game.GameplayEvent
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.PI
 import kotlin.math.sin
 
@@ -41,7 +42,7 @@ class GameAudioManager(context: Context) {
     private var musicSampleId = 0
     private var musicStreamId = 0
     private val loadedSamples = mutableMapOf<Cue, Int>()
-    private val readySamples = mutableSetOf<Int>()
+    private val readySamples = ConcurrentHashMap.newKeySet<Int>()
 
     private val soundPool = SoundPool.Builder()
         .setMaxStreams(8)
