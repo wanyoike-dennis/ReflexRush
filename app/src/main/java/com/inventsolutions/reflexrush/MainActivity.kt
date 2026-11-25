@@ -62,14 +62,18 @@ class MainActivity : ComponentActivity() {
                 var showModeSelection by remember { mutableStateOf(false) }
                 var showGame by remember { mutableStateOf(false) }
                 var showStatistics by remember { mutableStateOf(false) }
+                var showProgression by remember { mutableStateOf(false) }
+                val progressionStore = remember { PlayerProgressionStore(applicationContext) }
+                var playerProgression by remember { mutableStateOf(progressionStore.load()) }
                 val statisticsStore = remember { PlayerStatisticsStore(applicationContext) }
                 var playerStatistics by remember { mutableStateOf(statisticsStore.load()) }
                 var selectedMode by remember { mutableStateOf(GameMode.CLASSIC) }
-                BackHandler(enabled = showGame || showModeSelection || showStatistics) {
+                BackHandler(enabled = showGame || showModeSelection || showStatistics || showProgression) {
                     when {
                         showGame -> showGame = false
                         showModeSelection -> showModeSelection = false
                         showStatistics -> showStatistics = false
+                        showProgression -> showProgression = false
                     }
                 }
                 when {
@@ -84,7 +88,12 @@ class MainActivity : ComponentActivity() {
                         mode = selectedMode,
                         onSessionCompleted = { summary ->
                             playerStatistics = statisticsStore.record(summary)
+                            playerProgression = progressionStore.record(summary)
                         }
+                    )
+                    showProgression -> PlayerProgressionScreen(
+                        progression = playerProgression,
+                        onBack = { showProgression = false }
                     )
                     showStatistics -> PlayerStatisticsScreen(
                         statistics = playerStatistics,
@@ -104,6 +113,10 @@ class MainActivity : ComponentActivity() {
                             playerStatistics = statisticsStore.load()
                             showStatistics = true
                         },
+                        onProgressionClick = {
+                            playerProgression = progressionStore.load()
+                            showProgression = true
+                        },
                         bestScore = bestScores[GameMode.CLASSIC] ?: 0
                     )
                 }
@@ -116,6 +129,7 @@ class MainActivity : ComponentActivity() {
 fun ReflexRushHome(
     onPlayClick: () -> Unit = {},
     onStatisticsClick: () -> Unit = {},
+    onProgressionClick: () -> Unit = {},
     bestScore: Int = 0
 ) {
     Box(
