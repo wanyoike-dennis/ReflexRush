@@ -103,6 +103,6 @@ data class GameSessionSummary(
     val dangerTargetsHit: Int,
     val targetsMissed: Int,
     val goodTargetsMissed: Int,
-    val bestCombo: Int = 0,
-    val durationMs: Long
+    val durationMs: Long,
+    val bestCombo: Int = 0
 )
