@@ -94,7 +94,12 @@ class GameEngineTest {
 
     @Test
     fun dangerTargetExpiryDoesNotCostLife() {
-        val engine = GameEngine(testConfig(dangerTargetChance = 1f), Random(5))
+        // Difficulty progression intentionally caps danger probability at 45%.
+        // Use that supported maximum and force the scripted roll into its range.
+        val engine = GameEngine(
+            testConfig(dangerTargetChance = 0.45f),
+            ScriptedRandom(0.1f, 0.5f, 0.5f)
+        )
         engine.start()
         spawnOne(engine)
 
