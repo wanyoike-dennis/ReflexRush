@@ -124,7 +124,9 @@ class PowerupSystemTest {
         val engine = engine(
             GameConfig(
                 spawnIntervalMs = 100L,
-                targetLifetimeMs = 1_000L,
+                // Keep the miss update shorter than the spawn interval so
+                // the deterministic test does not create unrelated targets.
+                targetLifetimeMs = 50L,
                 dangerTargetChance = 0f,
                 powerupSpawnChance = 0.5f
             ),
@@ -140,7 +142,7 @@ class PowerupSystemTest {
         engine.advanceTime(100L)
         val goodTarget = engine.state.targets.single()
         assertEquals(TargetType.GOOD, goodTarget.type)
-        engine.advanceTime(1_000L)
+        engine.advanceTime(50L)
 
         assertEquals(3, engine.state.lives)
         assertFalse(engine.state.shieldAvailable)
