@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -44,6 +45,7 @@ fun PlayerProgressionScreen(
 ) {
     Column(
         modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(Color(0xFF050914), Color(0xFF0B1727), RushBackground)))
+            .safeDrawingPadding()
             .verticalScroll(rememberScrollState()).padding(horizontal = 20.dp, vertical = 22.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
