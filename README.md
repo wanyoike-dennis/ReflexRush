@@ -427,7 +427,8 @@ Online leaderboards, multiplayer, cloud synchronisation, monetisation, and socia
 | Hybrid expansion Stage 4 | Build succeeds; user confirmed music and sound effects are present. Toggle persistence and lifecycle checks remain unconfirmed |
 | Hybrid expansion Stage 5 | Four game modes, mode selection, mode-specific rules/HUD, and separate high scores implemented and user-tested |
 | Hybrid expansion Stage 6 | Lifetime statistics model, per-mode persistence, completed-session tracking, statistics screen, and unit tests pushed; latest GitHub Actions debug unit-test run passed; local build/device verification pending |
-| Hybrid expansion Stage 3 | Powerups and special targets implemented and tested by the user |\n| Hybrid expansion Stage 7 | Daily missions, permanent achievements, XP levels, cosmetic unlock milestones, offline persistence, and progression screen pushed; CI and device verification pending |
+| Hybrid expansion Stage 3 | Powerups and special targets implemented and tested by the user |
+| Hybrid expansion Stage 7 | Daily missions, permanent achievements, XP levels, cosmetic unlock milestones, offline persistence, and progression screen pushed; CI and device verification pending |
 | Hybrid expansion roadmap | Defined; architecture-first implementation underway |
 
 ---
