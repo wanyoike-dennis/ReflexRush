@@ -55,6 +55,7 @@ class DifficultyProgressionTest {
             targetLifetimeMs = 1_400L,
             spawnIntervalMs = 1_000L,
             dangerTargetChance = 0f,
+            powerupSpawnChance = 0f,
             maxActiveTargets = 1
         )
         val engine = GameEngine(config, Random(15))
@@ -76,7 +77,8 @@ class DifficultyProgressionTest {
             pointsPerGoodHit = 100,
             targetLifetimeMs = 2_000L,
             spawnIntervalMs = 100L,
-            dangerTargetChance = 0f
+            dangerTargetChance = 0f,
+            powerupSpawnChance = 0f
         )
         val engine = GameEngine(config, Random(12))
         engine.start()
