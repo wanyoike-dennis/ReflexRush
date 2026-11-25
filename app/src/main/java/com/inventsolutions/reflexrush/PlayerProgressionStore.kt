@@ -34,6 +34,7 @@ class PlayerProgressionStore(
             dailyDateKey = today,
             dailyGoodTargetsHit = if (sameDay) preferences.getInt(KEY_DAILY_GOOD, 0) else 0,
             dailyPowerupsCollected = if (sameDay) preferences.getInt(KEY_DAILY_POWERUPS, 0) else 0,
+            dailyBestCombo = if (sameDay) preferences.getInt(KEY_DAILY_BEST_COMBO, 0) else 0,
             completedDailyMissionIds = if (sameDay) {
                 preferences.getStringSet(KEY_DAILY_COMPLETED, emptySet()).orEmpty().toSet()
             } else emptySet()
@@ -61,6 +62,7 @@ class PlayerProgressionStore(
             .putString(KEY_DAILY_DATE, value.dailyDateKey)
             .putInt(KEY_DAILY_GOOD, value.dailyGoodTargetsHit)
             .putInt(KEY_DAILY_POWERUPS, value.dailyPowerupsCollected)
+            .putInt(KEY_DAILY_BEST_COMBO, value.dailyBestCombo)
             .putStringSet(KEY_DAILY_COMPLETED, value.completedDailyMissionIds)
             .apply()
     }
@@ -78,6 +80,7 @@ class PlayerProgressionStore(
         const val KEY_DAILY_DATE = "daily_date"
         const val KEY_DAILY_GOOD = "daily_good_hits"
         const val KEY_DAILY_POWERUPS = "daily_powerups"
+        const val KEY_DAILY_BEST_COMBO = "daily_best_combo"
         const val KEY_DAILY_COMPLETED = "daily_completed_missions"
     }
 }
