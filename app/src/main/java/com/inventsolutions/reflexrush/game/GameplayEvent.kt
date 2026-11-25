@@ -26,6 +26,17 @@ sealed interface GameplayEvent {
 
     data class LifeLost(val livesRemaining: Int) : GameplayEvent
 
+    data class ComboChanged(
+        val previousCount: Int,
+        val newCount: Int,
+        val multiplier: Int
+    ) : GameplayEvent
+
+    data class ComboMilestone(
+        val comboCount: Int,
+        val multiplier: Int
+    ) : GameplayEvent
+
     data class LevelChanged(
         val previousLevel: Int,
         val newLevel: Int
