@@ -312,8 +312,6 @@ Implementation requirements:
 
 ### 8.7 Stage 5 — Multiple game modes
 
-<text></text>
-
 **Implementation pushed; local build and device verification pending.**
 
 All four modes now launch through the shared `GameEngine`, with a dedicated mode-selection screen and independent local personal-best records.
