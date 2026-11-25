@@ -28,15 +28,15 @@ class PlayerProgressionStore(
             totalPowerupsCollected = preferences.getInt(KEY_POWERUPS, 0),
             bestCombo = preferences.getInt(KEY_BEST_COMBO, 0),
             highestScore = preferences.getInt(KEY_HIGHEST_SCORE, 0),
-            playedModes = preferences.getStringSet(KEY_PLAYED_MODES, emptySet()).orEmpty()
+            playedModes = preferences.getStringSet(KEY_PLAYED_MODES, mutableSetOf()).orEmpty()
                 .mapNotNull { value -> GameMode.entries.firstOrNull { it.name == value } }.toSet(),
-            unlockedAchievements = preferences.getStringSet(KEY_ACHIEVEMENTS, emptySet()).orEmpty().toSet(),
+            unlockedAchievements = preferences.getStringSet(KEY_ACHIEVEMENTS, mutableSetOf()).orEmpty().toSet(),
             dailyDateKey = today,
             dailyGoodTargetsHit = if (sameDay) preferences.getInt(KEY_DAILY_GOOD, 0) else 0,
             dailyPowerupsCollected = if (sameDay) preferences.getInt(KEY_DAILY_POWERUPS, 0) else 0,
             dailyBestCombo = if (sameDay) preferences.getInt(KEY_DAILY_BEST_COMBO, 0) else 0,
             completedDailyMissionIds = if (sameDay) {
-                preferences.getStringSet(KEY_DAILY_COMPLETED, emptySet()).orEmpty().toSet()
+                preferences.getStringSet(KEY_DAILY_COMPLETED, mutableSetOf()).orEmpty().toSet()
             } else emptySet()
         )
         if (!sameDay) save(progression)
