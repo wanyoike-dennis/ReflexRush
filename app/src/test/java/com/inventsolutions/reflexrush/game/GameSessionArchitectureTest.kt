@@ -55,7 +55,7 @@ class GameSessionArchitectureTest {
 
     @Test
     fun dangerTargetEventReportsOnlyThePenaltyActuallyApplied() {
-        val engine = engineWith(GameConfig(dangerTargetChance = 1f))
+        val engine = engineWith(GameConfig(dangerTargetChance = 1f, powerupSpawnChance = 0f))
         engine.start()
         engine.drainEvents()
         engine.advanceTime(engine.config.spawnIntervalMs)
