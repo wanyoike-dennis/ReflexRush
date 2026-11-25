@@ -268,19 +268,12 @@ Before implementing combos, establish the engine contracts that later features w
 - Display the current streak and multiplier with clear, short animations.
 - Track the best combo for the completed session.
 
-**Implementation pushed; local verification pending.** Added configurable combo thresholds (1–2 hits = 1×, 3–4 = 2×, 5–9 = 3×, 10+ = 5×), central multiplier scoring, combo reset on a missed good target or tapped danger target, combo milestone/change events, and best-combo session tracking. The gameplay screen now displays the live streak and multiplier. Added focused deterministic tests for threshold boundaries, multiplied scoring, milestone events, resets, replay, and session summary tracking.
+**Verified locally by the user:** The project was pulled, built successfully, and the unit-test task passed. Added configurable combo thresholds (1–2 hits = 1×, 3–4 = 2×, 5–9 = 3×, 10+ = 5×), central multiplier scoring, combo reset on a missed good target or tapped danger target, combo milestone/change events, and best-combo session tracking. The gameplay screen now displays the live streak and multiplier. Added focused deterministic tests for threshold boundaries, multiplied scoring, milestone events, resets, replay, and session summary tracking.
 
 **Exit criteria:** Multiplier boundaries, combo resets, score floors, event emission, and replay resets pass deterministic unit tests; the feature is verified in a local Android build and on a device.
-
-**Verified locally by the user:** The project was pulled, built successfully, and the unit-test task passed. Combo behaviour was implemented with 1×/2×/3×/5× scoring, reset conditions, best-combo tracking, and a live gameplay display.
-
 ### 8.5 Stage 3 — Powerups and special targets
 
-**Implementation pushed; local verification pending.** Added a dedicated powerup target type and four collectible effects: Golden Star (+50 points), Double Points (2× good-target scoring for five seconds, multiplied with the active combo), Slow Time (halves target-lifetime and spawn-clock progression for five seconds), and Shield (prevents one missed good target from costing a life). Powerup spawn chance, timed-effect duration, and slow-time factor are configurable in `GameConfig`. Timed effects are mutually exclusive and a newly collected timed effect refreshes/replaces the active timed effect; Shield can be held independently. Powerup spawn/collect/activate/expire and shield-consumption events are typed. The gameplay screen uses gold star targets and displays active timed effects and shield status. Added deterministic tests for bonus scoring, timed-effect expiry, slow-time timing, shield consumption, and round reset.
-
-**Exit criteria:** Collection, activation, expiration, timing, shield consumption, score interaction, mode restrictions, and event behaviour are unit-tested and device-verified.
-
-### 8.5 Stage 3 — Powerups and special targets
+**Implementation pushed; local verification pending.** Added a dedicated powerup target type and four collectible effects: Golden Star (+50 points), Double Points (2× good-target scoring for five seconds, multiplied with the active combo), Slow Time (halves target-lifetime and spawn-clock progression for five seconds), and Shield (prevents one missed good target from costing a life). Spawn probability, effect duration, slow-time factor, and enabled powerup types are configurable. Timed effects are mutually exclusive and a newly collected timed effect refreshes the active timed effect; Shield can be held independently. Typed events cover powerup spawn, collection, activation, expiration, and shield consumption. The gameplay screen gives each powerup a distinct target appearance and displays active effects. Added deterministic tests for bonus scoring, double scoring, timed-effect expiry, slow-time timing, shield consumption, round reset, and session restrictions.
 
 Initial powerups:
 
@@ -412,7 +405,8 @@ Online leaderboards, multiplayer, cloud synchronisation, monetisation, and socia
 | High-score persistence | Implemented and verified on a testing device |
 | Phase 5 gameplay polish | User tested; feedback improvements confirmed |
 | Phase 6 progressive difficulty | Implemented and user-verified on a testing device |
-| Phase 7 regression and release validation | In progress; the existing `testDebugUnitTest` baseline passed locally; release/build/device checks remain pending |\n| Hybrid expansion Stage 1 | Implemented, built, and unit-tested successfully by the user |\n| Hybrid expansion Stage 2 | Implemented, built, and unit-tested successfully by the user |\n| Hybrid expansion Stage 3 | Powerup engine, events, UI, and deterministic tests pushed; local verification pending |\n| Hybrid expansion roadmap | Defined; architecture-first implementation underway |
+| Phase 7 regression and release validation | In progress; the existing `testDebugUnitTest` baseline passed locally; release/build/device checks remain pending |
+| Hybrid expansion Stage 1 | Implemented, built, and unit-tested successfully by the user |\n| Hybrid expansion Stage 2 | Implemented, built, and unit-tested successfully by the user |\n| Hybrid expansion Stage 3 | Powerup engine, events, UI, and deterministic tests pushed; local verification pending |\n| Hybrid expansion roadmap | Defined; architecture-first implementation underway |
 
 ---
 
