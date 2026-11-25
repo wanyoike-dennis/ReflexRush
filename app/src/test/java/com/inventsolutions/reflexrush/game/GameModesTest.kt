@@ -78,7 +78,7 @@ class GameModesTest {
         val started = engine.start()
 
         assertEquals(2, started.targetLimit)
-        assertEquals(null, started.timeRemainingMs)
+        assertTrue(started.timeRemainingMs == null)
 
         engine.advanceTime(100L)
         val firstTarget = engine.state.targets.single()
