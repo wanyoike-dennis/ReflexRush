@@ -2,7 +2,7 @@
 
 **Reflex Rush** is an Android reflex and reaction-time arcade game by Invent Solutions. The game challenges players to spot and tap positive targets quickly while avoiding dangerous targets. It is designed to be fast, easy to understand, satisfying to replay, and playable offline.
 
-> **Project status:** The home screen, core gameplay engine, playable game screen, and local personal-best persistence are implemented and verified on a testing device. Phase 5 gameplay polish has been tested by the user. Phase 6 score-based difficulty progression is implemented remotely and awaiting local verification.
+> **Project status:** The home screen, core gameplay engine, playable game screen, local personal-best persistence, gameplay polish, and Phase 6 score-based difficulty progression have been implemented and user-verified on a testing device. Phase 7 is focused on final regression testing and release readiness.
 
 ## 1. Project objectives
 
@@ -169,15 +169,18 @@ Work through these phases in order. Each phase should be reviewed and verified b
 - Keep scoring, lives, target types, and the maximum active-target limit unchanged.
 - Add unit tests for score thresholds, timing progression, danger probability, and level updates.
 
-**Implementation status:** Score-based progression and the live level indicator are implemented on the feature branch. Local unit-test, Android build, and device verification are pending.
+**Verified by user:** Five-level score-based progression, faster spawning, shorter target lifetimes, danger-target probability increases, and the live level indicator were pulled, built, and tested on the user's device.
 
 ### Phase 7 — Testing and release readiness
-- Run the complete unit-test suite and Android build.
-- Install and play on an emulator or physical Android device.
-- Check every difficulty transition, lifecycle behaviour, repeated play, and high-score persistence.
-- Fix verified issues before considering V1 complete.
+- Expand deterministic game-engine regression coverage for timing, simultaneous misses, and replay resets.
+- Run debug and release unit-test tasks, then assemble both debug and release APKs.
+- Install the debug build and exercise the complete V1 flow on a physical device or emulator.
+- Verify all five difficulty levels, pause/resume, repeated rounds, game-over actions, and high-score persistence.
+- Check compact and larger screen layouts, including portrait orientation and system navigation insets.
+- Review app identity, launcher icon, backup behaviour, version metadata, and release signing configuration.
+- Fix only confirmed defects; do not change dependencies or unrelated project configuration as part of release checks.
 
-**Exit criteria:** Build succeeds, relevant tests pass, and the complete V1 flow has been manually exercised on Android.
+**Exit criteria:** Debug and release builds succeed, automated tests pass, the V1 acceptance checklist is completed on Android, and a signed release artifact can be produced using a private release keystore.
 
 ## 6. V1 acceptance checklist
 
@@ -242,8 +245,8 @@ Prioritise these only after the first release is stable:
 | Gameplay screen integration | Implemented; build, installation, and gameplay verified on a testing device |
 | High-score persistence | Implemented and verified on a testing device |
 | Phase 5 gameplay polish | User tested; feedback improvements confirmed |
-| Phase 6 progressive difficulty | Implemented remotely; local build and device verification pending |
-| Testing and release validation | Pending |
+| Phase 6 progressive difficulty | Implemented and user-verified on a testing device |
+| Phase 7 regression and release validation | In progress; expanded engine edge-case tests added, local execution pending |
 
 ---
 
