@@ -75,5 +75,6 @@ class PlayerStatisticsTest {
         assertEquals(0, stats.totalGamesPlayed)
         assertEquals(0, stats.accuracyPercent)
         assertEquals(0, stats.highestScore)
+        assertEquals(0, stats.highestLevel)
     }
 }
