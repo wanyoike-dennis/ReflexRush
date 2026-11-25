@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
@@ -103,6 +104,7 @@ fun GameScreen(onHome: () -> Unit, lifecycleOwner: LifecycleOwner) {
                     listOf(RushBackground, Color(0xFF101B2C), RushBackground)
                 )
             )
+            .safeDrawingPadding()
             .padding(horizontal = 20.dp, vertical = 18.dp)
     ) {
         Column(
