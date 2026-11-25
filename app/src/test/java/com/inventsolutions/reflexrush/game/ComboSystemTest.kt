@@ -61,16 +61,20 @@ class ComboSystemTest {
 
     @Test
     fun tappingDangerTargetBreaksComboWithoutChangingItsPenaltyRule() {
+        // Each target consumes three random values: type roll, x, then y.
+        // The first two rolls must be above the 0.5 danger threshold;
+        // the third deliberately falls below it.
         val random = ScriptedRandom(
-            0.1f, 0.5f, 0.5f,
-            0.1f, 0.5f, 0.5f,
-            0.9f, 0.5f, 0.5f
+            0.9f, 0.5f, 0.5f,
+            0.9f, 0.5f, 0.5f,
+            0.1f, 0.5f, 0.5f
         )
         val engine = GameEngine(
             GameConfig(
                 targetLifetimeMs = 1_000L,
                 spawnIntervalMs = 100L,
-                dangerTargetChance = 0.5f
+                dangerTargetChance = 0.5f,
+                powerupSpawnChance = 0f
             ),
             random
         )
