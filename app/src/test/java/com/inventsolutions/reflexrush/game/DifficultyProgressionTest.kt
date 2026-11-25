@@ -47,6 +47,29 @@ class DifficultyProgressionTest {
             .dangerTargetChance <= 0.45f)
     }
 
+
+    @Test
+    fun engineUsesFasterSpawnIntervalAndShorterLifetimeAfterLevelUp() {
+        val config = GameConfig(
+            pointsPerGoodHit = 100,
+            targetLifetimeMs = 1_400L,
+            spawnIntervalMs = 1_000L,
+            dangerTargetChance = 0f,
+            maxActiveTargets = 1
+        )
+        val engine = GameEngine(config, Random(15))
+        engine.start()
+        engine.advanceTime(config.spawnIntervalMs)
+        engine.tapTarget(engine.state.targets.single().id)
+
+        val beforeFasterSpawn = engine.advanceTime(919L)
+        assertTrue(beforeFasterSpawn.targets.isEmpty())
+
+        val afterFasterSpawn = engine.advanceTime(1L)
+        assertEquals(1, afterFasterSpawn.targets.size)
+        assertEquals(1_316L, afterFasterSpawn.targets.single().remainingLifetimeMs)
+    }
+
     @Test
     fun engineUpdatesDisplayedLevelWhenScoreCrossesThreshold() {
         val config = GameConfig(
