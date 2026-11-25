@@ -98,6 +98,25 @@ data class GameSessionConfig(
         require(precisionTargetCount > 0) { "Precision target count must be greater than zero." }
         require(precisionMissPenalty >= 0) { "Precision miss penalty cannot be negative." }
     }
+
+    companion object {
+        fun forMode(mode: GameMode): GameSessionConfig = when (mode) {
+            GameMode.CLASSIC -> GameSessionConfig()
+            GameMode.TIME_ATTACK -> GameSessionConfig(
+                mode = mode,
+                enabledPowerups = setOf(
+                    PowerupType.GOLDEN_STAR,
+                    PowerupType.DOUBLE_POINTS,
+                    PowerupType.SLOW_TIME
+                )
+            )
+            GameMode.SURVIVAL -> GameSessionConfig(mode = mode)
+            GameMode.PRECISION -> GameSessionConfig(
+                mode = mode,
+                enabledPowerups = setOf(PowerupType.GOLDEN_STAR)
+            )
+        }
+    }
 }
 
 /**
