@@ -266,20 +266,16 @@ fun GameScreen(
                     )
                     GameMode.CLASSIC, GameMode.SURVIVAL -> Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
-                            "LIVES",
-                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.48f),
+                            "LIVES  ${gameState.lives}/${engine.config.startingLives}",
+                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.72f),
                             fontSize = 9.sp,
                             fontWeight = FontWeight.Bold,
                             letterSpacing = 1.4.sp
                         )
                         Spacer(Modifier.height(5.dp))
                         Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
-                            repeat(engine.config.startingLives) { index ->
-                                Text(
-                                    "♥",
-                                    color = if (index < gameState.lives) RushRed else RushSurfaceVariant,
-                                    fontSize = 18.sp
-                                )
+                            repeat(gameState.lives) {
+                                Text("♥", color = RushRed, fontSize = 18.sp)
                             }
                         }
                     }
