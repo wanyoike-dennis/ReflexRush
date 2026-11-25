@@ -163,7 +163,7 @@ class ComboSystemTest {
         return engine.drainEvents()
     }
 
-    private fun engineWith(config: GameConfig) = GameEngine(config, Random(123))
+    private fun engineWith(config: GameConfig) = GameEngine(config.copy(powerupSpawnChance = 0f), Random(123))
 
     private class ScriptedRandom(vararg values: Float) : Random() {
         private val sequence = values.iterator()
