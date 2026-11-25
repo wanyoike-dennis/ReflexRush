@@ -241,7 +241,9 @@ Prioritise these only after the first release is stable:
 | Phase 2 core gameplay engine | Implemented; all 10 unit tests passed locally |
 | Gameplay screen integration | Implemented; build, installation, and gameplay verified on a testing device |
 | High-score persistence | Implemented and verified on a testing device |
-| Phase 5 gameplay polish | Implemented remotely; local build and device verification pending |\n| Testing and release validation | Pending |
+| Phase 5 gameplay polish | User tested; feedback improvements confirmed |
+| Phase 6 progressive difficulty | Implemented remotely; local build and device verification pending |
+| Testing and release validation | Pending |
 
 ---
 
