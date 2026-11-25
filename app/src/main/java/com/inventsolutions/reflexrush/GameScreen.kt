@@ -102,6 +102,9 @@ fun GameScreen(
 ) {
     val engine = remember { GameEngine() }
     val context = LocalContext.current
+    val audioManager = remember(context) { GameAudioManager(context.applicationContext) }
+    var soundEffectsEnabled by remember(audioManager) { mutableStateOf(audioManager.soundEffectsEnabled) }
+    var musicEnabled by remember(audioManager) { mutableStateOf(audioManager.musicEnabled) }
     var actionFeedback by remember { mutableStateOf<String?>(null) }
     var actionFeedbackColor by remember { mutableStateOf(RushGreen) }
     var feedbackToken by remember { mutableStateOf(0) }
@@ -115,6 +118,14 @@ fun GameScreen(
     var newBestAchieved by remember { mutableStateOf(false) }
     var isResumed by remember {
         mutableStateOf(lifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED))
+    }
+
+    DisposableEffect(audioManager) {
+        onDispose { audioManager.release() }
+    }
+
+    LaunchedEffect(gameState.status, isResumed) {
+        audioManager.setGameActive(gameState.status == GameStatus.RUNNING && isResumed)
     }
 
     DisposableEffect(lifecycleOwner) {
@@ -143,6 +154,7 @@ fun GameScreen(
             summary.finalScore > bestScore
         ) {
             onNewBestScore(summary.finalScore)
+            audioManager.play(GameAudioManager.Cue.PERSONAL_BEST)
             newBestAchieved = true
         }
     }
@@ -157,6 +169,7 @@ fun GameScreen(
                             .coerceAtLeast(1L)
                         val nextState = engine.advanceTime(elapsedMs)
                         val events = engine.drainEvents()
+                        audioManager.playEvents(events)
                         val livesLost = events.count { it is GameplayEvent.LifeLost }
                         if (livesLost > 0) {
                             actionFeedback = if (livesLost == 1) "−1 LIFE" else "−$livesLost LIVES"
@@ -217,7 +230,35 @@ fun GameScreen(
                 }
             }
 
-            Spacer(Modifier.height(22.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                OutlinedButton(
+                    onClick = {
+                        audioManager.setSoundEffectsEnabled(!soundEffectsEnabled)
+                        soundEffectsEnabled = audioManager.soundEffectsEnabled
+                    },
+                    border = BorderStroke(1.dp, if (soundEffectsEnabled) RushGreen.copy(alpha = 0.65f) else RushSurfaceVariant),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = if (soundEffectsEnabled) RushMint else RushSurfaceVariant)
+                ) {
+                    Text(if (soundEffectsEnabled) "SFX ON" else "SFX OFF", fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                }
+                Spacer(Modifier.width(8.dp))
+                OutlinedButton(
+                    onClick = {
+                        audioManager.setMusicEnabled(!musicEnabled)
+                        musicEnabled = audioManager.musicEnabled
+                    },
+                    border = BorderStroke(1.dp, if (musicEnabled) RushAmber.copy(alpha = 0.65f) else RushSurfaceVariant),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = if (musicEnabled) RushAmber else RushSurfaceVariant)
+                ) {
+                    Text(if (musicEnabled) "MUSIC ON" else "MUSIC OFF", fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                }
+            }
+
+            Spacer(Modifier.height(12.dp))
 
             Row(
                 modifier = Modifier
@@ -367,6 +408,7 @@ fun GameScreen(
                         onClick = {
                             val nextState = engine.tapTarget(target.id)
                             val events = engine.drainEvents()
+                            audioManager.playEvents(events)
                             val hitEvent = events.firstOrNull {
                                 it is GameplayEvent.GoodTargetHit ||
                                     it is GameplayEvent.DangerTargetHit ||
