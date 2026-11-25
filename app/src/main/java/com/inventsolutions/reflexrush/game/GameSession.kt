@@ -24,11 +24,13 @@ data class ScoreRules(
         require(dangerHitPenalty >= 0) { "Danger penalty cannot be negative." }
     }
 
-    fun awardGoodHit(currentScore: Int): ScoreChange {
+    fun awardGoodHit(currentScore: Int, multiplier: Int = 1): ScoreChange {
         require(currentScore >= 0) { "Current score cannot be negative." }
+        require(multiplier >= 1) { "Score multiplier must be at least one." }
+        val awardedPoints = pointsPerGoodHit * multiplier
         return ScoreChange(
-            pointsDelta = pointsPerGoodHit,
-            newScore = currentScore + pointsPerGoodHit
+            pointsDelta = awardedPoints,
+            newScore = currentScore + awardedPoints
         )
     }
 
@@ -49,6 +51,32 @@ data class ScoreChange(
 )
 
 /**
+ * Combo thresholds are based on consecutive successful good-target hits.
+ * A failed action resets the current streak, but never the session best.
+ */
+data class ComboRules(
+    val doubleMultiplierAt: Int = 3,
+    val tripleMultiplierAt: Int = 5,
+    val fiveTimesMultiplierAt: Int = 10
+) {
+    init {
+        require(doubleMultiplierAt >= 1)
+        require(tripleMultiplierAt > doubleMultiplierAt)
+        require(fiveTimesMultiplierAt > tripleMultiplierAt)
+    }
+
+    fun multiplierFor(comboCount: Int): Int {
+        require(comboCount >= 0) { "Combo count cannot be negative." }
+        return when {
+            comboCount >= fiveTimesMultiplierAt -> 5
+            comboCount >= tripleMultiplierAt -> 3
+            comboCount >= doubleMultiplierAt -> 2
+            else -> 1
+        }
+    }
+}
+
+/**
  * Immutable rules supplied when a round starts. Scoring defaults are derived
  * from GameConfig so existing Classic tuning remains the source of truth.
  */
@@ -58,7 +86,8 @@ data class GameSessionConfig(
     val scoreRules: ScoreRules = ScoreRules(
         pointsPerGoodHit = gameConfig.pointsPerGoodHit,
         dangerHitPenalty = gameConfig.dangerHitPenalty
-    )
+    ),
+    val comboRules: ComboRules = ComboRules()
 )
 
 /**
@@ -74,5 +103,6 @@ data class GameSessionSummary(
     val dangerTargetsHit: Int,
     val targetsMissed: Int,
     val goodTargetsMissed: Int,
+    val bestCombo: Int = 0,
     val durationMs: Long
 )
