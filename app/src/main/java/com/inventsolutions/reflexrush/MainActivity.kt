@@ -1,6 +1,7 @@
 package com.inventsolutions.reflexrush
 
 import android.os.Bundle
+import android.net.Uri
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
@@ -25,11 +26,13 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -74,6 +77,8 @@ class MainActivity : ComponentActivity() {
                 val audioSettingsStore = remember { AudioSettingsStore(applicationContext) }
                 val backupManager = remember { GameBackupManager(applicationContext) }
                 var backupStatus by remember { mutableStateOf<String?>(null) }
+                var pendingRestoreUri by remember { mutableStateOf<Uri?>(null) }
+                var showRestoreConfirmation by remember { mutableStateOf(false) }
                 var soundEffectsEnabled by remember { mutableStateOf(audioSettingsStore.soundEffectsEnabled) }
                 var musicEnabled by remember { mutableStateOf(audioSettingsStore.musicEnabled) }
                 val progressionStore = remember { PlayerProgressionStore(applicationContext) }
@@ -96,19 +101,52 @@ class MainActivity : ComponentActivity() {
                     contract = ActivityResultContracts.OpenDocument()
                 ) { uri ->
                     if (uri != null) {
-                        runCatching { backupManager.importFrom(uri) }
-                            .onSuccess {
-                                bestScores = GameMode.entries.associateWith { highScoreStore.load(it) }
-                                playerStatistics = statisticsStore.load()
-                                playerProgression = progressionStore.load()
-                                soundEffectsEnabled = audioSettingsStore.soundEffectsEnabled
-                                musicEnabled = audioSettingsStore.musicEnabled
-                                backupStatus = "Backup restored successfully."
-                            }
-                            .onFailure { error ->
-                                backupStatus = "Restore failed: ${error.localizedMessage ?: "Unknown error"}"
-                            }
+                        pendingRestoreUri = uri
+                        showRestoreConfirmation = true
                     }
+                }
+                if (showRestoreConfirmation && pendingRestoreUri != null) {
+                    AlertDialog(
+                        onDismissRequest = {
+                            showRestoreConfirmation = false
+                            pendingRestoreUri = null
+                        },
+                        title = { Text("Restore game backup?") },
+                        text = {
+                            Text("Restoring replaces the current scores, statistics, missions, achievements, XP and audio settings on this device. Export a backup of your current progress first if you want to keep it.")
+                        },
+                        confirmButton = {
+                            TextButton(
+                                onClick = {
+                                    val selectedBackup = pendingRestoreUri
+                                    showRestoreConfirmation = false
+                                    pendingRestoreUri = null
+                                    if (selectedBackup != null) {
+                                        runCatching { backupManager.importFrom(selectedBackup) }
+                                            .onSuccess {
+                                                bestScores = GameMode.entries.associateWith { highScoreStore.load(it) }
+                                                playerStatistics = statisticsStore.load()
+                                                playerProgression = progressionStore.load()
+                                                soundEffectsEnabled = audioSettingsStore.soundEffectsEnabled
+                                                musicEnabled = audioSettingsStore.musicEnabled
+                                                backupStatus = "Backup restored successfully."
+                                            }
+                                            .onFailure { error ->
+                                                backupStatus = "Restore failed: ${error.localizedMessage ?: "Unknown error"}"
+                                            }
+                                    }
+                                }
+                            ) { Text("RESTORE") }
+                        },
+                        dismissButton = {
+                            TextButton(
+                                onClick = {
+                                    showRestoreConfirmation = false
+                                    pendingRestoreUri = null
+                                }
+                            ) { Text("CANCEL") }
+                        }
+                    )
                 }
                 var selectedMode by remember { mutableStateOf(GameMode.CLASSIC) }
                 BackHandler(enabled = showGame || showModeSelection || showStatistics || showProgression || showSettings) {
