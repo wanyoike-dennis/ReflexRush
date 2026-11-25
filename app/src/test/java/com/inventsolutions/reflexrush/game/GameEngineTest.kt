@@ -227,13 +227,14 @@ class GameEngineTest {
 
     private fun testConfig(
         startingLives: Int = 3,
+        pointsPerGoodHit: Int = 10,
         maxActiveTargets: Int = 1,
         targetLifetimeMs: Long = 50L,
         spawnIntervalMs: Long = 100L,
         dangerTargetChance: Float = 0f
     ) = GameConfig(
         startingLives = startingLives,
-        pointsPerGoodHit = 10,
+        pointsPerGoodHit = pointsPerGoodHit,
         dangerHitPenalty = 10,
         targetLifetimeMs = targetLifetimeMs,
         spawnIntervalMs = spawnIntervalMs,
