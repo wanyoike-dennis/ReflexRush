@@ -117,7 +117,10 @@ data class GameState(
     val bestCombo: Int = 0,
     val activeTimedPowerup: PowerupType? = null,
     val powerupRemainingMs: Long = 0L,
-    val shieldAvailable: Boolean = false
+    val shieldAvailable: Boolean = false,
+    val timeRemainingMs: Long? = null,
+    val targetsResolved: Int = 0,
+    val targetLimit: Int? = null
 )
 
 /**
@@ -156,11 +159,11 @@ class GameEngine(
     private var targetsMissed = 0
     private var goodTargetsMissed = 0
     private var bestCombo = 0
+    private var targetsCreated = 0
+    private var targetsResolved = 0
 
     init {
-        require(sessionConfig.mode == GameMode.CLASSIC) {
-            "Only Classic mode is implemented in this version."
-        }
+        // All supported modes share this engine with mode-specific rules.
     }
 
     /**
@@ -182,6 +185,8 @@ class GameEngine(
         targetsMissed = 0
         goodTargetsMissed = 0
         bestCombo = 0
+        targetsCreated = 0
+        targetsResolved = 0
         completedSessionSummary = null
         pendingEvents.clear()
         state = GameState(
@@ -195,7 +200,14 @@ class GameEngine(
             bestCombo = 0,
             activeTimedPowerup = null,
             powerupRemainingMs = 0L,
-            shieldAvailable = false
+            shieldAvailable = false,
+            timeRemainingMs = if (sessionConfig.mode == GameMode.TIME_ATTACK) {
+                sessionConfig.timeAttackDurationMs
+            } else null,
+            targetsResolved = 0,
+            targetLimit = if (sessionConfig.mode == GameMode.PRECISION) {
+                sessionConfig.precisionTargetCount
+            } else null
         )
         pendingEvents += GameplayEvent.RoundStarted(sessionConfig.mode)
         return state
@@ -210,12 +222,16 @@ class GameEngine(
             return state
         }
 
-        elapsedSessionMs += elapsedMs
+        val roundElapsedMs = if (sessionConfig.mode == GameMode.TIME_ATTACK) {
+            minOf(elapsedMs, state.timeRemainingMs ?: sessionConfig.timeAttackDurationMs)
+        } else elapsedMs
+        elapsedSessionMs += roundElapsedMs
+        val nextTimeRemaining = state.timeRemainingMs?.let { (it - roundElapsedMs).coerceAtLeast(0L) }
 
         val slowTimeActive = state.activeTimedPowerup == PowerupType.SLOW_TIME
         val gameplayElapsedMs = if (slowTimeActive) {
-            (elapsedMs * config.slowTimeFactor).toLong().coerceAtLeast(1L)
-        } else elapsedMs
+            (roundElapsedMs * config.slowTimeFactor).toLong().coerceAtLeast(1L)
+        } else roundElapsedMs
 
         val expiredTargets = state.targets.filter {
             it.remainingLifetimeMs <= gameplayElapsedMs
@@ -225,7 +241,7 @@ class GameEngine(
             .map { it.copy(remainingLifetimeMs = it.remainingLifetimeMs - gameplayElapsedMs) }
 
         if (state.activeTimedPowerup != null) {
-            val remainingEffectMs = state.powerupRemainingMs - elapsedMs
+            val remainingEffectMs = state.powerupRemainingMs - roundElapsedMs
             if (remainingEffectMs <= 0L) {
                 val expiredPowerup = requireNotNull(state.activeTimedPowerup)
                 state = state.copy(activeTimedPowerup = null, powerupRemainingMs = 0L)
@@ -238,11 +254,18 @@ class GameEngine(
         var updatedLives = state.lives
         expiredTargets.forEach { target ->
             targetsMissed++
+            targetsResolved++
             pendingEvents += GameplayEvent.TargetMissed(target.id, target.type)
             if (target.type == TargetType.GOOD) {
                 goodTargetsMissed++
                 breakCombo()
-                if (state.shieldAvailable) {
+                if (sessionConfig.mode == GameMode.PRECISION) {
+                    val penalty = minOf(state.score, sessionConfig.precisionMissPenalty)
+                    if (penalty > 0) {
+                        state = state.copy(score = state.score - penalty)
+                        pendingEvents += GameplayEvent.PrecisionMissPenalty(penalty, state.score)
+                    }
+                } else if (state.shieldAvailable) {
                     state = state.copy(shieldAvailable = false)
                     pendingEvents += GameplayEvent.ShieldConsumed
                 } else {
@@ -257,7 +280,9 @@ class GameEngine(
             state = state.copy(
                 status = GameStatus.GAME_OVER,
                 lives = 0,
-                targets = emptyList()
+                targets = emptyList(),
+                timeRemainingMs = nextTimeRemaining,
+                targetsResolved = targetsResolved
             )
             completeSession()
             return state
@@ -267,19 +292,38 @@ class GameEngine(
         timeSinceLastSpawnMs += gameplayElapsedMs
 
         while (true) {
-            val difficulty = DifficultyProgression.forScore(state.score, config)
+            val difficulty = difficultyForCurrentMode()
             if (timeSinceLastSpawnMs < difficulty.spawnIntervalMs) break
 
             timeSinceLastSpawnMs -= difficulty.spawnIntervalMs
-            if (updatedTargets.size < config.maxActiveTargets) {
+            val precisionLimitReached = sessionConfig.mode == GameMode.PRECISION &&
+                targetsCreated >= sessionConfig.precisionTargetCount
+            if (!precisionLimitReached && updatedTargets.size < config.maxActiveTargets) {
                 updatedTargets = updatedTargets + createTarget(difficulty)
+            }
+            if (precisionLimitReached) {
+                timeSinceLastSpawnMs = 0L
+                break
             }
         }
 
         state = state.copy(
             lives = updatedLives,
-            targets = updatedTargets
+            targets = updatedTargets,
+            timeRemainingMs = nextTimeRemaining,
+            targetsResolved = targetsResolved
         )
+
+        if (sessionConfig.mode == GameMode.TIME_ATTACK && nextTimeRemaining == 0L) {
+            finishRound()
+        } else if (
+            sessionConfig.mode == GameMode.PRECISION &&
+            targetsCreated >= sessionConfig.precisionTargetCount &&
+            targetsResolved >= sessionConfig.precisionTargetCount &&
+            updatedTargets.isEmpty()
+        ) {
+            finishRound()
+        }
         return state
     }
 
@@ -297,7 +341,10 @@ class GameEngine(
         val previousComboCount = state.comboCount
         val previousMultiplier = state.comboMultiplier
         if (target.type == TargetType.POWERUP) {
+            targetsResolved++
             collectPowerup(target)
+            state = state.copy(targetsResolved = targetsResolved)
+            finishPrecisionIfComplete()
             return state
         }
 
@@ -331,10 +378,12 @@ class GameEngine(
             TargetType.POWERUP -> error("Powerup targets are handled before normal scoring.")
         }
 
-        val newLevel = DifficultyProgression.forScore(scoreChange.newScore, config).level
+        targetsResolved++
+        val newLevel = difficultyForCurrentMode(scoreChange.newScore).level
         state = state.copy(
             score = scoreChange.newScore,
             targets = state.targets.filterNot { it.id == targetId },
+            targetsResolved = targetsResolved,
             difficultyLevel = newLevel,
             comboCount = nextComboCount,
             comboMultiplier = nextMultiplier,
@@ -354,6 +403,7 @@ class GameEngine(
         if (newLevel != previousLevel) {
             pendingEvents += GameplayEvent.LevelChanged(previousLevel, newLevel)
         }
+        finishPrecisionIfComplete()
         return state
     }
 
@@ -365,7 +415,7 @@ class GameEngine(
             PowerupType.GOLDEN_STAR -> {
                 val newScore = state.score + 50
                 val previousLevel = state.difficultyLevel
-                val newLevel = DifficultyProgression.forScore(newScore, config).level
+                val newLevel = difficultyForCurrentMode(newScore).level
                 state = state.copy(
                     score = newScore,
                     difficultyLevel = newLevel
@@ -408,6 +458,34 @@ class GameEngine(
         pendingEvents += GameplayEvent.RoundCompleted(summary)
     }
 
+    private fun finishPrecisionIfComplete() {
+        if (
+            sessionConfig.mode == GameMode.PRECISION &&
+            targetsCreated >= sessionConfig.precisionTargetCount &&
+            targetsResolved >= sessionConfig.precisionTargetCount &&
+            state.targets.isEmpty()
+        ) {
+            finishRound()
+        }
+    }
+
+    private fun finishRound() {
+        if (state.status == GameStatus.GAME_OVER) return
+        state = state.copy(status = GameStatus.GAME_OVER, targets = emptyList())
+        completeSession()
+    }
+
+    private fun difficultyForCurrentMode(score: Int = state.score): DifficultyProfile {
+        val base = DifficultyProgression.forScore(score, config)
+        return if (sessionConfig.mode == GameMode.SURVIVAL) {
+            base.copy(
+                spawnIntervalMs = (base.spawnIntervalMs * 0.82f).toLong().coerceAtLeast(1L),
+                targetLifetimeMs = (base.targetLifetimeMs * 0.9f).toLong().coerceAtLeast(1L),
+                dangerTargetChance = (base.dangerTargetChance + 0.04f).coerceAtMost(0.5f)
+            )
+        } else base
+    }
+
     private fun breakCombo() {
         if (state.comboCount == 0) return
 
@@ -422,6 +500,7 @@ class GameEngine(
 
     private fun createTarget(difficulty: DifficultyProfile): GameTarget {
         val roll = random.nextFloat()
+        targetsCreated++
         val canSpawnTimedPowerup = state.activeTimedPowerup == null
         val availablePowerups = PowerupType.entries.filter { powerup ->
             powerup in sessionConfig.enabledPowerups &&
