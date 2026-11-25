@@ -16,6 +16,9 @@ data class GameConfig(
     val spawnIntervalMs: Long = 750L,
     val maxActiveTargets: Int = 3,
     val dangerTargetChance: Float = 0.22f,
+    val powerupSpawnChance: Float = 0.06f,
+    val powerupDurationMs: Long = 5_000L,
+    val slowTimeFactor: Float = 0.5f,
     val minTargetPosition: Float = 0.08f,
     val maxTargetPosition: Float = 0.92f
 ) {
@@ -27,6 +30,12 @@ data class GameConfig(
         require(spawnIntervalMs > 0L) { "Spawn interval must be greater than zero." }
         require(maxActiveTargets > 0) { "At least one target must be allowed." }
         require(dangerTargetChance in 0f..1f) { "Danger chance must be between zero and one." }
+        require(powerupSpawnChance in 0f..1f) { "Powerup chance must be between zero and one." }
+        require(dangerTargetChance + powerupSpawnChance <= 1f) {
+            "Danger and powerup chances cannot add up to more than one."
+        }
+        require(powerupDurationMs > 0L) { "Powerup duration must be greater than zero." }
+        require(slowTimeFactor in 0.1f..1f) { "Slow-time factor must be between 0.1 and 1." }
         require(minTargetPosition >= 0f && maxTargetPosition <= 1f) {
             "Target positions must stay within the play area."
         }
@@ -84,7 +93,8 @@ enum class GameStatus {
 
 enum class TargetType {
     GOOD,
-    DANGER
+    DANGER,
+    POWERUP
 }
 
 data class GameTarget(
@@ -92,7 +102,8 @@ data class GameTarget(
     val type: TargetType,
     val x: Float,
     val y: Float,
-    val remainingLifetimeMs: Long
+    val remainingLifetimeMs: Long,
+    val powerupType: PowerupType? = null
 )
 
 data class GameState(
@@ -103,7 +114,10 @@ data class GameState(
     val difficultyLevel: Int = 1,
     val comboCount: Int = 0,
     val comboMultiplier: Int = 1,
-    val bestCombo: Int = 0
+    val bestCombo: Int = 0,
+    val activeTimedPowerup: PowerupType? = null,
+    val powerupRemainingMs: Long = 0L,
+    val shieldAvailable: Boolean = false
 )
 
 /**
@@ -178,7 +192,10 @@ class GameEngine(
             difficultyLevel = 1,
             comboCount = 0,
             comboMultiplier = 1,
-            bestCombo = 0
+            bestCombo = 0,
+            activeTimedPowerup = null,
+            powerupRemainingMs = 0L,
+            shieldAvailable = false
         )
         pendingEvents += GameplayEvent.RoundStarted(sessionConfig.mode)
         return state
@@ -195,12 +212,28 @@ class GameEngine(
 
         elapsedSessionMs += elapsedMs
 
+        val slowTimeActive = state.activeTimedPowerup == PowerupType.SLOW_TIME
+        val gameplayElapsedMs = if (slowTimeActive) {
+            (elapsedMs * config.slowTimeFactor).toLong().coerceAtLeast(1L)
+        } else elapsedMs
+
         val expiredTargets = state.targets.filter {
-            it.remainingLifetimeMs <= elapsedMs
+            it.remainingLifetimeMs <= gameplayElapsedMs
         }
         val remainingTargets = state.targets
-            .filter { it.remainingLifetimeMs > elapsedMs }
-            .map { it.copy(remainingLifetimeMs = it.remainingLifetimeMs - elapsedMs) }
+            .filter { it.remainingLifetimeMs > gameplayElapsedMs }
+            .map { it.copy(remainingLifetimeMs = it.remainingLifetimeMs - gameplayElapsedMs) }
+
+        if (state.activeTimedPowerup != null) {
+            val remainingEffectMs = state.powerupRemainingMs - elapsedMs
+            if (remainingEffectMs <= 0L) {
+                val expiredPowerup = state.activeTimedPowerup
+                state = state.copy(activeTimedPowerup = null, powerupRemainingMs = 0L)
+                pendingEvents += GameplayEvent.PowerupExpired(expiredPowerup)
+            } else {
+                state = state.copy(powerupRemainingMs = remainingEffectMs)
+            }
+        }
 
         var updatedLives = state.lives
         expiredTargets.forEach { target ->
@@ -209,8 +242,13 @@ class GameEngine(
             if (target.type == TargetType.GOOD) {
                 goodTargetsMissed++
                 breakCombo()
-                updatedLives = (updatedLives - 1).coerceAtLeast(0)
-                pendingEvents += GameplayEvent.LifeLost(updatedLives)
+                if (state.shieldAvailable) {
+                    state = state.copy(shieldAvailable = false)
+                    pendingEvents += GameplayEvent.ShieldConsumed
+                } else {
+                    updatedLives = (updatedLives - 1).coerceAtLeast(0)
+                    pendingEvents += GameplayEvent.LifeLost(updatedLives)
+                }
             }
         }
 
@@ -226,7 +264,7 @@ class GameEngine(
         }
 
         var updatedTargets = remainingTargets
-        timeSinceLastSpawnMs += elapsedMs
+        timeSinceLastSpawnMs += gameplayElapsedMs
 
         while (true) {
             val difficulty = DifficultyProgression.forScore(state.score, config)
@@ -258,11 +296,18 @@ class GameEngine(
         val previousLevel = state.difficultyLevel
         val previousComboCount = state.comboCount
         val previousMultiplier = state.comboMultiplier
+        if (target.type == TargetType.POWERUP) {
+            collectPowerup(target)
+            return state
+        }
+
         val nextComboCount = if (target.type == TargetType.GOOD) previousComboCount + 1 else 0
         val nextMultiplier = sessionConfig.comboRules.multiplierFor(nextComboCount)
+        val timedMultiplier = if (state.activeTimedPowerup == PowerupType.DOUBLE_POINTS) 2 else 1
         val scoreChange = when (target.type) {
-            TargetType.GOOD -> sessionConfig.scoreRules.awardGoodHit(state.score, nextMultiplier)
+            TargetType.GOOD -> sessionConfig.scoreRules.awardGoodHit(state.score, nextMultiplier * timedMultiplier)
             TargetType.DANGER -> sessionConfig.scoreRules.applyDangerPenalty(state.score)
+            TargetType.POWERUP -> error("Powerup targets are handled before normal scoring.")
         }
 
         when (target.type) {
@@ -311,6 +356,39 @@ class GameEngine(
         return state
     }
 
+    private fun collectPowerup(target: GameTarget) {
+        val powerup = target.powerupType ?: return
+        pendingEvents += GameplayEvent.PowerupCollected(powerup)
+        when (powerup) {
+            PowerupType.GOLDEN_STAR -> {
+                val newScore = state.score + 50
+                val previousLevel = state.difficultyLevel
+                val newLevel = DifficultyProgression.forScore(newScore, config).level
+                state = state.copy(
+                    score = newScore,
+                    difficultyLevel = newLevel
+                )
+                pendingEvents += GameplayEvent.PowerupActivated(powerup)
+                if (newLevel != previousLevel) {
+                    pendingEvents += GameplayEvent.LevelChanged(previousLevel, newLevel)
+                }
+            }
+            PowerupType.SHIELD -> {
+                state = state.copy(shieldAvailable = true)
+                pendingEvents += GameplayEvent.PowerupActivated(powerup)
+            }
+            PowerupType.DOUBLE_POINTS, PowerupType.SLOW_TIME -> {
+                if (state.activeTimedPowerup == null) {
+                    state = state.copy(
+                        activeTimedPowerup = powerup,
+                        powerupRemainingMs = config.powerupDurationMs
+                    )
+                    pendingEvents += GameplayEvent.PowerupActivated(powerup)
+                }
+            }
+        }
+    }
+
     private fun completeSession() {
         if (completedSessionSummary != null) return
 
@@ -343,11 +421,23 @@ class GameEngine(
     }
 
     private fun createTarget(difficulty: DifficultyProfile): GameTarget {
-        val type = if (random.nextFloat() < difficulty.dangerTargetChance) {
-            TargetType.DANGER
-        } else {
-            TargetType.GOOD
+        val roll = random.nextFloat()
+        val canSpawnTimedPowerup = state.activeTimedPowerup == null
+        val powerupChance = if (canSpawnTimedPowerup) config.powerupSpawnChance
+            else config.powerupSpawnChance * 0.5f
+        val type = when {
+            roll < difficulty.dangerTargetChance -> TargetType.DANGER
+            roll < difficulty.dangerTargetChance + powerupChance -> TargetType.POWERUP
+            else -> TargetType.GOOD
         }
+        val powerupType = if (type == TargetType.POWERUP) {
+            val choices = if (canSpawnTimedPowerup) {
+                PowerupType.entries.toList()
+            } else {
+                listOf(PowerupType.GOLDEN_STAR, PowerupType.SHIELD)
+            }
+            choices[(random.nextFloat() * choices.size).toInt().coerceIn(0, choices.lastIndex)]
+        } else null
         val positionRange = config.minTargetPosition..config.maxTargetPosition
 
         return GameTarget(
@@ -357,7 +447,8 @@ class GameEngine(
                 positionRange.start,
             y = random.nextFloat() * (positionRange.endInclusive - positionRange.start) +
                 positionRange.start,
-            remainingLifetimeMs = difficulty.targetLifetimeMs
+            remainingLifetimeMs = difficulty.targetLifetimeMs,
+            powerupType = powerupType
         )
     }
 }
