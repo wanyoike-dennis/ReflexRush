@@ -312,20 +312,27 @@ Implementation requirements:
 
 ### 8.7 Stage 5 — Multiple game modes
 
-Implement four modes through shared engine rules and mode-specific session configuration, not separate game engines:
+<text></text>
 
-| Mode | Initial rules |
+**Implementation pushed; local build and device verification pending.**
+
+All four modes now launch through the shared `GameEngine`, with a dedicated mode-selection screen and independent local personal-best records.
+
+| Mode | Implemented rules |
 |---|---|
-| Classic | Preserve the current three-life game and progressive difficulty; support combos and configured powerups |
-| Time Attack | 60-second round; maximise score before time expires |
-| Survival | Three starting lives; survive escalating difficulty and maximise score |
-| Precision | Fixed set of 30 targets; reward accuracy and penalise danger hits and misses |
+| Classic | Preserves the original three-life round, score-based difficulty, combos, and all four powerups |
+| Time Attack | 60-second countdown; round ends when the clock reaches zero; Golden Star, Double Points, and Slow Time are enabled |
+| Survival | Three lives; target spawn interval is tightened by 18%, target lifetime by 10%, and danger probability is increased by 4 percentage points on top of normal score-based progression |
+| Precision | Fixed 30-target challenge; no life loss for missed good targets; each missed good target deducts 5 points; Golden Star is the only enabled powerup |
 
-- Add a mode-selection screen while keeping Classic easy to start.
-- Define mode-specific end conditions, scoring configuration, difficulty behaviour, and powerup availability.
-- Save personal-best scores separately for each mode.
-- Include the selected mode in every session summary and gameplay event context.
-- Ensure pausing, resuming, replaying, and returning home work for every mode.
+- Added a mode-selection screen with each mode's rules and challenge description.
+- Added mode-specific timer and target-count HUD displays.
+- Kept one engine and typed gameplay-event architecture; mode-specific behaviour is selected through `GameSessionConfig`.
+- Personal-best scores are persisted separately for Classic, Time Attack, Survival, and Precision. The existing Classic score preference key is retained for backward compatibility.
+- Precision misses emit a typed penalty event; all mode outcomes remain represented by the existing session summary.
+- No new dependencies or Gradle changes were introduced.
+
+**Verification still required:** Run unit tests and a debug build, then play one round in each mode. Confirm the 60-second Time Attack limit, Survival's tighter pacing, all 30 Precision targets and miss penalties, and separate high scores. Classic must still behave as before.
 
 **Exit criteria:** Each mode has distinct, tested rules and independent records; Classic remains compatible with the original experience.
 
@@ -412,7 +419,8 @@ Online leaderboards, multiplayer, cloud synchronisation, monetisation, and socia
 | Phase 7 regression and release validation | In progress; the existing `testDebugUnitTest` baseline passed locally; release/build/device checks remain pending |
 | Hybrid expansion Stage 1 | Implemented, built, and unit-tested successfully by the user |
 | Hybrid expansion Stage 2 | Implemented, built, and unit-tested successfully by the user |
-| Hybrid expansion Stage 4 | Audio manager, sound effects, looping music, persistent controls, and lifecycle handling pushed; local verification pending |
+| Hybrid expansion Stage 4 | Audio manager, sound effects, music, persistent controls, and lifecycle behaviour built and confirmed by the user |
+| Hybrid expansion Stage 5 | Four game modes, mode selection, mode-specific rules/HUD, and separate high scores pushed; local verification pending |
 | Hybrid expansion Stage 3 | Powerups and special targets implemented and tested by the user |
 | Hybrid expansion roadmap | Defined; architecture-first implementation underway |
 
