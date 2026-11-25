@@ -210,16 +210,168 @@ Work through these phases in order. Each phase should be reviewed and verified b
 - **Maintainability:** Keep game rules, persistence, and UI responsibilities clearly organised.
 - **Offline by default:** No network connection should be needed to start or complete a round.
 
-## 8. Possible future enhancements (after V1)
+## 8. Hybrid gameplay expansion roadmap
 
-Prioritise these only after the first release is stable:
-- Difficulty levels or progressive difficulty.
-- Additional modes, such as timed survival or accuracy challenge.
-- Sound effects, music controls, and haptic feedback.
-- Daily challenges and achievements.
-- Detailed personal statistics and reaction-time summaries.
-- Online leaderboards and optional cloud backup.
-- Monetisation, only if a clear product decision is made.
+After the current V1 regression and release-readiness work is complete, evolve Reflex Rush into a **hybrid arcade, competitive, and progression-driven game**. Preserve the verified Classic experience while adding the following features incrementally and in this order:
+
+1. Combos
+2. Powerups
+3. Sound and audio settings
+4. Game modes
+5. Player statistics
+6. Missions, achievements, and progression
+
+The implementation must be incremental: complete and verify each stage before starting the next. Do not attempt to deliver all features in one large change.
+
+### 8.1 Architectural foundation — before adding gameplay features
+
+Before implementing combos, establish the engine contracts that later features will share. This is a small, deliberate foundation step, not a rewrite of the working game.
+
+- Introduce an explicit `GameMode` model and a `GameSessionConfig` (or equivalent) so each session receives its rules and configuration. Initially, only Classic needs to be playable; the model must allow additional modes without duplicating the engine.
+- Define typed, immutable `GameplayEvent` values for meaningful outcomes such as good-target hit, danger-target hit, target missed, life lost, combo milestone, powerup collected, level changed, and round completed.
+- Make scoring an explicit engine responsibility through a central score/rules model. The engine should calculate awarded points, penalties, multipliers, and final session results consistently.
+- Expose events and a final session summary to the app layer. Statistics, missions, achievements, audio, and UI feedback should react to these events rather than independently infer what happened from Compose state or score changes.
+- Keep game rules pure Kotlin and independent of Android, Compose, audio APIs, and persistence. The UI renders engine state; storage records summaries and progress; audio responds to events.
+- Keep the current Classic defaults and five-level difficulty progression unchanged unless a separately reviewed balancing change is required.
+- Add deterministic tests for event emission, score calculation, session completion, and the Classic compatibility path.
+
+**Architecture acceptance criteria:** Existing Classic gameplay and high-score behaviour remain intact; the engine can be configured for a future mode; gameplay events and round summaries are testable without Android or Compose; no feature-specific storage or UI logic is embedded in the engine.
+
+### 8.2 Stage 0 — Complete the current release-readiness baseline
+
+- Finish the pending Phase 7 regression tests and build checks.
+- Confirm current gameplay, high-score persistence, difficulty progression, replay, and lifecycle pause/resume behaviour.
+- Record the passing test and build baseline before extending the engine.
+
+**Exit criteria:** Existing feature branch is clean, current regression checks pass, and the verified Classic game remains a stable reference point.
+
+### 8.3 Stage 1 — Engine foundation and gameplay events
+
+- Add the mode/session configuration, typed gameplay events, central scoring rules, and completed-session summary described above.
+- Adapt the current Classic flow to use these contracts without changing its visible rules.
+- Keep the current high-score store working; do not migrate persistence unnecessarily.
+- Add unit tests that prove existing Classic scoring, lives, difficulty, replay, and high-score integration remain compatible.
+
+**Exit criteria:** Classic still behaves as before, while the engine provides the shared contracts required by combos, modes, statistics, and missions.
+
+### 8.4 Stage 2 — Combo system
+
+- Count consecutive successful good-target hits.
+- Use the initial multiplier thresholds: 1–2 hits = 1×, 3–4 = 2×, 5–9 = 3×, and 10+ = 5×.
+- Reset the combo when a good target is missed or a danger target is tapped.
+- Apply multipliers centrally in the engine's score calculation.
+- Emit combo and combo-milestone events for UI feedback, statistics, and missions.
+- Display the current streak and multiplier with clear, short animations.
+- Track the best combo for the completed session.
+
+**Exit criteria:** Multiplier boundaries, combo resets, score floors, event emission, and replay resets pass deterministic unit tests; the feature is verified in a local Android build and on a device.
+
+### 8.5 Stage 3 — Powerups and special targets
+
+Initial powerups:
+
+| Powerup | Initial effect |
+|---|---|
+| Gold star | Award +50 bonus points |
+| Double Points | Double eligible points for 5 seconds |
+| Slow Time | Temporarily slow target expiry and spawning for 5 seconds |
+| Shield | Prevent one missed-good-target life loss |
+
+Implementation requirements:
+
+- Model powerup target types and effects explicitly; do not overload ordinary good/danger target logic.
+- Make spawn probability, effect duration, and effect limits configurable.
+- Initially allow only one timed effect at a time; a shield may be held until consumed.
+- Emit events when a powerup appears, is collected, activates, expires, or is consumed.
+- Let each mode's configuration enable or disable individual powerups.
+- Show active effects and remaining duration clearly in the gameplay UI.
+
+**Exit criteria:** Collection, activation, expiration, timing, shield consumption, score interaction, mode restrictions, and event behaviour are unit-tested and device-verified.
+
+### 8.6 Stage 4 — Sound and audio settings
+
+- Add a small Android audio manager outside the game engine.
+- Use short sound effects for target hits, danger penalties, combo milestones, powerup collection, life loss, game over, and new personal best.
+- Add independent sound-effects and background-music on/off settings.
+- Persist audio preferences locally.
+- Respect app lifecycle transitions and release or pause audio resources appropriately.
+- Start with sound effects; introduce optional background music only after effects and lifecycle handling are reliable.
+
+**Exit criteria:** Audio controls persist across app restarts, sounds correspond to gameplay events, and audio does not continue unexpectedly when the app is backgrounded.
+
+### 8.7 Stage 5 — Multiple game modes
+
+Implement four modes through shared engine rules and mode-specific session configuration, not separate game engines:
+
+| Mode | Initial rules |
+|---|---|
+| Classic | Preserve the current three-life game and progressive difficulty; support combos and configured powerups |
+| Time Attack | 60-second round; maximise score before time expires |
+| Survival | Three starting lives; survive escalating difficulty and maximise score |
+| Precision | Fixed set of 30 targets; reward accuracy and penalise danger hits and misses |
+
+- Add a mode-selection screen while keeping Classic easy to start.
+- Define mode-specific end conditions, scoring configuration, difficulty behaviour, and powerup availability.
+- Save personal-best scores separately for each mode.
+- Include the selected mode in every session summary and gameplay event context.
+- Ensure pausing, resuming, replaying, and returning home work for every mode.
+
+**Exit criteria:** Each mode has distinct, tested rules and independent records; Classic remains compatible with the original experience.
+
+### 8.8 Stage 6 — Player statistics
+
+Track session and lifetime statistics from gameplay events and completed-session summaries:
+
+- Games played and total play time.
+- Targets hit, danger targets hit, and targets missed.
+- Accuracy, using a documented and consistent denominator based on actual target outcomes (never derive accuracy from score).
+- Highest score and highest level.
+- Best combo and powerups collected.
+- Per-mode best scores and records.
+
+- Add a Statistics screen with overview, records, gameplay, and per-mode sections.
+- Update persistent statistics at appropriate session/event boundaries, not as a side effect of Compose recomposition.
+- Keep statistics available offline and across app restarts.
+
+**Exit criteria:** Statistics reconcile with known test sessions, survive app restarts, and remain separated by game mode where appropriate.
+
+### 8.9 Stage 7 — Missions, achievements, and progression
+
+Initial mission examples:
+
+| Mission | Completion condition |
+|---|---|
+| First Strike | Hit 20 good targets |
+| Combo Master | Reach a 5-hit combo |
+| Danger Dodger | Complete a round without tapping a danger target |
+| Speed Demon | Score 250 in Time Attack |
+| Survivor | Reach Level 4 in Classic |
+| Power Collector | Collect 5 powerups |
+
+- Track mission progress from typed gameplay events and session summaries.
+- Add daily missions that refresh by the device's local calendar date.
+- Persist progress and completion offline; completed missions must not silently reset.
+- Add achievements for longer-term milestones.
+- Introduce XP and cosmetic rewards, such as target colours or background themes, after mission tracking is reliable.
+- Keep rewards cosmetic initially; do not create pay-to-win or gameplay advantages.
+- Make date handling testable, including day changes and time-zone changes.
+
+**Exit criteria:** Mission progress reflects actual gameplay, daily refresh is deterministic and tested, completed rewards persist, and the feature works offline.
+
+### 8.10 Hybrid expansion quality checklist
+
+- [ ] Existing Classic gameplay remains playable and recognisable.
+- [ ] The engine owns scoring, mode rules, and gameplay event generation.
+- [ ] UI, audio, statistics, and missions consume shared gameplay events rather than duplicating game logic.
+- [ ] Each feature is implemented and verified before the next begins.
+- [ ] Game modes have separate rules and personal-best records.
+- [ ] Statistics and missions persist across app restarts.
+- [ ] All gameplay features work offline.
+- [ ] Unit tests cover engine rules, event sequences, scoring, timing, and progression.
+- [ ] Debug/release builds and physical-device checks pass after meaningful milestones.
+- [ ] No unnecessary dependencies, backend services, accounts, or unrelated refactors are introduced.
+
+Online leaderboards, multiplayer, cloud synchronisation, monetisation, and social features remain outside this roadmap until the offline hybrid game is stable and there is a separate product decision to add them.
 
 ## 9. Development workflow
 
@@ -246,7 +398,7 @@ Prioritise these only after the first release is stable:
 | High-score persistence | Implemented and verified on a testing device |
 | Phase 5 gameplay polish | User tested; feedback improvements confirmed |
 | Phase 6 progressive difficulty | Implemented and user-verified on a testing device |
-| Phase 7 regression and release validation | In progress; expanded engine edge-case tests added, local execution pending |
+| Phase 7 regression and release validation | In progress; expanded engine edge-case tests added, local execution pending |\n| Hybrid expansion roadmap | Defined; incremental architecture-first implementation planned after the Phase 7 baseline |
 
 ---
 
