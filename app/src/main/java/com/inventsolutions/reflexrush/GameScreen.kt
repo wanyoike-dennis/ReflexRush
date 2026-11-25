@@ -251,7 +251,55 @@ fun GameScreen(
                 GameStat(label = "LEVEL", value = gameState.difficultyLevel.toString(), tint = RushGreen)
             }
 
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(10.dp))
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(if (gameState.comboCount >= 3) Color(0xFF30291B) else RushSurface.copy(alpha = 0.72f))
+                    .border(
+                        1.dp,
+                        if (gameState.comboCount >= 3) RushAmber.copy(alpha = 0.72f) else RushSurfaceVariant,
+                        RoundedCornerShape(14.dp)
+                    )
+                    .padding(horizontal = 18.dp, vertical = 10.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        "COMBO STREAK",
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.52f),
+                        fontSize = 8.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 1.3.sp
+                    )
+                    Text(
+                        "${gameState.comboCount} HITS",
+                        color = if (gameState.comboCount >= 3) RushAmber else RushMint,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Black
+                    )
+                }
+                Column(horizontalAlignment = Alignment.End) {
+                    Text(
+                        "MULTIPLIER",
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.52f),
+                        fontSize = 8.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 1.3.sp
+                    )
+                    Text(
+                        "${gameState.comboMultiplier}×",
+                        color = if (gameState.comboMultiplier > 1) RushAmber else RushMint,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Black
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(12.dp))
 
             Text(
                 "TAP GREEN  •  AVOID RED",
