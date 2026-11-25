@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
@@ -48,6 +49,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.inventsolutions.reflexrush.game.GameMode
 import com.inventsolutions.reflexrush.ui.theme.ReflexRushTheme
+import com.inventsolutions.reflexrush.ui.theme.RushAmber
+import com.inventsolutions.reflexrush.ui.theme.RushGreen
+import com.inventsolutions.reflexrush.ui.theme.RushMint
+import com.inventsolutions.reflexrush.ui.theme.RushRed
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
