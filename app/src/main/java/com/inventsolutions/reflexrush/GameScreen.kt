@@ -101,7 +101,8 @@ fun GameScreen(
     lifecycleOwner: LifecycleOwner,
     bestScore: Int,
     onNewBestScore: (Int) -> Unit,
-    mode: GameMode = GameMode.CLASSIC
+    mode: GameMode = GameMode.CLASSIC,
+    onSessionCompleted: (com.inventsolutions.reflexrush.game.GameSessionSummary) -> Unit = {}
 ) {
     val engine = remember(mode) { GameEngine(GameSessionConfig.forMode(mode)) }
     val context = LocalContext.current
@@ -147,6 +148,12 @@ fun GameScreen(
         if (actionFeedback != null) {
             delay(650L)
             actionFeedback = null
+        }
+    }
+
+    LaunchedEffect(gameState.status) {
+        if (gameState.status == GameStatus.GAME_OVER) {
+            engine.completedSessionSummary?.let(onSessionCompleted)
         }
     }
 
