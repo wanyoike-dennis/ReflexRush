@@ -87,7 +87,8 @@ data class GameSessionConfig(
         pointsPerGoodHit = gameConfig.pointsPerGoodHit,
         dangerHitPenalty = gameConfig.dangerHitPenalty
     ),
-    val comboRules: ComboRules = ComboRules()
+    val comboRules: ComboRules = ComboRules(),
+    val enabledPowerups: Set<PowerupType> = PowerupType.entries.toSet()
 )
 
 /**
