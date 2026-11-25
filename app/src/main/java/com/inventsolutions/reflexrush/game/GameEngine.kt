@@ -100,7 +100,10 @@ data class GameState(
     val score: Int = 0,
     val lives: Int = 3,
     val targets: List<GameTarget> = emptyList(),
-    val difficultyLevel: Int = 1
+    val difficultyLevel: Int = 1,
+    val comboCount: Int = 0,
+    val comboMultiplier: Int = 1,
+    val bestCombo: Int = 0
 )
 
 /**
@@ -138,6 +141,7 @@ class GameEngine(
     private var dangerTargetsHit = 0
     private var targetsMissed = 0
     private var goodTargetsMissed = 0
+    private var bestCombo = 0
 
     init {
         require(sessionConfig.mode == GameMode.CLASSIC) {
@@ -163,6 +167,7 @@ class GameEngine(
         dangerTargetsHit = 0
         targetsMissed = 0
         goodTargetsMissed = 0
+        bestCombo = 0
         completedSessionSummary = null
         pendingEvents.clear()
         state = GameState(
@@ -170,7 +175,10 @@ class GameEngine(
             score = 0,
             lives = config.startingLives,
             targets = emptyList(),
-            difficultyLevel = 1
+            difficultyLevel = 1,
+            comboCount = 0,
+            comboMultiplier = 1,
+            bestCombo = 0
         )
         pendingEvents += GameplayEvent.RoundStarted(sessionConfig.mode)
         return state
@@ -200,6 +208,7 @@ class GameEngine(
             pendingEvents += GameplayEvent.TargetMissed(target.id, target.type)
             if (target.type == TargetType.GOOD) {
                 goodTargetsMissed++
+                breakCombo()
                 updatedLives = (updatedLives - 1).coerceAtLeast(0)
                 pendingEvents += GameplayEvent.LifeLost(updatedLives)
             }
@@ -247,14 +256,19 @@ class GameEngine(
 
         val target = state.targets.firstOrNull { it.id == targetId } ?: return state
         val previousLevel = state.difficultyLevel
+        val previousComboCount = state.comboCount
+        val previousMultiplier = state.comboMultiplier
+        val nextComboCount = if (target.type == TargetType.GOOD) previousComboCount + 1 else 0
+        val nextMultiplier = sessionConfig.comboRules.multiplierFor(nextComboCount)
         val scoreChange = when (target.type) {
-            TargetType.GOOD -> sessionConfig.scoreRules.awardGoodHit(state.score)
+            TargetType.GOOD -> sessionConfig.scoreRules.awardGoodHit(state.score, nextMultiplier)
             TargetType.DANGER -> sessionConfig.scoreRules.applyDangerPenalty(state.score)
         }
 
         when (target.type) {
             TargetType.GOOD -> {
                 goodTargetsHit++
+                bestCombo = maxOf(bestCombo, nextComboCount)
                 pendingEvents += GameplayEvent.GoodTargetHit(
                     targetId = target.id,
                     pointsAwarded = scoreChange.pointsDelta,
@@ -275,9 +289,22 @@ class GameEngine(
         state = state.copy(
             score = scoreChange.newScore,
             targets = state.targets.filterNot { it.id == targetId },
-            difficultyLevel = newLevel
+            difficultyLevel = newLevel,
+            comboCount = nextComboCount,
+            comboMultiplier = nextMultiplier,
+            bestCombo = bestCombo
         )
 
+        if (nextComboCount != previousComboCount) {
+            pendingEvents += GameplayEvent.ComboChanged(
+                previousCount = previousComboCount,
+                newCount = nextComboCount,
+                multiplier = nextMultiplier
+            )
+        }
+        if (nextMultiplier > previousMultiplier) {
+            pendingEvents += GameplayEvent.ComboMilestone(nextComboCount, nextMultiplier)
+        }
         if (newLevel != previousLevel) {
             pendingEvents += GameplayEvent.LevelChanged(previousLevel, newLevel)
         }
@@ -296,10 +323,23 @@ class GameEngine(
             dangerTargetsHit = dangerTargetsHit,
             targetsMissed = targetsMissed,
             goodTargetsMissed = goodTargetsMissed,
+            bestCombo = bestCombo,
             durationMs = elapsedSessionMs
         )
         completedSessionSummary = summary
         pendingEvents += GameplayEvent.RoundCompleted(summary)
+    }
+
+    private fun breakCombo() {
+        if (state.comboCount == 0) return
+
+        val previousCount = state.comboCount
+        state = state.copy(comboCount = 0, comboMultiplier = 1)
+        pendingEvents += GameplayEvent.ComboChanged(
+            previousCount = previousCount,
+            newCount = 0,
+            multiplier = 1
+        )
     }
 
     private fun createTarget(difficulty: DifficultyProfile): GameTarget {
