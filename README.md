@@ -2,7 +2,7 @@
 
 **Reflex Rush** is an Android reflex and reaction-time arcade game by Invent Solutions. The game challenges players to spot and tap positive targets quickly while avoiding dangerous targets. It is designed to be fast, easy to understand, satisfying to replay, and playable offline.
 
-> **Project status:** The home screen, core gameplay engine, playable game screen, local personal-best persistence, gameplay polish, and Phase 6 score-based difficulty progression have been implemented and user-verified on a testing device. Phase 7 is focused on final regression testing and release readiness.
+> **Project status:** The home screen, core gameplay engine, playable game screen, local personal-best persistence, gameplay polish, progressive difficulty, and four game modes have been implemented and user-verified. Hybrid expansion Stage 6 player statistics is implemented; local build and device verification are pending. Phase 7 is focused on final regression testing and release readiness.
 
 ## 1. Project objectives
 
@@ -312,7 +312,7 @@ Implementation requirements:
 
 ### 8.7 Stage 5 — Multiple game modes
 
-**Implementation pushed; local build and device verification pending.**
+**Implemented and user-tested.**
 
 All four modes now launch through the shared `GameEngine`, with a dedicated mode-selection screen and independent local personal-best records.
 
@@ -330,17 +330,21 @@ All four modes now launch through the shared `GameEngine`, with a dedicated mode
 - Precision misses emit a typed penalty event; all mode outcomes remain represented by the existing session summary.
 - No new dependencies or Gradle changes were introduced.
 
-**Verification still required:** Run unit tests and a debug build, then play one round in each mode. Confirm the 60-second Time Attack limit, Survival's tighter pacing, all 30 Precision targets and miss penalties, and separate high scores. Classic must still behave as before.
+**User verification:** The user confirmed the Stage 5 changes build and work after resolving the missing Compose width import.
 
 **Exit criteria:** Each mode has distinct, tested rules and independent records; Classic remains compatible with the original experience.
 
 ### 8.8 Stage 6 — Player statistics
 
-Track session and lifetime statistics from gameplay events and completed-session summaries:
+**Implementation pushed; local build and device verification pending.**
+
+Completed-session summaries now include collected powerups. A local SharedPreferences store aggregates lifetime statistics separately for each game mode, and the home screen opens a dedicated Statistics screen.
+
+Track session and lifetime statistics from completed-session summaries:
 
 - Games played and total play time.
 - Targets hit, danger targets hit, and targets missed.
-- Accuracy, using a documented and consistent denominator based on actual target outcomes (never derive accuracy from score).
+- Accuracy, using resolved ordinary target outcomes: good hits divided by good hits + danger hits + all expired targets. Powerups are tracked separately.
 - Highest score and highest level.
 - Best combo and powerups collected.
 - Per-mode best scores and records.
@@ -418,7 +422,8 @@ Online leaderboards, multiplayer, cloud synchronisation, monetisation, and socia
 | Hybrid expansion Stage 1 | Implemented, built, and unit-tested successfully by the user |
 | Hybrid expansion Stage 2 | Implemented, built, and unit-tested successfully by the user |
 | Hybrid expansion Stage 4 | Build succeeds; user confirmed music and sound effects are present. Toggle persistence and lifecycle checks remain unconfirmed |
-| Hybrid expansion Stage 5 | Four game modes, mode selection, mode-specific rules/HUD, and separate high scores pushed; local verification pending |
+| Hybrid expansion Stage 5 | Four game modes, mode selection, mode-specific rules/HUD, and separate high scores implemented and user-tested |
+| Hybrid expansion Stage 6 | Lifetime statistics model, per-mode persistence, completed-session tracking, statistics screen, and unit tests pushed; local verification pending |
 | Hybrid expansion Stage 3 | Powerups and special targets implemented and tested by the user |
 | Hybrid expansion roadmap | Defined; architecture-first implementation underway |
 
