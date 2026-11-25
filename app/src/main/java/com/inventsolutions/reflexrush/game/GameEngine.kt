@@ -159,6 +159,7 @@ class GameEngine(
     private var targetsMissed = 0
     private var goodTargetsMissed = 0
     private var bestCombo = 0
+    private var powerupsCollected = 0
     private var targetsCreated = 0
     private var targetsResolved = 0
 
@@ -185,6 +186,7 @@ class GameEngine(
         targetsMissed = 0
         goodTargetsMissed = 0
         bestCombo = 0
+        powerupsCollected = 0
         targetsCreated = 0
         targetsResolved = 0
         completedSessionSummary = null
@@ -410,6 +412,7 @@ class GameEngine(
     private fun collectPowerup(target: GameTarget) {
         val powerup = target.powerupType ?: return
         state = state.copy(targets = state.targets.filterNot { it.id == target.id })
+        powerupsCollected++
         pendingEvents += GameplayEvent.PowerupCollected(powerup)
         when (powerup) {
             PowerupType.GOLDEN_STAR -> {
@@ -452,7 +455,8 @@ class GameEngine(
             targetsMissed = targetsMissed,
             goodTargetsMissed = goodTargetsMissed,
             bestCombo = bestCombo,
-            durationMs = elapsedSessionMs
+            durationMs = elapsedSessionMs,
+            powerupsCollected = powerupsCollected
         )
         completedSessionSummary = summary
         pendingEvents += GameplayEvent.RoundCompleted(summary)
