@@ -189,8 +189,8 @@ fun ReflexRushHome(onPlayClick: () -> Unit = {}) {
                     color = Color(0xFF43F5B2)
                 )
                 TargetDot(
-                    modifier = Modifier.align(Alignment.CenterEnd).padding(end = 2.dp),
-                    color = Color(0xFFFFC45C).size(12.dp)
+                    modifier = Modifier.align(Alignment.CenterEnd).padding(end = 2.dp).size(12.dp),
+                    color = Color(0xFFFFC45C)
                 )
             }
 
