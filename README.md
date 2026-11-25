@@ -302,8 +302,9 @@ Implementation requirements:
 - Added `GameAudioManager`, a small Android audio layer outside the pure Kotlin game engine.
 - Uses Android `SoundPool` with short, locally synthesised WAV samples for good hits, danger hits, combo milestones, powerup collection, missed lives, shield consumption, game over, and a new personal best.
 - Added a soft looping ambient game track, with music disabled by default.
-- Added independent `SFX ON/OFF` and `MUSIC ON/OFF` controls to the gameplay screen.
-- Persisted both preferences locally with SharedPreferences; settings are restored when a new game screen is opened.
+- Added a dedicated neon `GAME SETTINGS` screen accessible from the home screen.
+- The settings screen contains independent sound-effects and background-music switches; the in-game HUD no longer carries audio toggles.
+- Persisted both preferences locally through `AudioSettingsStore` and SharedPreferences; gameplay audio reads the same stored settings.
 - Background music starts only during active, resumed gameplay and stops when the round ends, the app is paused, or the screen is disposed.
 - Audio is driven by the existing typed gameplay events; the game engine remains free of Android audio dependencies.
 - No Gradle files, dependency versions, or external audio libraries were changed.
