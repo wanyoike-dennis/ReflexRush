@@ -56,7 +56,9 @@ class MainActivity : ComponentActivity() {
         setContent {
             ReflexRushTheme {
                 val highScoreStore = remember { HighScoreStore(applicationContext) }
-                var classicBestScore by remember { mutableStateOf(highScoreStore.load(GameMode.CLASSIC)) }
+                var bestScores by remember {
+                    mutableStateOf(GameMode.entries.associateWith { highScoreStore.load(it) })
+                }
                 var showModeSelection by remember { mutableStateOf(false) }
                 var showGame by remember { mutableStateOf(false) }
                 var selectedMode by remember { mutableStateOf(GameMode.CLASSIC) }
@@ -67,10 +69,10 @@ class MainActivity : ComponentActivity() {
                     showGame -> GameScreen(
                         onHome = { showGame = false },
                         lifecycleOwner = this,
-                        bestScore = highScoreStore.load(selectedMode),
+                        bestScore = bestScores[selectedMode] ?: 0,
                         onNewBestScore = { score ->
                             val saved = highScoreStore.saveIfHigher(score, selectedMode)
-                            if (selectedMode == GameMode.CLASSIC) classicBestScore = saved
+                            bestScores = bestScores + (selectedMode to saved)
                         },
                         mode = selectedMode
                     )
@@ -84,7 +86,7 @@ class MainActivity : ComponentActivity() {
                     )
                     else -> ReflexRushHome(
                         onPlayClick = { showModeSelection = true },
-                        bestScore = classicBestScore
+                        bestScore = bestScores[GameMode.CLASSIC] ?: 0
                     )
                 }
             }
