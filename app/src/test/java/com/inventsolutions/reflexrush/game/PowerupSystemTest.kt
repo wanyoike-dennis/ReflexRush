@@ -28,7 +28,7 @@ class PowerupSystemTest {
     }
 
     @Test
-    fun doublePointsDoublesComboAdjustedGoodHitAndExpires() {
+    fun doublePointsExpiresAfterFiveSeconds() {
         val engine = engine(
             GameConfig(spawnIntervalMs = 10_000L, dangerTargetChance = 0f, powerupSpawnChance = 1f),
             0.2f, 0.3f, 0.5f, 0.5f
@@ -45,6 +45,47 @@ class PowerupSystemTest {
 
         assertEquals(null, engine.state.activeTimedPowerup)
         assertTrue(engine.drainEvents().contains(GameplayEvent.PowerupExpired(PowerupType.DOUBLE_POINTS)))
+    }
+
+    @Test
+    fun doublePointsDoublesTheComboAdjustedGoodHitScore() {
+        val engine = engine(
+            GameConfig(
+                spawnIntervalMs = 100L,
+                dangerTargetChance = 0f,
+                powerupSpawnChance = 0.5f
+            ),
+            0.2f, 0.3f, 0.5f, 0.5f, 0.9f, 0.5f, 0.5f
+        )
+        engine.start()
+        engine.advanceTime(100L)
+        engine.tapTarget(engine.state.targets.single().id)
+        engine.advanceTime(100L)
+        val goodTarget = engine.state.targets.single()
+
+        engine.tapTarget(goodTarget.id)
+
+        assertEquals(20, engine.state.score)
+        assertEquals(1, engine.state.comboCount)
+    }
+
+    @Test
+    fun sessionCanDisableIndividualPowerups() {
+        val engine = GameEngine(
+            sessionConfig = GameSessionConfig(
+                gameConfig = GameConfig(
+                    spawnIntervalMs = 100L,
+                    dangerTargetChance = 0f,
+                    powerupSpawnChance = 1f
+                ),
+                enabledPowerups = emptySet()
+            ),
+            random = ScriptedRandom(0.2f, 0.5f, 0.5f)
+        )
+        engine.start()
+        engine.advanceTime(100L)
+
+        assertEquals(TargetType.GOOD, engine.state.targets.single().type)
     }
 
     @Test
