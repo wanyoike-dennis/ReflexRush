@@ -357,24 +357,27 @@ Track session and lifetime statistics from completed-session summaries:
 
 ### 8.9 Stage 7 — Missions, achievements, and progression
 
+**Implementation pushed; GitHub Actions verification pending.**
+
+Added six daily missions (First Strike, Combo Master, Danger Dodger, Speed Demon, Survivor, and Power Collector), six permanent achievements, XP rewards, player levels, and level-based cosmetic unlock markers. Mission and achievement progress is calculated from completed-session summaries and stored offline in a dedicated SharedPreferences store. Daily counters and completions refresh when the device's local calendar date changes; lifetime XP, achievements, and mode history remain intact. The home screen now opens a Missions & Achievements screen showing daily progress, permanent unlocks, XP level, and cosmetic milestones.
+
 Initial mission examples:
 
 | Mission | Completion condition |
 |---|---|
-| First Strike | Hit 20 good targets |
-| Combo Master | Reach a 5-hit combo |
-| Danger Dodger | Complete a round without tapping a danger target |
+| First Strike | Hit 20 good targets today |
+| Combo Master | Reach a 5-hit combo in a round |
+| Danger Dodger | Finish a round without tapping a danger target |
 | Speed Demon | Score 250 in Time Attack |
 | Survivor | Reach Level 4 in Classic |
-| Power Collector | Collect 5 powerups |
+| Power Collector | Collect 5 powerups today |
 
-- Track mission progress from typed gameplay events and session summaries.
-- Add daily missions that refresh by the device's local calendar date.
-- Persist progress and completion offline; completed missions must not silently reset.
-- Add achievements for longer-term milestones.
-- Introduce XP and cosmetic rewards, such as target colours or background themes, after mission tracking is reliable.
-- Keep rewards cosmetic initially; do not create pay-to-win or gameplay advantages.
-- Make date handling testable, including day changes and time-zone changes.
+- Track mission progress from completed session summaries and engine-owned gameplay outcomes.
+- Refresh daily mission counters using the device's local calendar date while preserving lifetime XP and permanent achievements.
+- Persist progress and completion offline; each daily mission reward is granted only once per day, and each achievement reward only once for the lifetime of the profile.
+- Award XP for missions and achievements, calculate player levels, and expose cosmetic unlock milestones at Levels 3, 5, and 10. Cosmetic unlock markers are present; equipping and rendering alternate target themes is a follow-up presentation task.
+- Keep rewards cosmetic; do not create pay-to-win or gameplay advantages.
+- Keep the date key injectable in the progression model so date rollover behaviour can be tested deterministically.
 
 **Exit criteria:** Mission progress reflects actual gameplay, daily refresh is deterministic and tested, completed rewards persist, and the feature works offline. Add device checks for date rollover, restart persistence, and mission-screen layout before marking the stage verified.
 
