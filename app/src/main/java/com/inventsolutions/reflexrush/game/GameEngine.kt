@@ -104,24 +104,67 @@ data class GameState(
 )
 
 /**
- * Pure Kotlin game rules. The UI is responsible for calling [advanceTime]
- * regularly while a round is running and forwarding target taps to [tapTarget].
+ * Pure Kotlin game rules. The UI advances the engine while a round is active
+ * and forwards target taps. Events are buffered until [drainEvents] is called.
  *
  * The injected Random instance makes target generation deterministic in tests.
  */
 class GameEngine(
-    val config: GameConfig = GameConfig(),
+    val sessionConfig: GameSessionConfig = GameSessionConfig(),
     private val random: Random = Random.Default
 ) {
+    constructor(
+        config: GameConfig,
+        random: Random = Random.Default
+    ) : this(
+        sessionConfig = GameSessionConfig(gameConfig = config),
+        random = random
+    )
+
+    val config: GameConfig
+        get() = sessionConfig.gameConfig
+
     var state: GameState = GameState(lives = config.startingLives)
         private set
 
+    var completedSessionSummary: GameSessionSummary? = null
+        private set
+
+    private val pendingEvents = mutableListOf<GameplayEvent>()
     private var nextTargetId = 1L
     private var timeSinceLastSpawnMs = 0L
+    private var elapsedSessionMs = 0L
+    private var goodTargetsHit = 0
+    private var dangerTargetsHit = 0
+    private var targetsMissed = 0
+    private var goodTargetsMissed = 0
+
+    init {
+        require(sessionConfig.mode == GameMode.CLASSIC) {
+            "Only Classic mode is implemented in this version."
+        }
+    }
+
+    /**
+     * Returns and clears events generated since the previous drain.
+     * Consumers should drain after each engine action they want to observe.
+     */
+    fun drainEvents(): List<GameplayEvent> {
+        val events = pendingEvents.toList()
+        pendingEvents.clear()
+        return events
+    }
 
     fun start(): GameState {
         nextTargetId = 1L
         timeSinceLastSpawnMs = 0L
+        elapsedSessionMs = 0L
+        goodTargetsHit = 0
+        dangerTargetsHit = 0
+        targetsMissed = 0
+        goodTargetsMissed = 0
+        completedSessionSummary = null
+        pendingEvents.clear()
         state = GameState(
             status = GameStatus.RUNNING,
             score = 0,
@@ -129,6 +172,7 @@ class GameEngine(
             targets = emptyList(),
             difficultyLevel = 1
         )
+        pendingEvents += GameplayEvent.RoundStarted(sessionConfig.mode)
         return state
     }
 
@@ -141,6 +185,8 @@ class GameEngine(
             return state
         }
 
+        elapsedSessionMs += elapsedMs
+
         val expiredTargets = state.targets.filter {
             it.remainingLifetimeMs <= elapsedMs
         }
@@ -148,8 +194,16 @@ class GameEngine(
             .filter { it.remainingLifetimeMs > elapsedMs }
             .map { it.copy(remainingLifetimeMs = it.remainingLifetimeMs - elapsedMs) }
 
-        val missedGoodTargets = expiredTargets.count { it.type == TargetType.GOOD }
-        val updatedLives = (state.lives - missedGoodTargets).coerceAtLeast(0)
+        var updatedLives = state.lives
+        expiredTargets.forEach { target ->
+            targetsMissed++
+            pendingEvents += GameplayEvent.TargetMissed(target.id, target.type)
+            if (target.type == TargetType.GOOD) {
+                goodTargetsMissed++
+                updatedLives = (updatedLives - 1).coerceAtLeast(0)
+                pendingEvents += GameplayEvent.LifeLost(updatedLives)
+            }
+        }
 
         if (updatedLives == 0) {
             timeSinceLastSpawnMs = 0L
@@ -158,6 +212,7 @@ class GameEngine(
                 lives = 0,
                 targets = emptyList()
             )
+            completeSession()
             return state
         }
 
@@ -191,17 +246,60 @@ class GameEngine(
         }
 
         val target = state.targets.firstOrNull { it.id == targetId } ?: return state
-        val updatedScore = when (target.type) {
-            TargetType.GOOD -> state.score + config.pointsPerGoodHit
-            TargetType.DANGER -> (state.score - config.dangerHitPenalty).coerceAtLeast(0)
+        val previousLevel = state.difficultyLevel
+        val scoreChange = when (target.type) {
+            TargetType.GOOD -> sessionConfig.scoreRules.awardGoodHit(state.score)
+            TargetType.DANGER -> sessionConfig.scoreRules.applyDangerPenalty(state.score)
         }
 
+        when (target.type) {
+            TargetType.GOOD -> {
+                goodTargetsHit++
+                pendingEvents += GameplayEvent.GoodTargetHit(
+                    targetId = target.id,
+                    pointsAwarded = scoreChange.pointsDelta,
+                    totalScore = scoreChange.newScore
+                )
+            }
+            TargetType.DANGER -> {
+                dangerTargetsHit++
+                pendingEvents += GameplayEvent.DangerTargetHit(
+                    targetId = target.id,
+                    pointsDeducted = -scoreChange.pointsDelta,
+                    totalScore = scoreChange.newScore
+                )
+            }
+        }
+
+        val newLevel = DifficultyProgression.forScore(scoreChange.newScore, config).level
         state = state.copy(
-            score = updatedScore,
+            score = scoreChange.newScore,
             targets = state.targets.filterNot { it.id == targetId },
-            difficultyLevel = DifficultyProgression.forScore(updatedScore, config).level
+            difficultyLevel = newLevel
         )
+
+        if (newLevel != previousLevel) {
+            pendingEvents += GameplayEvent.LevelChanged(previousLevel, newLevel)
+        }
         return state
+    }
+
+    private fun completeSession() {
+        if (completedSessionSummary != null) return
+
+        val summary = GameSessionSummary(
+            mode = sessionConfig.mode,
+            finalScore = state.score,
+            levelReached = state.difficultyLevel,
+            livesRemaining = state.lives,
+            goodTargetsHit = goodTargetsHit,
+            dangerTargetsHit = dangerTargetsHit,
+            targetsMissed = targetsMissed,
+            goodTargetsMissed = goodTargetsMissed,
+            durationMs = elapsedSessionMs
+        )
+        completedSessionSummary = summary
+        pendingEvents += GameplayEvent.RoundCompleted(summary)
     }
 
     private fun createTarget(difficulty: DifficultyProfile): GameTarget {
