@@ -2,7 +2,7 @@
 
 **Reflex Rush** is an Android reflex and reaction-time arcade game by Invent Solutions. The game challenges players to spot and tap positive targets quickly while avoiding dangerous targets. It is designed to be fast, easy to understand, satisfying to replay, and playable offline.
 
-> **Project status:** The home screen, tested core gameplay engine, and first playable game-screen integration are implemented. Local Android build and on-device gameplay verification are the next checks.
+> **Project status:** The home screen, core gameplay engine, and playable game screen are implemented and verified on a testing device. Local personal-best persistence is implemented; build and persistence verification are pending.
 
 ## 1. Project objectives
 
@@ -141,15 +141,16 @@ Work through these phases in order. Each phase should be reviewed and verified b
 - Transition to game-over at the correct time.
 - Provide replay and return-to-home actions.
 
-**Exit criteria:** A complete round can be played from start to finish without manual intervention. **Implementation status:** Connected; local build and device playtesting pending.
+**Exit criteria:** A complete round can be played from start to finish without manual intervention. **Verified:** local Android build, installation, and manual gameplay checks passed on a testing device.
 
 ### Phase 4 — High-score persistence and replay
-- Store the best score locally.
-- Load the saved best score on app launch.
-- Update it only when a new personal best is achieved.
-- Implement replay and return-to-home flows with clean state resets.
+- Store the best score locally using Android SharedPreferences, without adding a dependency.
+- Load the saved best score on app launch and show it on the home screen.
+- Update it only when a completed round beats the existing personal best.
+- Show the best score and a new-personal-best message on the game-over screen.
+- Keep replay and return-to-home flows with clean state resets.
 
-**Exit criteria:** Best score survives app restarts and replay starts a fresh round.
+**Implementation status:** Local storage and UI integration implemented; local build and persistence verification pending.
 
 ### Phase 5 — Feedback, polish, and accessibility
 - Add restrained animations and visual feedback for hits, misses, penalties, and game-over.
@@ -227,8 +228,8 @@ Prioritise these only after the first release is stable:
 | Project objectives and implementation plan | Documented in this README |
 | Phase 1 home screen | Implemented and installed on a testing device |
 | Phase 2 core gameplay engine | Implemented; all 10 unit tests passed locally |
-| Gameplay screen integration | Implemented; local build and device playtesting pending |
-| High-score persistence and complete V1 flow | Pending |
+| Gameplay screen integration | Implemented; build, installation, and gameplay verified on a testing device |
+| High-score persistence | Implemented locally; build and persistence verification pending |
 | Testing and release validation | Pending |
 
 ---
