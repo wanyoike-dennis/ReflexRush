@@ -53,8 +53,8 @@ class GameEngineTest {
     @Test
     fun dangerTargetSubtractsPointsButNeverBelowZero() {
         val random = ScriptedRandom(
-            0.1f, 0.5f, 0.5f,
-            0.9f, 0.5f, 0.5f
+            0.9f, 0.5f, 0.5f,
+            0.1f, 0.5f, 0.5f
         )
         val engine = GameEngine(
             testConfig(
