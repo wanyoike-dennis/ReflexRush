@@ -2,7 +2,7 @@
 
 **Reflex Rush** is an Android reflex and reaction-time arcade game by Invent Solutions. The game challenges players to spot and tap positive targets quickly while avoiding dangerous targets. It is designed to be fast, easy to understand, satisfying to replay, and playable offline.
 
-> **Project status:** The home screen, core gameplay engine, playable game screen, local personal-best persistence, gameplay polish, progressive difficulty, and four game modes have been implemented and user-verified. Hybrid expansion Stage 6 player statistics is implemented; local build and device verification are pending. Phase 7 is focused on final regression testing and release readiness.
+> **Project status:** The home screen, core gameplay engine, playable game screen, local personal-best persistence, gameplay polish, progressive difficulty, and four game modes have been implemented and user-verified. Hybrid expansion Stage 6 player statistics is implemented and its unit tests pass in GitHub Actions; local build and device verification are pending. Hybrid expansion Stage 7 missions, achievements, and XP progression is implemented; CI verification is pending. Phase 7 is focused on final regression testing and release readiness.
 
 ## 1. Project objectives
 
@@ -376,7 +376,7 @@ Initial mission examples:
 - Keep rewards cosmetic initially; do not create pay-to-win or gameplay advantages.
 - Make date handling testable, including day changes and time-zone changes.
 
-**Exit criteria:** Mission progress reflects actual gameplay, daily refresh is deterministic and tested, completed rewards persist, and the feature works offline.
+**Exit criteria:** Mission progress reflects actual gameplay, daily refresh is deterministic and tested, completed rewards persist, and the feature works offline. Add device checks for date rollover, restart persistence, and mission-screen layout before marking the stage verified.
 
 ### 8.10 Hybrid expansion quality checklist
 
@@ -423,8 +423,8 @@ Online leaderboards, multiplayer, cloud synchronisation, monetisation, and socia
 | Hybrid expansion Stage 2 | Implemented, built, and unit-tested successfully by the user |
 | Hybrid expansion Stage 4 | Build succeeds; user confirmed music and sound effects are present. Toggle persistence and lifecycle checks remain unconfirmed |
 | Hybrid expansion Stage 5 | Four game modes, mode selection, mode-specific rules/HUD, and separate high scores implemented and user-tested |
-| Hybrid expansion Stage 6 | Lifetime statistics model, per-mode persistence, completed-session tracking, statistics screen, and unit tests pushed; local verification pending |
-| Hybrid expansion Stage 3 | Powerups and special targets implemented and tested by the user |
+| Hybrid expansion Stage 6 | Lifetime statistics model, per-mode persistence, completed-session tracking, statistics screen, and unit tests pushed; latest GitHub Actions debug unit-test run passed; local build/device verification pending |
+| Hybrid expansion Stage 3 | Powerups and special targets implemented and tested by the user |\n| Hybrid expansion Stage 7 | Daily missions, permanent achievements, XP levels, cosmetic unlock milestones, offline persistence, and progression screen pushed; CI and device verification pending |
 | Hybrid expansion roadmap | Defined; architecture-first implementation underway |
 
 ---
