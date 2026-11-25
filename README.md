@@ -2,7 +2,7 @@
 
 **Reflex Rush** is an Android reflex and reaction-time arcade game by Invent Solutions. The game challenges players to spot and tap positive targets quickly while avoiding dangerous targets. It is designed to be fast, easy to understand, satisfying to replay, and playable offline.
 
-> **Project status:** Foundation project created. The first playable version is planned; features in this document are objectives, not claims about what is already implemented.
+> **Project status:** The home screen and core gameplay engine are implemented. The gameplay engine is now being verified before it is connected to the game screen.
 
 ## 1. Project objectives
 
@@ -34,7 +34,7 @@ Build a polished, responsive Android game that tests and improves a player's rea
 | Language | Kotlin |
 | UI | Jetpack Compose |
 | Application ID | `com.inventsolutions.reflexrush` |
-| Minimum Android version | API 23 (as configured in the starter project) |
+| Minimum Android version | API 24 (as configured in the Android project) |
 | Data storage | Local device storage for the initial release |
 | Connectivity | Offline-first; no account or backend required for core play |
 
@@ -42,16 +42,28 @@ Existing Gradle, Kotlin, Compose, and Android configuration should be retained u
 
 ## 3. Core gameplay concept
 
-A round places targets in a play area for a limited time.
+Targets appear at changing positions in the play area and remain visible for a limited lifetime.
 
 - **Good targets:** Tap these before they disappear to earn points.
-- **Danger targets:** Avoid tapping these. A tap applies the configured penalty.
-- **Missed targets:** A good target that disappears without being tapped costs a life.
-- **Score:** Successful good-target hits increase the round score.
+- **Danger targets:** Avoid tapping these. A tap subtracts points.
+- **Missed targets:** A good target that disappears without being tapped costs one life. An expired danger target has no penalty.
+- **Score:** A successful good-target hit adds points; a danger-target hit subtracts points, but the score cannot go below zero.
 - **Lives:** The round ends when the player runs out of lives.
 - **High score:** The best score is saved locally and shown on the home/game-over experience.
 
-The exact round duration, target lifetime, spawn interval, starting lives, and penalty values should be tuned during implementation and playtesting. They should be centralised as game configuration rather than scattered through UI code.
+The initial, configurable gameplay defaults are:
+
+| Rule | Initial value |
+|---|---:|
+| Starting lives | 3 |
+| Good-target hit | +10 points |
+| Danger-target hit | −10 points |
+| Target lifetime | 1,400 ms |
+| Spawn interval | 750 ms |
+| Maximum active targets | 3 |
+| Danger-target probability | 22% |
+
+These are starting values for playtesting and may be adjusted in `GameConfig` without changing the game rules.
 
 ## 4. Version 1 scope (first playable release)
 
@@ -114,16 +126,18 @@ Work through these phases in order. Each phase should be reviewed and verified b
 
 ### Phase 2 — Core gameplay engine
 - Define game state, target types, score, lives, and configurable gameplay values.
-- Implement target spawning, movement/appearance timing, expiry, and tap handling.
-- Prevent duplicate scoring and invalid state updates.
-- Ensure only one active game loop runs at a time.
+- Implement random target spawning, safe play-area positions, target expiry, and tap handling.
+- Enforce the maximum number of active targets.
+- Prevent duplicate scoring and ignore invalid state updates.
+- Add unit tests for scoring, penalties, missed targets, lives, round completion, and target limits.
 
-**Exit criteria:** The core rules work consistently and can be tested independently of screen styling where practical.
+**Exit criteria:** The core rules pass unit tests independently of screen styling.
 
 ### Phase 3 — Connect gameplay to the UI
 - Render active targets in the play area.
 - Connect target taps and expiry events to the game state.
 - Update score and lives immediately.
+- Run one lifecycle-aware game loop and pause/resume it safely.
 - Transition to game-over at the correct time.
 
 **Exit criteria:** A complete round can be played from start to finish without manual intervention.
@@ -210,7 +224,10 @@ Prioritise these only after the first release is stable:
 | GitHub repository | Created |
 | Feature branch `feature/reflex-rush-game` | Created |
 | Project objectives and implementation plan | Documented in this README |
-| V1 gameplay | Not yet implemented |
+| Phase 1 home screen | Implemented and installed on a testing device |
+| Phase 2 core gameplay engine | Implemented; local unit tests added, execution pending |
+| Gameplay screen integration | Pending |
+| High-score persistence and complete V1 flow | Pending |
 | Testing and release validation | Pending |
 
 ---
