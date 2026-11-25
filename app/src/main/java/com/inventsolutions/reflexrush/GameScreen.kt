@@ -128,7 +128,8 @@ fun GameScreen(
                         val previousLives = gameState.lives
                         val nextState = engine.advanceTime(elapsedMs)
                         if (nextState.lives < previousLives) {
-                            actionFeedback = "−1 LIFE"
+                            val livesLost = previousLives - nextState.lives
+                            actionFeedback = if (livesLost == 1) "−1 LIFE" else "−$livesLost LIVES"
                             actionFeedbackColor = RushRed
                             feedbackToken++
                             hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
