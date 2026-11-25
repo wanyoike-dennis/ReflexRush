@@ -62,6 +62,7 @@ import com.inventsolutions.reflexrush.game.GameEngine
 import com.inventsolutions.reflexrush.game.GameplayEvent
 import com.inventsolutions.reflexrush.game.GameStatus
 import com.inventsolutions.reflexrush.game.GameTarget
+import com.inventsolutions.reflexrush.game.PowerupType
 import com.inventsolutions.reflexrush.game.TargetType
 import com.inventsolutions.reflexrush.ui.theme.RushAmber
 import com.inventsolutions.reflexrush.ui.theme.RushBackground
@@ -299,10 +300,41 @@ fun GameScreen(
                 }
             }
 
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(8.dp))
+
+            if (gameState.activeTimedPowerup != null || gameState.shieldAvailable) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Color(0xFF2B281D))
+                        .border(1.dp, RushAmber.copy(alpha = 0.55f), RoundedCornerShape(12.dp))
+                        .padding(horizontal = 14.dp, vertical = 9.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        gameState.activeTimedPowerup?.let {
+                            val seconds = (gameState.powerupRemainingMs + 999L) / 1_000L
+                            when (it) {
+                                PowerupType.DOUBLE_POINTS -> "2× POINTS  •  ${seconds}s"
+                                PowerupType.SLOW_TIME -> "SLOW TIME  •  ${seconds}s"
+                                else -> it.name
+                            }
+                        } ?: "POWERUP READY",
+                        color = RushAmber,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.ExtraBold
+                    )
+                    if (gameState.shieldAvailable) {
+                        Text("SHIELD  ●", color = RushMint, fontSize = 10.sp, fontWeight = FontWeight.ExtraBold)
+                    }
+                }
+                Spacer(Modifier.height(8.dp))
+            }
 
             Text(
-                "TAP GREEN  •  AVOID RED",
+                "TAP GREEN  •  AVOID RED  •  COLLECT GOLD",
                 color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.62f),
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Bold,
@@ -336,7 +368,9 @@ fun GameScreen(
                             val nextState = engine.tapTarget(target.id)
                             val events = engine.drainEvents()
                             val hitEvent = events.firstOrNull {
-                                it is GameplayEvent.GoodTargetHit || it is GameplayEvent.DangerTargetHit
+                                it is GameplayEvent.GoodTargetHit ||
+                                    it is GameplayEvent.DangerTargetHit ||
+                                    it is GameplayEvent.PowerupCollected
                             }
                             when (hitEvent) {
                                 is GameplayEvent.GoodTargetHit -> {
@@ -346,6 +380,15 @@ fun GameScreen(
                                 is GameplayEvent.DangerTargetHit -> {
                                     actionFeedback = "−${hitEvent.pointsDeducted}"
                                     actionFeedbackColor = RushRed
+                                }
+                                is GameplayEvent.PowerupCollected -> {
+                                    actionFeedback = when (hitEvent.powerup) {
+                                        PowerupType.GOLDEN_STAR -> "+50 BONUS"
+                                        PowerupType.DOUBLE_POINTS -> "DOUBLE POINTS!"
+                                        PowerupType.SLOW_TIME -> "SLOW TIME!"
+                                        PowerupType.SHIELD -> "SHIELD READY!"
+                                    }
+                                    actionFeedbackColor = RushAmber
                                 }
                                 else -> Unit
                             }
@@ -444,7 +487,12 @@ private fun GameTargetButton(
     onClick: () -> Unit
 ) {
     val isDanger = target.type == TargetType.DANGER
-    val targetColor = if (isDanger) RushRed else RushGreen
+    val isPowerup = target.type == TargetType.POWERUP
+    val targetColor = when {
+        isDanger -> RushRed
+        isPowerup -> RushAmber
+        else -> RushGreen
+    }
     var hasAppeared by remember(target.id) { mutableStateOf(false) }
     LaunchedEffect(target.id) { hasAppeared = true }
     val targetScale by animateFloatAsState(
@@ -470,16 +518,24 @@ private fun GameTargetButton(
             )
             .border(3.dp, Color.White.copy(alpha = 0.72f), CircleShape)
             .clickable(
-                onClickLabel = if (isDanger) "Danger target. Avoid tapping." else "Good target. Tap to score points.",
+                onClickLabel = when {
+                    isDanger -> "Danger target. Avoid tapping."
+                    isPowerup -> "Powerup target. Tap to collect."
+                    else -> "Good target. Tap to score points."
+                },
                 role = Role.Button,
                 onClick = onClick
             ),
         contentAlignment = Alignment.Center
     ) {
         Text(
-            if (isDanger) "!" else "＋",
+            when {
+                isDanger -> "!"
+                isPowerup -> "★"
+                else -> "＋"
+            },
             color = if (isDanger) Color.White else Color(0xFF062116),
-            fontSize = if (isDanger) 31.sp else 29.sp,
+            fontSize = 29.sp,
             fontWeight = FontWeight.Black
         )
     }
