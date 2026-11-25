@@ -2,7 +2,7 @@
 
 **Reflex Rush** is an Android reflex and reaction-time arcade game by Invent Solutions. The game challenges players to spot and tap positive targets quickly while avoiding dangerous targets. It is designed to be fast, easy to understand, satisfying to replay, and playable offline.
 
-> **Project status:** The home screen, core gameplay engine, and playable game screen are implemented and verified on a testing device. Local personal-best persistence is implemented; build and persistence verification are pending.
+> **Project status:** The home screen, core gameplay engine, playable game screen, and local personal-best persistence are implemented and verified on a testing device. Phase 5 gameplay polish is in progress.
 
 ## 1. Project objectives
 
@@ -150,14 +150,16 @@ Work through these phases in order. Each phase should be reviewed and verified b
 - Show the best score and a new-personal-best message on the game-over screen.
 - Keep replay and return-to-home flows with clean state resets.
 
-**Implementation status:** Local storage and UI integration implemented; local build and persistence verification pending.
+**Verified:** Local SharedPreferences storage, home-screen display, game-over personal-best display, and persistence after closing/reopening the app were tested successfully on the user's device.
 
 ### Phase 5 — Feedback, polish, and accessibility
-- Add restrained animations and visual feedback for hits, misses, penalties, and game-over.
+- Add restrained target entrance animations and game-over presentation.
+- Show brief, colour-coded feedback for successful hits, danger penalties, and missed-life events.
+- Use Android's native haptic feedback for gameplay actions without adding a dependency or manifest permission.
 - Review typography, contrast, touch target sizes, and layout behaviour.
-- Consider sound and vibration only if they improve play and can be implemented without destabilising the core game.
+- Consider sound only if it improves play and can be implemented without destabilising the core game.
 
-**Exit criteria:** The game feels responsive and understandable, with no distracting or inaccessible UI.
+**Implementation status:** Target entrance animation, score/penalty/life feedback, native haptic feedback, and game-over entrance animation are implemented. Local build and device verification are pending.
 
 ### Phase 6 — Testing and release readiness
 - Add or update unit tests for scoring, lives, target expiry, danger-target penalties, round completion, and high-score rules.
@@ -229,8 +231,8 @@ Prioritise these only after the first release is stable:
 | Phase 1 home screen | Implemented and installed on a testing device |
 | Phase 2 core gameplay engine | Implemented; all 10 unit tests passed locally |
 | Gameplay screen integration | Implemented; build, installation, and gameplay verified on a testing device |
-| High-score persistence | Implemented locally; build and persistence verification pending |
-| Testing and release validation | Pending |
+| High-score persistence | Implemented and verified on a testing device |
+| Phase 5 gameplay polish | Implemented remotely; local build and device verification pending |\n| Testing and release validation | Pending |
 
 ---
 
