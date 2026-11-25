@@ -37,6 +37,12 @@ sealed interface GameplayEvent {
         val multiplier: Int
     ) : GameplayEvent
 
+    data class PowerupSpawned(val powerup: PowerupType) : GameplayEvent
+    data class PowerupCollected(val powerup: PowerupType) : GameplayEvent
+    data class PowerupActivated(val powerup: PowerupType) : GameplayEvent
+    data class PowerupExpired(val powerup: PowerupType) : GameplayEvent
+    data object ShieldConsumed : GameplayEvent
+
     data class LevelChanged(
         val previousLevel: Int,
         val newLevel: Int
