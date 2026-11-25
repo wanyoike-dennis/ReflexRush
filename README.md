@@ -1,0 +1,220 @@
+# Reflex Rush
+
+**Reflex Rush** is an Android reflex and reaction-time arcade game by Invent Solutions. The game challenges players to spot and tap positive targets quickly while avoiding dangerous targets. It is designed to be fast, easy to understand, satisfying to replay, and playable offline.
+
+> **Project status:** Foundation project created. The first playable version is planned; features in this document are objectives, not claims about what is already implemented.
+
+## 1. Project objectives
+
+### Primary objective
+Build a polished, responsive Android game that tests and improves a player's reaction speed, accuracy, and focus through short, repeatable rounds.
+
+### Product objectives
+- Make the game immediately understandable, with a simple start-to-play experience.
+- Reward fast and accurate target selection.
+- Create meaningful risk by penalising missed targets and dangerous-target taps.
+- Make each round engaging through changing target positions and pacing.
+- Encourage replay through personal best scores and progressively greater challenge.
+- Keep the core game available without an internet connection.
+- Deliver a clean, accessible interface that works across supported Android screen sizes.
+
+### Engineering objectives
+- Use Kotlin and Jetpack Compose, following the existing Android project structure.
+- Keep gameplay rules separate from UI rendering where practical.
+- Use lifecycle-aware state and predictable game-state transitions.
+- Persist the player's high score locally.
+- Keep the initial implementation lightweight; avoid unnecessary libraries, services, accounts, or backend dependencies.
+- Add tests for core game rules and verify changes with Android builds and on-device play.
+
+## 2. Target platform and technology
+
+| Area | Initial decision |
+|---|---|
+| Platform | Android |
+| Language | Kotlin |
+| UI | Jetpack Compose |
+| Application ID | `com.inventsolutions.reflexrush` |
+| Minimum Android version | API 23 (as configured in the starter project) |
+| Data storage | Local device storage for the initial release |
+| Connectivity | Offline-first; no account or backend required for core play |
+
+Existing Gradle, Kotlin, Compose, and Android configuration should be retained unless a demonstrated implementation requirement makes a change necessary.
+
+## 3. Core gameplay concept
+
+A round places targets in a play area for a limited time.
+
+- **Good targets:** Tap these before they disappear to earn points.
+- **Danger targets:** Avoid tapping these. A tap applies the configured penalty.
+- **Missed targets:** A good target that disappears without being tapped costs a life.
+- **Score:** Successful good-target hits increase the round score.
+- **Lives:** The round ends when the player runs out of lives.
+- **High score:** The best score is saved locally and shown on the home/game-over experience.
+
+The exact round duration, target lifetime, spawn interval, starting lives, and penalty values should be tuned during implementation and playtesting. They should be centralised as game configuration rather than scattered through UI code.
+
+## 4. Version 1 scope (first playable release)
+
+The first release should stay focused on one complete, reliable game loop.
+
+### Included in V1
+1. **Home screen**
+   - Reflex Rush identity and short instructions.
+   - Clear Play button.
+   - Best score display.
+2. **Gameplay screen**
+   - Visible score and remaining lives.
+   - A play area with targets appearing at changing positions.
+   - Distinct visual treatment for good and danger targets.
+   - Responsive tap targets and clear feedback.
+3. **Gameplay rules**
+   - Award points for valid good-target taps.
+   - Remove tapped targets so they cannot score more than once.
+   - Deduct a life when a good target expires.
+   - Apply a penalty when a danger target is tapped.
+   - End the round when lives reach zero.
+4. **Game-over screen**
+   - Final score and best score.
+   - Clear Play Again action.
+   - Return to home action if needed.
+5. **Local persistence**
+   - Save the best score on the device.
+   - Load it when the app is reopened.
+6. **Basic quality**
+   - Handle leaving and returning to the app without creating duplicate game loops or timers.
+   - Provide readable contrast, sensible touch areas, and layouts for different screen sizes.
+
+### Explicitly out of scope for V1
+- Online multiplayer, leaderboards, accounts, and cloud synchronisation.
+- Ads, in-app purchases, and payment integration.
+- Backend APIs.
+- Daily challenges, achievements, and social sharing.
+- Multiple game modes and extensive difficulty selection.
+- Advanced analytics.
+
+These can be considered after the core game is stable and tested.
+
+## 5. Implementation plan
+
+Work through these phases in order. Each phase should be reviewed and verified before moving to the next.
+
+### Phase 0 — Project baseline and documentation
+- Preserve the Android Studio starter configuration.
+- Document product goals, gameplay rules, scope, and acceptance criteria.
+- Confirm the feature branch is the working branch.
+
+**Exit criteria:** Project plan is committed and the existing starter project remains intact.
+
+### Phase 1 — UI foundation and visual direction
+- Establish a consistent game visual style, colours, typography, spacing, and reusable Compose elements.
+- Build the home screen and navigation between home, gameplay, and game-over states.
+- Ensure the layout adapts to small and large screens.
+
+**Exit criteria:** Screens render correctly and navigation works; gameplay can still be a placeholder at this stage.
+
+### Phase 2 — Core gameplay engine
+- Define game state, target types, score, lives, and configurable gameplay values.
+- Implement target spawning, movement/appearance timing, expiry, and tap handling.
+- Prevent duplicate scoring and invalid state updates.
+- Ensure only one active game loop runs at a time.
+
+**Exit criteria:** The core rules work consistently and can be tested independently of screen styling where practical.
+
+### Phase 3 — Connect gameplay to the UI
+- Render active targets in the play area.
+- Connect target taps and expiry events to the game state.
+- Update score and lives immediately.
+- Transition to game-over at the correct time.
+
+**Exit criteria:** A complete round can be played from start to finish without manual intervention.
+
+### Phase 4 — High-score persistence and replay
+- Store the best score locally.
+- Load the saved best score on app launch.
+- Update it only when a new personal best is achieved.
+- Implement replay and return-to-home flows with clean state resets.
+
+**Exit criteria:** Best score survives app restarts and replay starts a fresh round.
+
+### Phase 5 — Feedback, polish, and accessibility
+- Add restrained animations and visual feedback for hits, misses, penalties, and game-over.
+- Review typography, contrast, touch target sizes, and layout behaviour.
+- Consider sound and vibration only if they improve play and can be implemented without destabilising the core game.
+
+**Exit criteria:** The game feels responsive and understandable, with no distracting or inaccessible UI.
+
+### Phase 6 — Testing and release readiness
+- Add or update unit tests for scoring, lives, target expiry, danger-target penalties, round completion, and high-score rules.
+- Run the available unit tests and Android build.
+- Install and play on an emulator or physical Android device.
+- Check lifecycle behaviour, repeated play, and persistence after force-closing/reopening.
+- Fix verified issues before considering V1 complete.
+
+**Exit criteria:** Build succeeds, relevant tests pass, and the complete V1 flow has been manually exercised on Android.
+
+## 6. V1 acceptance checklist
+
+- [ ] App opens to a finished home screen.
+- [ ] Player can start a new round.
+- [ ] Good targets appear in the play area.
+- [ ] Tapping a good target awards points exactly once.
+- [ ] Good targets that expire reduce lives.
+- [ ] Danger targets are visually distinguishable.
+- [ ] Tapping a danger target applies the defined penalty.
+- [ ] The round ends when lives are exhausted.
+- [ ] Game-over shows the final score.
+- [ ] A new personal best is saved locally.
+- [ ] Saved best score is available after restarting the app.
+- [ ] Replay resets score, lives, targets, and timers correctly.
+- [ ] Leaving and returning to the app does not create duplicate timers or gameplay loops.
+- [ ] Core gameplay works without an internet connection.
+- [ ] Unit tests and Android build pass, and manual device testing is completed.
+
+## 7. Design and gameplay principles
+
+- **Clarity first:** Players should understand what to tap and what to avoid without lengthy instructions.
+- **Fast feedback:** Every action should have an immediate, understandable response.
+- **Fair difficulty:** Challenge should increase through deliberate tuning, not unpredictable or impossible target placement.
+- **Consistency:** Colours, shapes, animation, and feedback should communicate the same meaning throughout the game.
+- **Performance:** Gameplay should remain smooth and responsive on supported devices.
+- **Maintainability:** Keep game rules, persistence, and UI responsibilities clearly organised.
+- **Offline by default:** No network connection should be needed to start or complete a round.
+
+## 8. Possible future enhancements (after V1)
+
+Prioritise these only after the first release is stable:
+- Difficulty levels or progressive difficulty.
+- Additional modes, such as timed survival or accuracy challenge.
+- Sound effects, music controls, and haptic feedback.
+- Daily challenges and achievements.
+- Detailed personal statistics and reaction-time summaries.
+- Online leaderboards and optional cloud backup.
+- Monetisation, only if a clear product decision is made.
+
+## 9. Development workflow
+
+- Work on `feature/reflex-rush-game` until a change is reviewed and ready to merge.
+- Inspect the current branch and relevant source files before editing.
+- Keep changes focused on the agreed phase; avoid unrelated refactors.
+- Do not change Gradle or dependency versions unless required and justified.
+- Commit coherent milestones with descriptive messages.
+- Pull the remote changes locally, then build and test in Android Studio.
+- Report exactly what was changed and what was or was not verified.
+- Update this README when scope, decisions, or phase status materially changes.
+
+## 10. Current project status
+
+| Item | Status |
+|---|---|
+| Android Studio starter project | Created |
+| GitHub repository | Created |
+| Feature branch `feature/reflex-rush-game` | Created |
+| Project objectives and implementation plan | Documented in this README |
+| V1 gameplay | Not yet implemented |
+| Testing and release validation | Pending |
+
+---
+
+**Project:** Reflex Rush  
+**Publisher / developer:** Invent Solutions  
+**Repository:** [wanyoike-dennis/ReflexRush](https://github.com/wanyoike-dennis/ReflexRush)
