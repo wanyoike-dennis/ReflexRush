@@ -61,9 +61,15 @@ import com.inventsolutions.reflexrush.ui.theme.RushSurfaceVariant
 import kotlinx.coroutines.isActive
 
 @Composable
-fun GameScreen(onHome: () -> Unit, lifecycleOwner: LifecycleOwner) {
+fun GameScreen(
+    onHome: () -> Unit,
+    lifecycleOwner: LifecycleOwner,
+    bestScore: Int,
+    onNewBestScore: (Int) -> Unit
+) {
     val engine = remember { GameEngine() }
     var gameState by remember { mutableStateOf(engine.start()) }
+    var newBestAchieved by remember { mutableStateOf(false) }
     var isResumed by remember {
         mutableStateOf(lifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED))
     }
@@ -78,6 +84,13 @@ fun GameScreen(onHome: () -> Unit, lifecycleOwner: LifecycleOwner) {
         }
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+
+    LaunchedEffect(gameState.status, gameState.score, bestScore) {
+        if (gameState.status == GameStatus.GAME_OVER && gameState.score > bestScore) {
+            onNewBestScore(gameState.score)
+            newBestAchieved = true
+        }
     }
 
     LaunchedEffect(gameState.status, isResumed) {
@@ -246,7 +259,12 @@ fun GameScreen(onHome: () -> Unit, lifecycleOwner: LifecycleOwner) {
         if (gameState.status == GameStatus.GAME_OVER) {
             GameOverOverlay(
                 score = gameState.score,
-                onPlayAgain = { gameState = engine.start() },
+                bestScore = bestScore,
+                newBestAchieved = newBestAchieved,
+                onPlayAgain = {
+                    newBestAchieved = false
+                    gameState = engine.start()
+                },
                 onHome = onHome
             )
         }
@@ -302,6 +320,8 @@ private fun GameTargetButton(
 @Composable
 private fun GameOverOverlay(
     score: Int,
+    bestScore: Int,
+    newBestAchieved: Boolean,
     onPlayAgain: () -> Unit,
     onHome: () -> Unit
 ) {
@@ -351,6 +371,23 @@ private fun GameOverOverlay(
                     color = RushAmber,
                     fontSize = 54.sp,
                     fontWeight = FontWeight.Black
+                )
+                if (newBestAchieved) {
+                    Text(
+                        "NEW PERSONAL BEST!",
+                        color = RushGreen,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        letterSpacing = 1.4.sp
+                    )
+                }
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    "BEST SCORE  $bestScore",
+                    color = RushMint.copy(alpha = 0.75f),
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.sp
                 )
                 Spacer(Modifier.height(20.dp))
                 Button(
