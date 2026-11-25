@@ -254,7 +254,7 @@ Before implementing combos, establish the engine contracts that later features w
 - Keep the current high-score store working; do not migrate persistence unnecessarily.
 - Add unit tests that prove existing Classic scoring, lives, difficulty, replay, and high-score integration remain compatible.
 
-**Implementation pushed; local verification pending.** Added `GameMode` and `GameSessionConfig`, central `ScoreRules`, typed `GameplayEvent` values, and immutable `GameSessionSummary`. The Classic engine now emits and buffers events for round start, target hits, misses, life loss, level changes, and round completion. The gameplay screen consumes hit/life events for its existing feedback, and personal-best saving reads the completed session summary. Existing `GameConfig` construction remains supported for current tests and callers. Eight focused architecture tests were added.
+**Verified locally by the user:** The updated project built successfully and the full `testDebugUnitTest` task passed after pulling the implementation. Added `GameMode` and `GameSessionConfig`, central `ScoreRules`, typed `GameplayEvent` values, and immutable `GameSessionSummary`. The Classic engine emits and buffers events for round start, target hits, misses, life loss, level changes, and round completion. The gameplay screen consumes hit/life events for its existing feedback, and personal-best saving reads the completed session summary. Existing `GameConfig` construction remains supported. Eight focused architecture tests were added.
 
 **Exit criteria:** Classic still behaves as before, while the engine provides the shared contracts required by combos, modes, statistics, and missions.
 
@@ -267,6 +267,8 @@ Before implementing combos, establish the engine contracts that later features w
 - Emit combo and combo-milestone events for UI feedback, statistics, and missions.
 - Display the current streak and multiplier with clear, short animations.
 - Track the best combo for the completed session.
+
+**Implementation pushed; local verification pending.** Added configurable combo thresholds (1–2 hits = 1×, 3–4 = 2×, 5–9 = 3×, 10+ = 5×), central multiplier scoring, combo reset on a missed good target or tapped danger target, combo milestone/change events, and best-combo session tracking. The gameplay screen now displays the live streak and multiplier. Added focused deterministic tests for threshold boundaries, multiplied scoring, milestone events, resets, replay, and session summary tracking.
 
 **Exit criteria:** Multiplier boundaries, combo resets, score floors, event emission, and replay resets pass deterministic unit tests; the feature is verified in a local Android build and on a device.
 
@@ -402,7 +404,7 @@ Online leaderboards, multiplayer, cloud synchronisation, monetisation, and socia
 | High-score persistence | Implemented and verified on a testing device |
 | Phase 5 gameplay polish | User tested; feedback improvements confirmed |
 | Phase 6 progressive difficulty | Implemented and user-verified on a testing device |
-| Phase 7 regression and release validation | In progress; the existing `testDebugUnitTest` baseline passed locally; release/build/device checks remain pending |\n| Hybrid expansion Stage 1 | Implemented and pushed; eight new architecture tests are awaiting local execution |\n| Hybrid expansion roadmap | Defined; architecture-first implementation underway |
+| Phase 7 regression and release validation | In progress; the existing `testDebugUnitTest` baseline passed locally; release/build/device checks remain pending |\n| Hybrid expansion Stage 1 | Implemented, built, and unit-tested successfully by the user |\n| Hybrid expansion Stage 2 | Combo engine and UI implemented and pushed; local build and tests pending |\n| Hybrid expansion roadmap | Defined; architecture-first implementation underway |
 
 ---
 
