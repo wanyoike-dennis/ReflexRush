@@ -227,7 +227,7 @@ class GameEngine(
         if (state.activeTimedPowerup != null) {
             val remainingEffectMs = state.powerupRemainingMs - elapsedMs
             if (remainingEffectMs <= 0L) {
-                val expiredPowerup = state.activeTimedPowerup
+                val expiredPowerup = requireNotNull(state.activeTimedPowerup)
                 state = state.copy(activeTimedPowerup = null, powerupRemainingMs = 0L)
                 pendingEvents += GameplayEvent.PowerupExpired(expiredPowerup)
             } else {
