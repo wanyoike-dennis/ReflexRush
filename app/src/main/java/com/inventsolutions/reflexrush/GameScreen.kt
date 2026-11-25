@@ -108,8 +108,6 @@ fun GameScreen(
     val engine = remember(mode) { GameEngine(GameSessionConfig.forMode(mode)) }
     val context = LocalContext.current
     val audioManager = remember(context) { GameAudioManager(context.applicationContext) }
-    var soundEffectsEnabled by remember(audioManager) { mutableStateOf(audioManager.soundEffectsEnabled) }
-    var musicEnabled by remember(audioManager) { mutableStateOf(audioManager.musicEnabled) }
     var actionFeedback by remember { mutableStateOf<String?>(null) }
     var actionFeedbackColor by remember { mutableStateOf(RushGreen) }
     var feedbackToken by remember { mutableStateOf(0) }
@@ -235,34 +233,6 @@ fun GameScreen(
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = RushMint)
                 ) {
                     Text("EXIT", fontSize = 9.sp, fontWeight = FontWeight.Black, letterSpacing = 1.sp)
-                }
-            }
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                OutlinedButton(
-                    onClick = {
-                        audioManager.setSoundEffectsEnabled(!soundEffectsEnabled)
-                        soundEffectsEnabled = audioManager.soundEffectsEnabled
-                    },
-                    border = BorderStroke(1.dp, if (soundEffectsEnabled) RushGreen.copy(alpha = 0.65f) else RushSurfaceVariant),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = if (soundEffectsEnabled) RushMint else RushSurfaceVariant)
-                ) {
-                    Text(if (soundEffectsEnabled) "♫ SFX" else "SFX OFF", fontSize = 8.sp, fontWeight = FontWeight.Black, letterSpacing = 0.6.sp)
-                }
-                Spacer(Modifier.width(8.dp))
-                OutlinedButton(
-                    onClick = {
-                        audioManager.setMusicEnabled(!musicEnabled)
-                        musicEnabled = audioManager.musicEnabled
-                    },
-                    border = BorderStroke(1.dp, if (musicEnabled) RushAmber.copy(alpha = 0.65f) else RushSurfaceVariant),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = if (musicEnabled) RushAmber else RushSurfaceVariant)
-                ) {
-                    Text(if (musicEnabled) "♪ MUSIC" else "MUSIC OFF", fontSize = 8.sp, fontWeight = FontWeight.Black, letterSpacing = 0.4.sp)
                 }
             }
 
