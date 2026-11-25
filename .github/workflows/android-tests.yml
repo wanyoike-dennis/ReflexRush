@@ -1,4 +1,4 @@
-name: Android Tests
+name: Android Verification
 
 on:
   push:
@@ -13,8 +13,8 @@ permissions:
   contents: read
 
 jobs:
-  unit-tests:
-    name: Debug unit tests
+  verify:
+    name: Unit tests and APK builds
     runs-on: ubuntu-latest
     steps:
       - name: Check out source
@@ -32,5 +32,5 @@ jobs:
       - name: Make Gradle wrapper executable
         run: chmod +x gradlew
 
-      - name: Run debug unit tests
-        run: ./gradlew testDebugUnitTest --stacktrace
+      - name: Run unit tests and build debug and release APKs
+        run: ./gradlew testDebugUnitTest assembleDebug assembleRelease --stacktrace
