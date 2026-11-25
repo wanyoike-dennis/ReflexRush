@@ -20,6 +20,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
@@ -30,6 +32,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -39,6 +42,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -58,6 +64,7 @@ import com.inventsolutions.reflexrush.ui.theme.RushMint
 import com.inventsolutions.reflexrush.ui.theme.RushRed
 import com.inventsolutions.reflexrush.ui.theme.RushSurface
 import com.inventsolutions.reflexrush.ui.theme.RushSurfaceVariant
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 
 @Composable
@@ -68,6 +75,15 @@ fun GameScreen(
     onNewBestScore: (Int) -> Unit
 ) {
     val engine = remember { GameEngine() }
+    val hapticFeedback = LocalHapticFeedback.current
+    var actionFeedback by remember { mutableStateOf<String?>(null) }
+    var actionFeedbackColor by remember { mutableStateOf(RushGreen) }
+    var feedbackToken by remember { mutableStateOf(0) }
+    val feedbackAlpha by animateFloatAsState(
+        targetValue = if (actionFeedback == null) 0f else 1f,
+        animationSpec = spring(stiffness = 500f),
+        label = "actionFeedbackAlpha"
+    )
     var gameState by remember { mutableStateOf(engine.start()) }
     var newBestAchieved by remember { mutableStateOf(false) }
     var isResumed by remember {
@@ -86,6 +102,13 @@ fun GameScreen(
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
+    LaunchedEffect(feedbackToken) {
+        if (actionFeedback != null) {
+            delay(650L)
+            actionFeedback = null
+        }
+    }
+
     LaunchedEffect(gameState.status, gameState.score, bestScore) {
         if (gameState.status == GameStatus.GAME_OVER && gameState.score > bestScore) {
             onNewBestScore(gameState.score)
@@ -101,7 +124,15 @@ fun GameScreen(
                     if (previousFrameNanos != 0L) {
                         val elapsedMs = ((frameNanos - previousFrameNanos) / 1_000_000L)
                             .coerceAtLeast(1L)
-                        gameState = engine.advanceTime(elapsedMs)
+                        val previousLives = gameState.lives
+                        val nextState = engine.advanceTime(elapsedMs)
+                        if (nextState.lives < previousLives) {
+                            actionFeedback = "−1 LIFE"
+                            actionFeedbackColor = RushRed
+                            feedbackToken++
+                            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                        }
+                        gameState = nextState
                     }
                     previousFrameNanos = frameNanos
                 }
@@ -215,6 +246,7 @@ fun GameScreen(
             ) {
                 val targetSize = 66.dp
                 gameState.targets.forEach { target ->
+                    key(target.id) {
                     GameTargetButton(
                         target = target,
                         modifier = Modifier.offset(
@@ -222,8 +254,31 @@ fun GameScreen(
                             y = (maxHeight * target.y - targetSize / 2).coerceIn(0.dp, maxHeight - targetSize)
                         ),
                         onClick = {
+                            actionFeedback = if (target.type == TargetType.GOOD) "+${engine.config.pointsPerGoodHit}" else "−${engine.config.dangerHitPenalty}"
+                            actionFeedbackColor = if (target.type == TargetType.GOOD) RushGreen else RushRed
+                            feedbackToken++
+                            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                             gameState = engine.tapTarget(target.id)
                         }
+                    )
+                    }
+                }
+
+                if (actionFeedback != null) {
+                    Text(
+                        text = actionFeedback.orEmpty(),
+                        modifier = Modifier
+                            .align(Alignment.TopCenter)
+                            .padding(top = 18.dp)
+                            .graphicsLayer { alpha = feedbackAlpha; translationY = (1f - feedbackAlpha) * 10.dp.toPx() }
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(RushSurface.copy(alpha = 0.94f))
+                            .border(1.dp, actionFeedbackColor.copy(alpha = 0.7f), RoundedCornerShape(14.dp))
+                            .padding(horizontal = 18.dp, vertical = 9.dp),
+                        color = actionFeedbackColor,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = 1.2.sp
                     )
                 }
 
@@ -294,8 +349,21 @@ private fun GameTargetButton(
 ) {
     val isDanger = target.type == TargetType.DANGER
     val targetColor = if (isDanger) RushRed else RushGreen
+    var hasAppeared by remember(target.id) { mutableStateOf(false) }
+    LaunchedEffect(target.id) { hasAppeared = true }
+    val targetScale by animateFloatAsState(
+        targetValue = if (hasAppeared) 1f else 0.62f,
+        animationSpec = spring(dampingRatio = 0.55f, stiffness = 520f),
+        label = "targetScale"
+    )
+    val targetAlpha by animateFloatAsState(
+        targetValue = if (hasAppeared) 1f else 0f,
+        animationSpec = spring(stiffness = 520f),
+        label = "targetAlpha"
+    )
     Box(
         modifier = modifier
+            .graphicsLayer { scaleX = targetScale; scaleY = targetScale; alpha = targetAlpha }
             .size(66.dp)
             .shadow(14.dp, CircleShape, ambientColor = targetColor.copy(alpha = 0.55f))
             .clip(CircleShape)
@@ -325,6 +393,18 @@ private fun GameOverOverlay(
     onPlayAgain: () -> Unit,
     onHome: () -> Unit
 ) {
+    var overlayVisible by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) { overlayVisible = true }
+    val overlayScale by animateFloatAsState(
+        targetValue = if (overlayVisible) 1f else 0.92f,
+        animationSpec = spring(dampingRatio = 0.72f, stiffness = 360f),
+        label = "gameOverScale"
+    )
+    val overlayAlpha by animateFloatAsState(
+        targetValue = if (overlayVisible) 1f else 0f,
+        animationSpec = spring(stiffness = 360f),
+        label = "gameOverAlpha"
+    )
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -333,6 +413,7 @@ private fun GameOverOverlay(
     ) {
         Surface(
             modifier = Modifier
+                .graphicsLayer { scaleX = overlayScale; scaleY = overlayScale; alpha = overlayAlpha }
                 .fillMaxWidth()
                 .padding(horizontal = 12.dp),
             shape = RoundedCornerShape(28.dp),
