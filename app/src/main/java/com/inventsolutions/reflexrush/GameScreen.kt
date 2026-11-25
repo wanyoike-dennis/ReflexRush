@@ -59,6 +59,8 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.compose.runtime.withFrameNanos
 import com.inventsolutions.reflexrush.game.GameEngine
+import com.inventsolutions.reflexrush.game.GameMode
+import com.inventsolutions.reflexrush.game.GameSessionConfig
 import com.inventsolutions.reflexrush.game.GameplayEvent
 import com.inventsolutions.reflexrush.game.GameStatus
 import com.inventsolutions.reflexrush.game.GameTarget
@@ -98,9 +100,10 @@ fun GameScreen(
     onHome: () -> Unit,
     lifecycleOwner: LifecycleOwner,
     bestScore: Int,
-    onNewBestScore: (Int) -> Unit
+    onNewBestScore: (Int) -> Unit,
+    mode: GameMode = GameMode.CLASSIC
 ) {
-    val engine = remember { GameEngine() }
+    val engine = remember(mode) { GameEngine(GameSessionConfig.forMode(mode)) }
     val context = LocalContext.current
     val audioManager = remember(context) { GameAudioManager(context.applicationContext) }
     var soundEffectsEnabled by remember(audioManager) { mutableStateOf(audioManager.soundEffectsEnabled) }
@@ -214,7 +217,12 @@ fun GameScreen(
                         letterSpacing = 2.sp
                     )
                     Text(
-                        "SCORE UP. THE CHALLENGE RISES.",
+                        when (mode) {
+                            GameMode.CLASSIC -> "CLASSIC • BUILD YOUR BEST SCORE"
+                            GameMode.TIME_ATTACK -> "TIME ATTACK • 60 SECONDS"
+                            GameMode.SURVIVAL -> "SURVIVAL • THE PACE KEEPS RISING"
+                            GameMode.PRECISION -> "PRECISION • 30 TARGET CHALLENGE"
+                        },
                         color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.48f),
                         fontSize = 9.sp,
                         fontWeight = FontWeight.Bold,
@@ -256,6 +264,26 @@ fun GameScreen(
                 ) {
                     Text(if (musicEnabled) "MUSIC ON" else "MUSIC OFF", fontSize = 9.sp, fontWeight = FontWeight.Bold)
                 }
+            }
+
+            if (mode == GameMode.TIME_ATTACK || mode == GameMode.PRECISION) {
+                val modeProgress = when (mode) {
+                    GameMode.TIME_ATTACK -> {
+                        val remaining = gameState.timeRemainingMs ?: 0L
+                        val seconds = (remaining + 999L) / 1_000L
+                        "TIME LEFT  •  ${seconds / 60}:${(seconds % 60).toString().padStart(2, '0')}"
+                    }
+                    GameMode.PRECISION -> "TARGETS  •  ${gameState.targetsResolved}/${gameState.targetLimit ?: 30}"
+                    else -> ""
+                }
+                Text(
+                    modeProgress,
+                    color = if (mode == GameMode.TIME_ATTACK && (gameState.timeRemainingMs ?: 0L) <= 10_000L) RushRed else RushAmber,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    letterSpacing = 1.4.sp
+                )
+                Spacer(Modifier.height(10.dp))
             }
 
             Spacer(Modifier.height(12.dp))
