@@ -45,7 +45,10 @@ class GameSessionArchitectureTest {
         engine.tapTarget(target.id)
 
         assertEquals(
-            listOf(GameplayEvent.GoodTargetHit(target.id, 10, 10)),
+            listOf(
+                GameplayEvent.GoodTargetHit(target.id, 10, 10),
+                GameplayEvent.ComboChanged(previousCount = 0, newCount = 1, multiplier = 1)
+            ),
             engine.drainEvents()
         )
     }
@@ -86,6 +89,7 @@ class GameSessionArchitectureTest {
         assertEquals(
             listOf(
                 GameplayEvent.GoodTargetHit(target.id, 100, 100),
+                GameplayEvent.ComboChanged(previousCount = 0, newCount = 1, multiplier = 1),
                 GameplayEvent.LevelChanged(1, 2)
             ),
             engine.drainEvents()
