@@ -132,42 +132,14 @@ fun ReflexRushHome(
     onProgressionClick: () -> Unit = {},
     bestScore: Int = 0
 ) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(
-                        MaterialTheme.colorScheme.background,
-                        Color(0xFF101B2C),
-                        Color(0xFF080E19)
-                    )
-                )
-            )
-    ) {
-        Canvas(modifier = Modifier.fillMaxSize()) {
-            drawCircle(
-                brush = Brush.radialGradient(
-                    colors = listOf(Color(0x3327E6A1), Color.Transparent),
-                    center = Offset(size.width * 0.82f, size.height * 0.22f),
-                    radius = size.width * 0.58f
-                ),
-                radius = size.width * 0.58f,
-                center = Offset(size.width * 0.82f, size.height * 0.22f)
-            )
-            drawCircle(
-                color = Color(0x1827E6A1),
-                radius = size.width * 0.34f,
-                center = Offset(size.width * 0.5f, size.height * 0.39f),
-                style = Stroke(width = 1.dp.toPx())
-            )
-        }
-
+    Box(Modifier.fillMaxSize()) {
+        ArcadeBackdrop(Modifier.fillMaxSize())
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .safeDrawingPadding()
-                .padding(horizontal = 26.dp, vertical = 28.dp),
+                .then(Modifier.padding(horizontal = 22.dp, vertical = 18.dp))
+                .verticalScroll(androidx.compose.foundation.rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Row(
@@ -179,210 +151,140 @@ fun ReflexRushHome(
                     BrandMark()
                     Spacer(Modifier.width(10.dp))
                     Column {
-                        Text(
-                            "REFLEX",
-                            color = MaterialTheme.colorScheme.onBackground,
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.ExtraBold,
-                            letterSpacing = 2.2.sp
-                        )
-                        Text(
-                            "RUSH",
-                            color = MaterialTheme.colorScheme.primary,
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            letterSpacing = 4.sp
-                        )
+                        Text("REFLEX RUSH", color = Color.White, fontSize = 17.sp, fontWeight = FontWeight.Black, letterSpacing = 2.sp)
+                        Text("ARCADE REACTION CHALLENGE", color = RushMint, fontSize = 8.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 1.4.sp)
                     }
                 }
-                Text(
-                    "ARCADE  •  01",
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.48f),
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.5.sp
-                )
-            }
-
-            Spacer(Modifier.weight(1f))
-
-            Box(
-                modifier = Modifier.size(220.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Canvas(Modifier.fillMaxSize()) {
-                    drawCircle(
-                        color = Color(0x1427E6A1),
-                        style = Stroke(width = 1.dp.toPx()),
-                        radius = size.minDimension * 0.48f
-                    )
-                    drawCircle(
-                        color = Color(0x2227E6A1),
-                        style = Stroke(width = 1.dp.toPx()),
-                        radius = size.minDimension * 0.36f
-                    )
-                    drawCircle(
-                        brush = Brush.radialGradient(
-                            listOf(Color(0x5527E6A1), Color(0x0527E6A1))
-                        ),
-                        radius = size.minDimension * 0.29f
-                    )
-                }
-                Box(
-                    modifier = Modifier
-                        .size(112.dp)
-                        .shadow(26.dp, CircleShape, ambientColor = Color(0x6627E6A1))
-                        .clip(CircleShape)
-                        .background(
-                            Brush.linearGradient(
-                                listOf(Color(0xFF43F5B2), Color(0xFF0DBB82))
-                            )
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        "⚡",
-                        fontSize = 58.sp,
-                        textAlign = TextAlign.Center
-                    )
-                }
-                TargetDot(
-                    modifier = Modifier.align(Alignment.TopEnd).padding(top = 22.dp, end = 18.dp),
-                    color = Color(0xFFFF5D69)
-                )
-                TargetDot(
-                    modifier = Modifier.align(Alignment.BottomStart).padding(start = 20.dp, bottom = 25.dp),
-                    color = Color(0xFF43F5B2)
-                )
-                TargetDot(
-                    modifier = Modifier.align(Alignment.CenterEnd).padding(end = 2.dp).size(12.dp),
-                    color = Color(0xFFFFC45C)
-                )
-            }
-
-            Spacer(Modifier.height(30.dp))
-
-            Text(
-                "TRUST YOUR REFLEXES.",
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.58f),
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 2.6.sp
-            )
-            Spacer(Modifier.height(10.dp))
-            Text(
-                "Ready, set,\nREFLEX!",
-                color = MaterialTheme.colorScheme.onBackground,
-                fontSize = 42.sp,
-                lineHeight = 46.sp,
-                fontWeight = FontWeight.Black,
-                textAlign = TextAlign.Center
-            )
-            Spacer(Modifier.height(12.dp))
-            Text(
-                "Hit the good targets. Avoid the danger.\nHow sharp are your reactions?",
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.62f),
-                fontSize = 14.sp,
-                lineHeight = 21.sp,
-                textAlign = TextAlign.Center
-            )
-
-            Spacer(Modifier.height(30.dp))
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(18.dp))
-                    .background(Color(0xFF172438))
-                    .border(1.dp, Color(0xFF26384D), RoundedCornerShape(18.dp))
-                    .padding(vertical = 16.dp, horizontal = 18.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                StatPreview(value = "TAP", label = "THE TARGETS", tint = MaterialTheme.colorScheme.primary)
-                Box(
-                    Modifier
-                        .width(1.dp)
-                        .height(34.dp)
-                        .background(Color(0xFF304056))
-                )
-                StatPreview(value = "DODGE", label = "THE RED ONES", tint = Color(0xFFFF6975))
-                Box(
-                    Modifier
-                        .width(1.dp)
-                        .height(34.dp)
-                        .background(Color(0xFF304056))
-                )
-                StatPreview(value = "SCORE", label = "BIG", tint = Color(0xFFFFC45C))
+                Text("V 1.0", color = RushMint.copy(alpha = 0.65f), fontSize = 9.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.2.sp)
             }
 
             Spacer(Modifier.height(22.dp))
 
+            Box(
+                modifier = Modifier.fillMaxWidth().height(218.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Canvas(Modifier.fillMaxSize()) {
+                    val center = Offset(size.width / 2f, size.height / 2f)
+                    listOf(0.46f, 0.34f, 0.22f).forEachIndexed { index, fraction ->
+                        drawCircle(
+                            color = RushGreen.copy(alpha = 0.12f + index * 0.04f),
+                            radius = size.minDimension * fraction,
+                            center = center,
+                            style = Stroke(width = (1.2f + index * 0.5f).dp.toPx())
+                        )
+                    }
+                    drawCircle(
+                        brush = Brush.radialGradient(
+                            listOf(Color(0x6632F5B0), Color(0x1132F5B0), Color.Transparent),
+                            center = center,
+                            radius = size.minDimension * 0.34f
+                        ),
+                        radius = size.minDimension * 0.34f,
+                        center = center
+                    )
+                }
+                Box(
+                    modifier = Modifier
+                        .size(104.dp)
+                        .shadow(28.dp, CircleShape, ambientColor = Color(0xAA27E6A1))
+                        .clip(CircleShape)
+                        .background(Brush.linearGradient(listOf(Color(0xFF7BFFD0), Color(0xFF08A875)))),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("⚡", color = Color(0xFF062116), fontSize = 58.sp, fontWeight = FontWeight.Black)
+                }
+                TargetDot(Modifier.align(Alignment.TopEnd).padding(top = 34.dp, end = 54.dp), RushRed)
+                TargetDot(Modifier.align(Alignment.BottomStart).padding(start = 48.dp, bottom = 30.dp), RushGreen)
+                TargetDot(Modifier.align(Alignment.CenterEnd).padding(end = 36.dp).size(12.dp), RushAmber)
+            }
+
+            Text("TRUST YOUR", color = RushMint, fontSize = 12.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 4.sp)
+            Text(
+                "REFLEXES.",
+                color = Color.White,
+                fontSize = 39.sp,
+                lineHeight = 43.sp,
+                fontWeight = FontWeight.Black,
+                letterSpacing = 1.2.sp,
+                textAlign = TextAlign.Center
+            )
+            Spacer(Modifier.height(8.dp))
+            Text(
+                "Hit green. Dodge red. Chase the perfect combo.",
+                color = Color.White.copy(alpha = 0.66f),
+                fontSize = 12.sp,
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(Modifier.height(22.dp))
+
+            ArcadePanel(
+                modifier = Modifier.fillMaxWidth(),
+                accent = RushGreen,
+                radius = 20.dp
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 14.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text("CLASSIC RECORD", color = RushMint.copy(alpha = 0.72f), fontSize = 9.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.3.sp)
+                        Text(if (bestScore > 0) bestScore.toString() else "—", color = RushAmber, fontSize = 30.sp, fontWeight = FontWeight.Black)
+                    }
+                    Column(horizontalAlignment = Alignment.End) {
+                        Text("YOUR MISSION", color = RushMint.copy(alpha = 0.72f), fontSize = 9.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.3.sp)
+                        Text("BEAT YOUR BEST", color = RushGreen, fontSize = 12.sp, fontWeight = FontWeight.Black)
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(18.dp))
+
             Button(
                 onClick = onPlayClick,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(60.dp)
-                    .shadow(14.dp, RoundedCornerShape(18.dp), ambientColor = Color(0x5527E6A1)),
-                shape = RoundedCornerShape(18.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = Color(0xFF062116)
-                )
+                modifier = Modifier.fillMaxWidth().height(64.dp)
+                    .shadow(18.dp, RoundedCornerShape(20.dp), ambientColor = Color(0x9927E6A1)),
+                shape = RoundedCornerShape(20.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = RushGreen, contentColor = Color(0xFF04170F))
             ) {
-                Text(
-                    "PLAY NOW",
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    letterSpacing = 2.sp
-                )
-                Spacer(Modifier.width(10.dp))
-                Text("→", fontSize = 21.sp, fontWeight = FontWeight.Bold)
+                Text("PLAY", fontSize = 19.sp, fontWeight = FontWeight.Black, letterSpacing = 3.sp)
+                Spacer(Modifier.width(12.dp))
+                Text("▶", fontSize = 17.sp, fontWeight = FontWeight.Black)
             }
 
-            Spacer(Modifier.height(10.dp))
-            androidx.compose.material3.OutlinedButton(
-                onClick = onStatisticsClick,
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.primary)
-            ) {
-                Text("PLAYER STATISTICS", fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.4.sp)
+            Spacer(Modifier.height(12.dp))
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                androidx.compose.material3.OutlinedButton(
+                    onClick = onProgressionClick,
+                    modifier = Modifier.weight(1f).height(54.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, RushAmber.copy(alpha = 0.65f)),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = RushAmber)
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("★", fontSize = 16.sp)
+                        Text("MISSIONS", fontSize = 9.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 1.sp)
+                    }
+                }
+                androidx.compose.material3.OutlinedButton(
+                    onClick = onStatisticsClick,
+                    modifier = Modifier.weight(1f).height(54.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, RushMint.copy(alpha = 0.55f)),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = RushMint)
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("▥", fontSize = 16.sp)
+                        Text("STATS", fontSize = 9.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 1.sp)
+                    }
+                }
             }
 
-            Spacer(Modifier.height(8.dp))
-            androidx.compose.material3.OutlinedButton(
-                onClick = onProgressionClick,
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFFFC45C))
-            ) {
-                Text("MISSIONS & ACHIEVEMENTS", fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.2.sp)
-            }
-
-            Spacer(Modifier.height(16.dp))
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    "BEST SCORE",
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.48f),
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.5.sp
-                )
-                Spacer(Modifier.width(8.dp))
-                Text(
-                    if (bestScore > 0) bestScore.toString() else "—",
-                    color = MaterialTheme.colorScheme.primary,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-
-            Spacer(Modifier.weight(1f))
-            Text(
-                "A QUICK GAME. A SHARPER MIND.",
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.32f),
-                fontSize = 9.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 1.8.sp
-            )
+            Spacer(Modifier.height(18.dp))
+            Text("4 GAME MODES  •  COMBOS  •  POWERUPS  •  DAILY MISSIONS", color = Color.White.copy(alpha = 0.4f), fontSize = 8.sp, fontWeight = FontWeight.Bold, letterSpacing = 0.8.sp, textAlign = TextAlign.Center)
+            Spacer(Modifier.height(12.dp))
         }
     }
 }
