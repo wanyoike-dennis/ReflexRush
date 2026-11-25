@@ -68,17 +68,22 @@ class MainActivity : ComponentActivity() {
                 var showGame by remember { mutableStateOf(false) }
                 var showStatistics by remember { mutableStateOf(false) }
                 var showProgression by remember { mutableStateOf(false) }
+                var showSettings by remember { mutableStateOf(false) }
+                val audioSettingsStore = remember { AudioSettingsStore(applicationContext) }
+                var soundEffectsEnabled by remember { mutableStateOf(audioSettingsStore.soundEffectsEnabled) }
+                var musicEnabled by remember { mutableStateOf(audioSettingsStore.musicEnabled) }
                 val progressionStore = remember { PlayerProgressionStore(applicationContext) }
                 var playerProgression by remember { mutableStateOf(progressionStore.load()) }
                 val statisticsStore = remember { PlayerStatisticsStore(applicationContext) }
                 var playerStatistics by remember { mutableStateOf(statisticsStore.load()) }
                 var selectedMode by remember { mutableStateOf(GameMode.CLASSIC) }
-                BackHandler(enabled = showGame || showModeSelection || showStatistics || showProgression) {
+                BackHandler(enabled = showGame || showModeSelection || showStatistics || showProgression || showSettings) {
                     when {
                         showGame -> showGame = false
                         showModeSelection -> showModeSelection = false
                         showStatistics -> showStatistics = false
                         showProgression -> showProgression = false
+                        showSettings -> showSettings = false
                     }
                 }
                 when {
@@ -95,6 +100,19 @@ class MainActivity : ComponentActivity() {
                             playerStatistics = statisticsStore.record(summary)
                             playerProgression = progressionStore.record(summary)
                         }
+                    )
+                    showSettings -> GameSettingsScreen(
+                        soundEffectsEnabled = soundEffectsEnabled,
+                        musicEnabled = musicEnabled,
+                        onSoundEffectsChange = { enabled ->
+                            audioSettingsStore.setSoundEffectsEnabled(enabled)
+                            soundEffectsEnabled = enabled
+                        },
+                        onMusicChange = { enabled ->
+                            audioSettingsStore.setMusicEnabled(enabled)
+                            musicEnabled = enabled
+                        },
+                        onBack = { showSettings = false }
                     )
                     showProgression -> PlayerProgressionScreen(
                         progression = playerProgression,
@@ -122,6 +140,7 @@ class MainActivity : ComponentActivity() {
                             playerProgression = progressionStore.load()
                             showProgression = true
                         },
+                        onSettingsClick = { showSettings = true },
                         bestScore = bestScores[GameMode.CLASSIC] ?: 0
                     )
                 }
@@ -135,6 +154,7 @@ fun ReflexRushHome(
     onPlayClick: () -> Unit = {},
     onStatisticsClick: () -> Unit = {},
     onProgressionClick: () -> Unit = {},
+    onSettingsClick: () -> Unit = {},
     bestScore: Int = 0
 ) {
     Box(Modifier.fillMaxSize()) {
@@ -285,6 +305,17 @@ fun ReflexRushHome(
                         Text("STATS", fontSize = 9.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 1.sp)
                     }
                 }
+            }
+
+            Spacer(Modifier.height(10.dp))
+            androidx.compose.material3.OutlinedButton(
+                onClick = onSettingsClick,
+                modifier = Modifier.fillMaxWidth().height(48.dp),
+                shape = RoundedCornerShape(15.dp),
+                border = androidx.compose.foundation.BorderStroke(1.dp, RushAmber.copy(alpha = 0.55f)),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = RushAmber)
+            ) {
+                Text("⚙  GAME SETTINGS", fontSize = 10.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 1.2.sp)
             }
 
             Spacer(Modifier.height(18.dp))
