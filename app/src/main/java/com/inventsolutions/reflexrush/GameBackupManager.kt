@@ -39,7 +39,7 @@ class GameBackupManager(context: Context) {
             .put("exportedAtEpochMs", System.currentTimeMillis())
             .put("preferences", allPreferences)
 
-        val output = appContext.contentResolver.openOutputStream(uri, "wt")
+        val output = appContext.contentResolver.openOutputStream(uri)
             ?: throw IOException("Unable to open the selected backup destination.")
         output.bufferedWriter(Charsets.UTF_8).use { writer ->
             writer.write(backup.toString(2))
