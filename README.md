@@ -406,7 +406,10 @@ Online leaderboards, multiplayer, cloud synchronisation, monetisation, and socia
 | Phase 5 gameplay polish | User tested; feedback improvements confirmed |
 | Phase 6 progressive difficulty | Implemented and user-verified on a testing device |
 | Phase 7 regression and release validation | In progress; the existing `testDebugUnitTest` baseline passed locally; release/build/device checks remain pending |
-| Hybrid expansion Stage 1 | Implemented, built, and unit-tested successfully by the user |\n| Hybrid expansion Stage 2 | Implemented, built, and unit-tested successfully by the user |\n| Hybrid expansion Stage 3 | Powerup engine, events, UI, and deterministic tests pushed; local verification pending |\n| Hybrid expansion roadmap | Defined; architecture-first implementation underway |
+| Hybrid expansion Stage 1 | Implemented, built, and unit-tested successfully by the user |
+| Hybrid expansion Stage 2 | Implemented, built, and unit-tested successfully by the user |
+| Hybrid expansion Stage 3 | Powerup engine, events, UI, and deterministic tests pushed; local verification pending |
+| Hybrid expansion roadmap | Defined; architecture-first implementation underway |
 
 ---
 
