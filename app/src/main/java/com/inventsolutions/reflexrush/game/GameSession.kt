@@ -1,8 +1,8 @@
 package com.inventsolutions.reflexrush.game
 
 /**
- * Modes share one engine. Only CLASSIC is playable in this foundation stage;
- * the other values reserve stable identities for later mode implementations.
+ * Supported game modes share one engine while supplying mode-specific timing,
+ * target-count, difficulty, and scoring rules.
  */
 enum class GameMode {
     CLASSIC,
