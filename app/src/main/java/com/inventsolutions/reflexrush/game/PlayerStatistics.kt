@@ -43,7 +43,7 @@ data class PlayerStatistics(
     val totalGamesPlayed: Int get() = modes.values.sumOf { it.gamesPlayed }
     val totalPlayTimeMs: Long get() = modes.values.sumOf { it.totalPlayTimeMs }
     val totalGoodTargetsHit: Int get() = modes.values.sumOf { it.goodTargetsHit }
-    val totalDangerTargetsHit: Int get() get() = modes.values.sumOf { it.dangerTargetsHit }
+    val totalDangerTargetsHit: Int get() = modes.values.sumOf { it.dangerTargetsHit }
     val totalTargetsMissed: Int get() = modes.values.sumOf { it.targetsMissed }
     val totalPowerupsCollected: Int get() = modes.values.sumOf { it.powerupsCollected }
     val highestScore: Int get() = modes.values.maxOfOrNull { it.highestScore } ?: 0
