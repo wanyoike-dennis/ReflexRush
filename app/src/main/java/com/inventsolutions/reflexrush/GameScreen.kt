@@ -59,6 +59,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.compose.runtime.withFrameNanos
 import com.inventsolutions.reflexrush.game.GameEngine
+import com.inventsolutions.reflexrush.game.GameplayEvent
 import com.inventsolutions.reflexrush.game.GameStatus
 import com.inventsolutions.reflexrush.game.GameTarget
 import com.inventsolutions.reflexrush.game.TargetType
@@ -108,7 +109,8 @@ fun GameScreen(
         animationSpec = spring(stiffness = 500f),
         label = "actionFeedbackAlpha"
     )
-    var gameState by remember { mutableStateOf(engine.start()) }
+    val initialGameState = remember(engine) { engine.start().also { engine.drainEvents() } }
+    var gameState by remember { mutableStateOf(initialGameState) }
     var newBestAchieved by remember { mutableStateOf(false) }
     var isResumed by remember {
         mutableStateOf(lifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED))
@@ -133,9 +135,13 @@ fun GameScreen(
         }
     }
 
-    LaunchedEffect(gameState.status, gameState.score, bestScore) {
-        if (gameState.status == GameStatus.GAME_OVER && gameState.score > bestScore) {
-            onNewBestScore(gameState.score)
+    LaunchedEffect(gameState.status, bestScore) {
+        val summary = engine.completedSessionSummary
+        if (gameState.status == GameStatus.GAME_OVER &&
+            summary != null &&
+            summary.finalScore > bestScore
+        ) {
+            onNewBestScore(summary.finalScore)
             newBestAchieved = true
         }
     }
@@ -148,10 +154,10 @@ fun GameScreen(
                     if (previousFrameNanos != 0L) {
                         val elapsedMs = ((frameNanos - previousFrameNanos) / 1_000_000L)
                             .coerceAtLeast(1L)
-                        val previousLives = gameState.lives
                         val nextState = engine.advanceTime(elapsedMs)
-                        if (nextState.lives < previousLives) {
-                            val livesLost = previousLives - nextState.lives
+                        val events = engine.drainEvents()
+                        val livesLost = events.count { it is GameplayEvent.LifeLost }
+                        if (livesLost > 0) {
                             actionFeedback = if (livesLost == 1) "−1 LIFE" else "−$livesLost LIVES"
                             actionFeedbackColor = RushRed
                             feedbackToken++
@@ -279,11 +285,27 @@ fun GameScreen(
                             y = (maxHeight * target.y - targetSize / 2).coerceIn(0.dp, maxHeight - targetSize)
                         ),
                         onClick = {
-                            actionFeedback = if (target.type == TargetType.GOOD) "+${engine.config.pointsPerGoodHit}" else "−${engine.config.dangerHitPenalty}"
-                            actionFeedbackColor = if (target.type == TargetType.GOOD) RushGreen else RushRed
-                            feedbackToken++
-                            performGameVibration(context)
-                            gameState = engine.tapTarget(target.id)
+                            val nextState = engine.tapTarget(target.id)
+                            val events = engine.drainEvents()
+                            val hitEvent = events.firstOrNull {
+                                it is GameplayEvent.GoodTargetHit || it is GameplayEvent.DangerTargetHit
+                            }
+                            when (hitEvent) {
+                                is GameplayEvent.GoodTargetHit -> {
+                                    actionFeedback = "+${hitEvent.pointsAwarded}"
+                                    actionFeedbackColor = RushGreen
+                                }
+                                is GameplayEvent.DangerTargetHit -> {
+                                    actionFeedback = "−${hitEvent.pointsDeducted}"
+                                    actionFeedbackColor = RushRed
+                                }
+                                else -> Unit
+                            }
+                            if (hitEvent != null) {
+                                feedbackToken++
+                                performGameVibration(context)
+                            }
+                            gameState = nextState
                         }
                     )
                     }
@@ -344,6 +366,7 @@ fun GameScreen(
                 onPlayAgain = {
                     newBestAchieved = false
                     gameState = engine.start()
+                    engine.drainEvents()
                 },
                 onHome = onHome
             )
