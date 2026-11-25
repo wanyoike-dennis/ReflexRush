@@ -13,7 +13,7 @@ data class ModeStatistics(
     val targetsMissed: Int = 0,
     val powerupsCollected: Int = 0,
     val highestScore: Int = 0,
-    val highestLevel: Int = 1,
+    val highestLevel: Int = 0,
     val bestCombo: Int = 0
 ) {
     val resolvedTargets: Int
@@ -47,7 +47,7 @@ data class PlayerStatistics(
     val totalTargetsMissed: Int get() = modes.values.sumOf { it.targetsMissed }
     val totalPowerupsCollected: Int get() = modes.values.sumOf { it.powerupsCollected }
     val highestScore: Int get() = modes.values.maxOfOrNull { it.highestScore } ?: 0
-    val highestLevel: Int get() = modes.values.maxOfOrNull { it.highestLevel } ?: 1
+    val highestLevel: Int get() = modes.values.maxOfOrNull { it.highestLevel } ?: 0
     val bestCombo: Int get() = modes.values.maxOfOrNull { it.bestCombo } ?: 0
     val accuracyPercent: Int
         get() {
