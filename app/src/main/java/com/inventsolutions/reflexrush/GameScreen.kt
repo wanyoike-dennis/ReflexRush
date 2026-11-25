@@ -266,26 +266,6 @@ fun GameScreen(
                 }
             }
 
-            if (mode == GameMode.TIME_ATTACK || mode == GameMode.PRECISION) {
-                val modeProgress = when (mode) {
-                    GameMode.TIME_ATTACK -> {
-                        val remaining = gameState.timeRemainingMs ?: 0L
-                        val seconds = (remaining + 999L) / 1_000L
-                        "TIME LEFT  •  ${seconds / 60}:${(seconds % 60).toString().padStart(2, '0')}"
-                    }
-                    GameMode.PRECISION -> "TARGETS  •  ${gameState.targetsResolved}/${gameState.targetLimit ?: 30}"
-                    else -> ""
-                }
-                Text(
-                    modeProgress,
-                    color = if (mode == GameMode.TIME_ATTACK && (gameState.timeRemainingMs ?: 0L) <= 10_000L) RushRed else RushAmber,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    letterSpacing = 1.4.sp
-                )
-                Spacer(Modifier.height(10.dp))
-            }
-
             Spacer(Modifier.height(12.dp))
 
             Row(
@@ -299,22 +279,38 @@ fun GameScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 GameStat(label = "SCORE", value = gameState.score.toString(), tint = RushAmber)
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        "LIVES",
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.48f),
-                        fontSize = 9.sp,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 1.4.sp
+                when (mode) {
+                    GameMode.TIME_ATTACK -> {
+                        val remaining = gameState.timeRemainingMs ?: 0L
+                        val seconds = (remaining + 999L) / 1_000L
+                        GameStat(
+                            label = "TIME LEFT",
+                            value = "${seconds / 60}:${(seconds % 60).toString().padStart(2, '0')}",
+                            tint = if (remaining <= 10_000L) RushRed else RushAmber
+                        )
+                    }
+                    GameMode.PRECISION -> GameStat(
+                        label = "TARGETS",
+                        value = "${gameState.targetsResolved}/${gameState.targetLimit ?: 30}",
+                        tint = RushMint
                     )
-                    Spacer(Modifier.height(5.dp))
-                    Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
-                        repeat(engine.config.startingLives) { index ->
-                            Text(
-                                "♥",
-                                color = if (index < gameState.lives) RushRed else RushSurfaceVariant,
-                                fontSize = 18.sp
-                            )
+                    GameMode.CLASSIC, GameMode.SURVIVAL -> Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            "LIVES",
+                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.48f),
+                            fontSize = 9.sp,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 1.4.sp
+                        )
+                        Spacer(Modifier.height(5.dp))
+                        Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+                            repeat(engine.config.startingLives) { index ->
+                                Text(
+                                    "♥",
+                                    color = if (index < gameState.lives) RushRed else RushSurfaceVariant,
+                                    fontSize = 18.sp
+                                )
+                            }
                         }
                     }
                 }
