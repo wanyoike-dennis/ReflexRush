@@ -2,7 +2,7 @@
 
 **Reflex Rush** is an Android reflex and reaction-time arcade game by Invent Solutions. The game challenges players to spot and tap positive targets quickly while avoiding dangerous targets. It is designed to be fast, easy to understand, satisfying to replay, and playable offline.
 
-> **Project status:** The home screen and core gameplay engine are implemented. The gameplay engine is now being verified before it is connected to the game screen.
+> **Project status:** The home screen, tested core gameplay engine, and first playable game-screen integration are implemented. Local Android build and on-device gameplay verification are the next checks.
 
 ## 1. Project objectives
 
@@ -131,7 +131,7 @@ Work through these phases in order. Each phase should be reviewed and verified b
 - Prevent duplicate scoring and ignore invalid state updates.
 - Add unit tests for scoring, penalties, missed targets, lives, round completion, and target limits.
 
-**Exit criteria:** The core rules pass unit tests independently of screen styling.
+**Exit criteria:** The core rules pass unit tests independently of screen styling. **Verified:** all 10 game-engine unit tests passed locally.
 
 ### Phase 3 — Connect gameplay to the UI
 - Render active targets in the play area.
@@ -139,8 +139,9 @@ Work through these phases in order. Each phase should be reviewed and verified b
 - Update score and lives immediately.
 - Run one lifecycle-aware game loop and pause/resume it safely.
 - Transition to game-over at the correct time.
+- Provide replay and return-to-home actions.
 
-**Exit criteria:** A complete round can be played from start to finish without manual intervention.
+**Exit criteria:** A complete round can be played from start to finish without manual intervention. **Implementation status:** Connected; local build and device playtesting pending.
 
 ### Phase 4 — High-score persistence and replay
 - Store the best score locally.
@@ -225,8 +226,8 @@ Prioritise these only after the first release is stable:
 | Feature branch `feature/reflex-rush-game` | Created |
 | Project objectives and implementation plan | Documented in this README |
 | Phase 1 home screen | Implemented and installed on a testing device |
-| Phase 2 core gameplay engine | Implemented; local unit tests added, execution pending |
-| Gameplay screen integration | Pending |
+| Phase 2 core gameplay engine | Implemented; all 10 unit tests passed locally |
+| Gameplay screen integration | Implemented; local build and device playtesting pending |
 | High-score persistence and complete V1 flow | Pending |
 | Testing and release validation | Pending |
 
