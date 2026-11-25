@@ -4,6 +4,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -70,12 +72,44 @@ class MainActivity : ComponentActivity() {
                 var showProgression by remember { mutableStateOf(false) }
                 var showSettings by remember { mutableStateOf(false) }
                 val audioSettingsStore = remember { AudioSettingsStore(applicationContext) }
+                val backupManager = remember { GameBackupManager(applicationContext) }
+                var backupStatus by remember { mutableStateOf<String?>(null) }
                 var soundEffectsEnabled by remember { mutableStateOf(audioSettingsStore.soundEffectsEnabled) }
                 var musicEnabled by remember { mutableStateOf(audioSettingsStore.musicEnabled) }
                 val progressionStore = remember { PlayerProgressionStore(applicationContext) }
                 var playerProgression by remember { mutableStateOf(progressionStore.load()) }
                 val statisticsStore = remember { PlayerStatisticsStore(applicationContext) }
                 var playerStatistics by remember { mutableStateOf(statisticsStore.load()) }
+                val exportBackupLauncher = rememberLauncherForActivityResult(
+                    contract = ActivityResultContracts.CreateDocument("application/json")
+                ) { uri ->
+                    if (uri != null) {
+                        backupStatus = runCatching {
+                            backupManager.exportTo(uri)
+                            "Backup exported successfully."
+                        }.getOrElse { error ->
+                            "Backup failed: ${error.localizedMessage ?: "Unknown error"}"
+                        }
+                    }
+                }
+                val importBackupLauncher = rememberLauncherForActivityResult(
+                    contract = ActivityResultContracts.OpenDocument()
+                ) { uri ->
+                    if (uri != null) {
+                        runCatching { backupManager.importFrom(uri) }
+                            .onSuccess {
+                                bestScores = GameMode.entries.associateWith { highScoreStore.load(it) }
+                                playerStatistics = statisticsStore.load()
+                                playerProgression = progressionStore.load()
+                                soundEffectsEnabled = audioSettingsStore.soundEffectsEnabled
+                                musicEnabled = audioSettingsStore.musicEnabled
+                                backupStatus = "Backup restored successfully."
+                            }
+                            .onFailure { error ->
+                                backupStatus = "Restore failed: ${error.localizedMessage ?: "Unknown error"}"
+                            }
+                    }
+                }
                 var selectedMode by remember { mutableStateOf(GameMode.CLASSIC) }
                 BackHandler(enabled = showGame || showModeSelection || showStatistics || showProgression || showSettings) {
                     when {
@@ -104,6 +138,9 @@ class MainActivity : ComponentActivity() {
                     showSettings -> GameSettingsScreen(
                         soundEffectsEnabled = soundEffectsEnabled,
                         musicEnabled = musicEnabled,
+                        backupStatus = backupStatus,
+                        onExportBackup = { exportBackupLauncher.launch("reflex-rush-backup.json") },
+                        onImportBackup = { importBackupLauncher.launch(arrayOf("application/json", "text/json")) },
                         onSoundEffectsChange = { enabled ->
                             audioSettingsStore.setSoundEffectsEnabled(enabled)
                             soundEffectsEnabled = enabled
