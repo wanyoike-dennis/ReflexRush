@@ -1,7 +1,5 @@
 package com.inventsolutions.reflexrush.feature.game
 
-import com.inventsolutions.reflexrush.core.audio.*
-import com.inventsolutions.reflexrush.core.feedback.*
 import com.inventsolutions.reflexrush.core.ui.*
 
 import androidx.compose.foundation.BorderStroke
@@ -61,10 +59,6 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.compose.runtime.withFrameNanos
 import com.inventsolutions.reflexrush.game.GameMode
-import com.inventsolutions.reflexrush.game.GameController
-import com.inventsolutions.reflexrush.game.GameEngine
-import com.inventsolutions.reflexrush.game.GameSessionConfig
-import com.inventsolutions.reflexrush.game.GameLoop
 import com.inventsolutions.reflexrush.game.GameStatus
 import com.inventsolutions.reflexrush.game.GameTarget
 import com.inventsolutions.reflexrush.game.PowerupType
@@ -93,13 +87,11 @@ fun GameScreen(
     val screenHeightDp = configuration.screenHeightDp
     val isTabletLayout = screenWidthDp >= 700
     val compactLandscape = screenWidthDp > screenHeightDp && screenHeightDp < 700
-    val controller = remember(mode) {
-        GameController(GameEngine(GameSessionConfig.forMode(mode)))
-    }
     val context = LocalContext.current
-    val audioCoordinator = remember(context) { GameAudioCoordinator(context.applicationContext) }
-    val feedbackCoordinator = remember(context) { GameFeedbackCoordinator(context.applicationContext) }
-    val gameLoop = remember(controller) { GameLoop() }
+    val sessionRuntime = remember(context.applicationContext, mode) {
+        GameSessionRuntime(context.applicationContext, mode)
+    }
+    val controller = sessionRuntime.controller
     var actionFeedback by remember { mutableStateOf<String?>(null) }
     var actionFeedbackColor by remember { mutableStateOf(RushGreen) }
     var feedbackToken by remember { mutableStateOf(0) }
@@ -108,19 +100,19 @@ fun GameScreen(
         animationSpec = spring(stiffness = 500f),
         label = "actionFeedbackAlpha"
     )
-    val initialGameState = remember(controller) { controller.start().state }
+    val initialGameState = remember(sessionRuntime) { sessionRuntime.start().action.state }
     var gameState by remember { mutableStateOf(initialGameState) }
     var newBestAchieved by remember { mutableStateOf(false) }
     var isResumed by remember {
         mutableStateOf(lifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED))
     }
 
-    DisposableEffect(audioCoordinator) {
-        onDispose { audioCoordinator.release() }
+    DisposableEffect(sessionRuntime) {
+        onDispose { sessionRuntime.release() }
     }
 
     LaunchedEffect(gameState.status, isResumed) {
-        audioCoordinator.setGameActive(gameState.status, isResumed)
+        sessionRuntime.setGameActive(gameState.status, isResumed)
     }
 
     DisposableEffect(lifecycleOwner) {
@@ -155,26 +147,25 @@ fun GameScreen(
             summary.finalScore > bestScore
         ) {
             onNewBestScore(summary.finalScore)
-            audioCoordinator.playPersonalBest()
+            sessionRuntime.playPersonalBest()
             newBestAchieved = true
         }
     }
 
     LaunchedEffect(gameState.status, isResumed) {
         if (gameState.status == GameStatus.RUNNING && isResumed) {
-            gameLoop.reset()
+            sessionRuntime.resetLoop()
             while (isActive && gameState.status == GameStatus.RUNNING) {
                 withFrameNanos { frameNanos ->
-                    val update = gameLoop.onFrame(frameNanos, gameState, controller)
-                    if (update != null) {
-                        audioCoordinator.playEvents(update.action.events)
-                        feedbackCoordinator.handle(update.action.events)?.let { feedback ->
+                    val frame = sessionRuntime.onFrame(frameNanos, gameState)
+                    if (frame != null) {
+                        frame.feedback?.let { feedback ->
                             actionFeedback = feedback.message
                             actionFeedbackColor = feedback.color
                             feedbackToken++
                         }
-                        if (update.shouldPublishState) {
-                            gameState = update.action.state
+                        if (frame.update.shouldPublishState) {
+                            gameState = frame.update.action.state
                         }
                     }
                 }
@@ -242,14 +233,13 @@ fun GameScreen(
                             y = (maxHeight * target.y - targetSize / 2).coerceIn(0.dp, maxHeight - targetSize)
                         ),
                         onClick = {
-                            val action = controller.tapTarget(target.id)
-                            audioCoordinator.playEvents(action.events)
-                            feedbackCoordinator.handle(action.events)?.let { feedback ->
+                            val result = sessionRuntime.tapTarget(target.id)
+                            result.feedback?.let { feedback ->
                                 actionFeedback = feedback.message
                                 actionFeedbackColor = feedback.color
                                 feedbackToken++
                             }
-                            gameState = action.state
+                            gameState = result.action.state
                         }
                     )
                     }
@@ -314,7 +304,7 @@ fun GameScreen(
                 mode = mode,
                 onPlayAgain = {
                     newBestAchieved = false
-                    gameState = controller.start().state
+                    gameState = sessionRuntime.start().action.state
                 },
                 onHome = onHome
             )
