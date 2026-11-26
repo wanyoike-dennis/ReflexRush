@@ -171,7 +171,7 @@ fun GameScreen(
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        ArcadeBackdrop(Modifier.fillMaxSize(), RushGreen)
+        ArcadeBackdrop(Modifier.fillMaxSize(), RushGreen, intensity = 1.65f)
         Column(
             modifier = Modifier.fillMaxSize().safeDrawingPadding().padding(
                 horizontal = if (isTabletLayout) 28.dp else 16.dp,

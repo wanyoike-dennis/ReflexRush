@@ -58,7 +58,7 @@ fun ReflexRushHome(
     val horizontalInset = ((screenWidthDp - 720) / 2).coerceAtLeast(22).dp
     val isTabletLayout = screenWidthDp >= 700
     Box(Modifier.fillMaxSize()) {
-        ArcadeBackdrop(Modifier.fillMaxSize())
+        ArcadeBackdrop(Modifier.fillMaxSize(), intensity = 1.05f)
         Column(
             modifier = Modifier
                 .fillMaxSize()

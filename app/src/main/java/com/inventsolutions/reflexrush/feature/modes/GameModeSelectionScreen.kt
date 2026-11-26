@@ -55,7 +55,7 @@ fun GameModeSelectionScreen(
     )
 
     Box(Modifier.fillMaxSize()) {
-        ArcadeBackdrop(Modifier.fillMaxSize(), RushMint)
+        ArcadeBackdrop(Modifier.fillMaxSize(), RushMint, intensity = 0.78f)
         Column(
             modifier = Modifier.fillMaxSize().safeDrawingPadding().padding(horizontal = horizontalInset, vertical = if (isTabletLayout) 24.dp else 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally

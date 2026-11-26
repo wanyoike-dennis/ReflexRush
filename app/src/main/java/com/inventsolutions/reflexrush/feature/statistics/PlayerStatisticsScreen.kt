@@ -49,7 +49,7 @@ fun PlayerStatisticsScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Brush.verticalGradient(listOf(Color(0xFF050914), Color(0xFF0B1727), RushBackground)))
+            .arcadeBackdrop(accent = RushMint, intensity = 0.38f)
             .safeDrawingPadding()
             .verticalScroll(rememberScrollState())
             .padding(horizontal = horizontalInset, vertical = 22.dp),

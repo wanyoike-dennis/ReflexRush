@@ -46,7 +46,7 @@ fun GameSettingsScreen(
     val screenWidthDp = LocalConfiguration.current.screenWidthDp
     val horizontalInset = ((screenWidthDp - 760) / 2).coerceAtLeast(20).dp
     Box(Modifier.fillMaxSize()) {
-        ArcadeBackdrop(Modifier.fillMaxSize(), RushAmber)
+        ArcadeBackdrop(Modifier.fillMaxSize(), RushAmber, intensity = 0.42f)
         Column(
             modifier = Modifier.fillMaxSize().safeDrawingPadding().verticalScroll(rememberScrollState()).padding(horizontal = horizontalInset, vertical = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally

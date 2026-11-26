@@ -49,7 +49,7 @@ fun PlayerProgressionScreen(
     val screenWidthDp = LocalConfiguration.current.screenWidthDp
     val horizontalInset = ((screenWidthDp - 900) / 2).coerceAtLeast(20).dp
     Column(
-        modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(Color(0xFF050914), Color(0xFF0B1727), RushBackground)))
+        modifier = Modifier.fillMaxSize().arcadeBackdrop(accent = RushMint, intensity = 0.38f)
             .safeDrawingPadding()
             .verticalScroll(rememberScrollState()).padding(horizontal = horizontalInset, vertical = 22.dp),
         horizontalAlignment = Alignment.CenterHorizontally
