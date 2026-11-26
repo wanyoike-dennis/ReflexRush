@@ -1,6 +1,7 @@
 package com.inventsolutions.reflexrush.feature.profile
 
 import com.inventsolutions.reflexrush.core.ui.ArcadeBackdrop
+import com.inventsolutions.reflexrush.core.ui.ArcadeScreenHeader
 import com.inventsolutions.reflexrush.core.ui.ArcadePanel
 import com.inventsolutions.reflexrush.game.GameMode
 import com.inventsolutions.reflexrush.game.PlayerProgression
