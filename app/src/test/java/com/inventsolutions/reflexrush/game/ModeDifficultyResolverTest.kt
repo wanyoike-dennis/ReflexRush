@@ -29,12 +29,12 @@ class ModeDifficultyResolverTest {
     }
 
     @Test
-    fun survivalDangerChanceRemainsCappedAtFiftyPercent() {
+    fun survivalDangerChancePreservesExistingProgressionAndModeCaps() {
         val config = GameConfig(dangerTargetChance = 0.45f)
         val actual = ModeDifficultyResolver(GameMode.SURVIVAL, config).forScore(10_000)
 
-        assertTrue(actual.dangerTargetChance <= 0.5f)
-        assertEquals(0.5f, actual.dangerTargetChance, 0.0001f)
+        assertTrue(actual.dangerTargetChance <= 0.49f)
+        assertEquals(0.49f, actual.dangerTargetChance, 0.0001f)
     }
 
     @Test
