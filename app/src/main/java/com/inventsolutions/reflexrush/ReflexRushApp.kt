@@ -6,6 +6,8 @@ import com.inventsolutions.reflexrush.data.progression.PlayerProgressionStore
 import com.inventsolutions.reflexrush.data.scores.HighScoreStore
 import com.inventsolutions.reflexrush.data.statistics.PlayerStatisticsStore
 import com.inventsolutions.reflexrush.feature.game.GameScreen
+import com.inventsolutions.reflexrush.feature.profile.PlayerProfileScreen
+import com.inventsolutions.reflexrush.feature.highscores.HighScoresScreen
 import com.inventsolutions.reflexrush.feature.home.ReflexRushHome
 import com.inventsolutions.reflexrush.feature.modes.GameModeSelectionScreen
 import com.inventsolutions.reflexrush.feature.progression.PlayerProgressionScreen
@@ -163,6 +165,21 @@ fun ReflexRushApp(lifecycleOwner: LifecycleOwner) {
                 onBack = navigation::goHome
             )
 
+            AppDestination.PLAYER_PROFILE -> PlayerProfileScreen(
+                statistics = playerStatistics,
+                progression = playerProgression,
+                bestScores = bestScores,
+                onStatistics = { navigation.navigateTo(AppDestination.STATISTICS) },
+                onHighScores = { navigation.navigateTo(AppDestination.HIGH_SCORES) },
+                onAchievements = { navigation.navigateTo(AppDestination.PROGRESSION) },
+                onBack = navigation::goHome
+            )
+
+            AppDestination.HIGH_SCORES -> HighScoresScreen(
+                bestScores = bestScores,
+                onBack = navigation::goHome
+            )
+
             AppDestination.MODE_SELECTION -> GameModeSelectionScreen(
                 onModeSelected = navigation::startGame,
                 onBack = navigation::goHome
@@ -181,7 +198,13 @@ fun ReflexRushApp(lifecycleOwner: LifecycleOwner) {
                 onSettingsClick = { navigation.navigateTo(AppDestination.SETTINGS) },
                 onProfileClick = {
                     playerStatistics = statisticsStore.load()
-                    navigation.navigateTo(AppDestination.STATISTICS)
+                    playerProgression = progressionStore.load()
+                    bestScores = GameMode.entries.associateWith { highScoreStore.load(it) }
+                    navigation.navigateTo(AppDestination.PLAYER_PROFILE)
+                },
+                onHighScoresClick = {
+                    bestScores = GameMode.entries.associateWith { highScoreStore.load(it) }
+                    navigation.navigateTo(AppDestination.HIGH_SCORES)
                 },
                 bestScore = bestScores[GameMode.CLASSIC] ?: 0,
                 totalGamesPlayed = playerStatistics.totalGamesPlayed,
