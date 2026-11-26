@@ -55,7 +55,7 @@ class GameLoopTest {
         assertTrue(controller.state.targets.isEmpty())
     }
 
-    private fun controller(spawnIntervalMs: Long) = GameController(
+    private fun controller(spawnIntervalMs: Long = 750L) = GameController(
         GameEngine(
             GameConfig(
                 spawnIntervalMs = spawnIntervalMs,
