@@ -46,6 +46,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -232,13 +233,16 @@ fun ReflexRushHome(
     onSettingsClick: () -> Unit = {},
     bestScore: Int = 0
 ) {
+    val screenWidthDp = LocalConfiguration.current.screenWidthDp
+    val horizontalInset = ((screenWidthDp - 720) / 2).coerceAtLeast(22).dp
+    val isTabletLayout = screenWidthDp >= 700
     Box(Modifier.fillMaxSize()) {
         ArcadeBackdrop(Modifier.fillMaxSize())
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .safeDrawingPadding()
-                .then(Modifier.padding(horizontal = 22.dp, vertical = 18.dp))
+                .then(Modifier.padding(horizontal = horizontalInset, vertical = 18.dp))
                 .verticalScroll(androidx.compose.foundation.rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -275,7 +279,7 @@ fun ReflexRushHome(
             Spacer(Modifier.height(22.dp))
 
             Box(
-                modifier = Modifier.fillMaxWidth().height(218.dp),
+                modifier = Modifier.fillMaxWidth().height(if (isTabletLayout) 250.dp else 218.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Canvas(Modifier.fillMaxSize()) {
@@ -300,7 +304,7 @@ fun ReflexRushHome(
                 }
                 Box(
                     modifier = Modifier
-                        .size(104.dp)
+                        .size(if (isTabletLayout) 118.dp else 104.dp)
                         .shadow(28.dp, CircleShape, ambientColor = Color(0xAA27E6A1))
                         .clip(CircleShape)
                         .background(Brush.linearGradient(listOf(Color(0xFF7BFFD0), Color(0xFF08A875)))),
@@ -358,7 +362,7 @@ fun ReflexRushHome(
 
             Button(
                 onClick = onPlayClick,
-                modifier = Modifier.fillMaxWidth().height(64.dp)
+                modifier = Modifier.fillMaxWidth().height(if (isTabletLayout) 70.dp else 64.dp)
                     .shadow(18.dp, RoundedCornerShape(20.dp), ambientColor = Color(0x9927E6A1)),
                 shape = RoundedCornerShape(20.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = RushGreen, contentColor = Color(0xFF04170F))
