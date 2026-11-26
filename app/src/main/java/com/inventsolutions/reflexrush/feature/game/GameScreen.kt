@@ -133,14 +133,6 @@ fun GameScreen(
     }
 
     LaunchedEffect(gameState.status) {
-        if (isPaused && gameState.status == GameStatus.RUNNING) {
-            GamePauseOverlay(
-                score = gameState.score,
-                onResume = { isPaused = false },
-                onHome = onHome
-            )
-        }
-
         if (gameState.status == GameStatus.GAME_OVER) {
             controller.completedSessionSummary?.let(onSessionCompleted)
         }
@@ -249,6 +241,14 @@ fun GameScreen(
                 "Miss a green target and you lose one life.",
                 color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.38f),
                 fontSize = 10.sp
+            )
+        }
+
+        if (isPaused && gameState.status == GameStatus.RUNNING) {
+            GamePauseOverlay(
+                score = gameState.score,
+                onResume = { isPaused = false },
+                onHome = onHome
             )
         }
 
