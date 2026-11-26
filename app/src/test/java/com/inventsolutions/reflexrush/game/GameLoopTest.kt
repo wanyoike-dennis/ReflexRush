@@ -51,7 +51,7 @@ class GameLoopTest {
         val next = loop.onFrame(5_040_000_000L, controller.state, controller)
 
         assertNotNull(next)
-        assertEquals(40L, controller.state.targets.firstOrNull()?.remainingLifetimeMs?.let { 40L } ?: 0L)
+        assertFalse(next!!.shouldPublishState)
         assertTrue(controller.state.targets.isEmpty())
     }
 
