@@ -54,17 +54,11 @@ fun PlayerProgressionScreen(
             .verticalScroll(rememberScrollState()).padding(horizontal = horizontalInset, vertical = 22.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column {
-                Text("PLAYER PROGRESSION", color = RushMint, fontSize = 9.sp, fontWeight = FontWeight.Black, letterSpacing = 2.sp)
-                Text("QUEST BOARD", color = Color.White, fontSize = 26.sp, fontWeight = FontWeight.Black, letterSpacing = 1.2.sp)
-            }
-            OutlinedButton(onClick = onBack) { Text("BACK") }
-        }
+        ArcadeScreenHeader(
+            eyebrow = "PLAYER PROGRESSION",
+            title = "QUEST BOARD",
+            onBack = onBack
+        )
         Spacer(Modifier.height(18.dp))
         ProgressPanel {
             Text("LEVEL ${progression.level}", color = RushGreen, fontSize = 32.sp, fontWeight = FontWeight.Black, letterSpacing = 1.sp)
