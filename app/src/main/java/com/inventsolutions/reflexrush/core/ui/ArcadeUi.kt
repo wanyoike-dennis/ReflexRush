@@ -15,6 +15,10 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.inventsolutions.reflexrush.ui.theme.RushBackground
+import com.inventsolutions.reflexrush.ui.theme.RushSurfaceVariant
+import com.inventsolutions.reflexrush.ui.theme.RushSurface
+import com.inventsolutions.reflexrush.ui.theme.RushRed
+import com.inventsolutions.reflexrush.ui.theme.RushAmber
 import com.inventsolutions.reflexrush.ui.theme.RushGreen
 import com.inventsolutions.reflexrush.ui.theme.RushMint
 
