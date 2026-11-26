@@ -1,9 +1,5 @@
 package com.inventsolutions.reflexrush
 
-import android.content.Context
-import android.os.Build
-import android.os.VibrationEffect
-import android.os.Vibrator
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -60,10 +56,9 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.compose.runtime.withFrameNanos
-import com.inventsolutions.reflexrush.game.GameEngine
 import com.inventsolutions.reflexrush.game.GameMode
-import com.inventsolutions.reflexrush.game.GameSessionConfig
-import com.inventsolutions.reflexrush.game.GameplayEvent
+import com.inventsolutions.reflexrush.game.GameController
+import com.inventsolutions.reflexrush.game.GameLoop
 import com.inventsolutions.reflexrush.game.GameStatus
 import com.inventsolutions.reflexrush.game.GameTarget
 import com.inventsolutions.reflexrush.game.PowerupType
@@ -77,25 +72,6 @@ import com.inventsolutions.reflexrush.ui.theme.RushSurface
 import com.inventsolutions.reflexrush.ui.theme.RushSurfaceVariant
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
-
-/**
- * Uses the device vibrator directly so gameplay feedback is not dependent on
- * the Compose view's haptic-feedback setting. The permission is declared in
- * the app manifest; devices without a vibrator safely skip this effect.
- */
-@Suppress("DEPRECATION")
-private fun performGameVibration(context: Context, missedLife: Boolean = false) {
-    val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator ?: return
-    if (!vibrator.hasVibrator()) return
-
-    val timings = if (missedLife) longArrayOf(0L, 70L, 55L, 100L) else longArrayOf(0L, 45L)
-
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        vibrator.vibrate(VibrationEffect.createWaveform(timings, -1))
-    } else {
-        vibrator.vibrate(timings, -1)
-    }
-}
 
 @Composable
 fun GameScreen(
@@ -111,9 +87,13 @@ fun GameScreen(
     val screenHeightDp = configuration.screenHeightDp
     val isTabletLayout = screenWidthDp >= 700
     val compactLandscape = screenWidthDp > screenHeightDp && screenHeightDp < 700
-    val engine = remember(mode) { GameEngine(GameSessionConfig.forMode(mode)) }
+    val controller = remember(mode) {
+        GameController(GameEngine(GameSessionConfig.forMode(mode)))
+    }
     val context = LocalContext.current
-    val audioManager = remember(context) { GameAudioManager(context.applicationContext) }
+    val audioCoordinator = remember(context) { GameAudioCoordinator(context.applicationContext) }
+    val feedbackCoordinator = remember(context) { GameFeedbackCoordinator(context.applicationContext) }
+    val gameLoop = remember(controller) { GameLoop() }
     var actionFeedback by remember { mutableStateOf<String?>(null) }
     var actionFeedbackColor by remember { mutableStateOf(RushGreen) }
     var feedbackToken by remember { mutableStateOf(0) }
@@ -122,19 +102,19 @@ fun GameScreen(
         animationSpec = spring(stiffness = 500f),
         label = "actionFeedbackAlpha"
     )
-    val initialGameState = remember(engine) { engine.start().also { engine.drainEvents() } }
+    val initialGameState = remember(controller) { controller.start().state }
     var gameState by remember { mutableStateOf(initialGameState) }
     var newBestAchieved by remember { mutableStateOf(false) }
     var isResumed by remember {
         mutableStateOf(lifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED))
     }
 
-    DisposableEffect(audioManager) {
-        onDispose { audioManager.release() }
+    DisposableEffect(audioCoordinator) {
+        onDispose { audioCoordinator.release() }
     }
 
     LaunchedEffect(gameState.status, isResumed) {
-        audioManager.setGameActive(gameState.status == GameStatus.RUNNING && isResumed)
+        audioCoordinator.setGameActive(gameState.status, isResumed)
     }
 
     DisposableEffect(lifecycleOwner) {
@@ -158,78 +138,39 @@ fun GameScreen(
 
     LaunchedEffect(gameState.status) {
         if (gameState.status == GameStatus.GAME_OVER) {
-            engine.completedSessionSummary?.let(onSessionCompleted)
+            controller.completedSessionSummary?.let(onSessionCompleted)
         }
     }
 
     LaunchedEffect(gameState.status, bestScore) {
-        val summary = engine.completedSessionSummary
+        val summary = controller.completedSessionSummary
         if (gameState.status == GameStatus.GAME_OVER &&
             summary != null &&
             summary.finalScore > bestScore
         ) {
             onNewBestScore(summary.finalScore)
-            audioManager.play(GameAudioManager.Cue.PERSONAL_BEST)
+            audioCoordinator.playPersonalBest()
             newBestAchieved = true
         }
     }
 
     LaunchedEffect(gameState.status, isResumed) {
         if (gameState.status == GameStatus.RUNNING && isResumed) {
-            var previousFrameNanos = 0L
-            var accumulatedFrameMs = 0L
-            var uiUpdateElapsedMs = 0L
-
+            gameLoop.reset()
             while (isActive && gameState.status == GameStatus.RUNNING) {
                 withFrameNanos { frameNanos ->
-                    if (previousFrameNanos != 0L) {
-                        val frameElapsedMs = ((frameNanos - previousFrameNanos) / 1_000_000L)
-                            .coerceAtLeast(1L)
-                        accumulatedFrameMs += frameElapsedMs
-
-                        // The game simulation only needs a 30 Hz tick. Taps still
-                        // update state immediately in the target click handler.
-                        if (accumulatedFrameMs >= GAME_TICK_INTERVAL_MS) {
-                            val elapsedMs = accumulatedFrameMs
-                            accumulatedFrameMs = 0L
-                            val previousState = gameState
-                            val nextState = engine.advanceTime(elapsedMs)
-                            val events = engine.drainEvents()
-                            audioManager.playEvents(events)
-
-                            val livesLost = events.count { it is GameplayEvent.LifeLost }
-                            if (livesLost > 0) {
-                                actionFeedback = if (livesLost == 1) "−1 LIFE" else "−$livesLost LIVES"
-                                actionFeedbackColor = RushRed
-                                feedbackToken++
-                                performGameVibration(context, missedLife = true)
-                            }
-
-                            uiUpdateElapsedMs += elapsedMs
-                            val immediateUiChange =
-                                nextState.status != previousState.status ||
-                                    targetIdsChanged(previousState.targets, nextState.targets) ||
-                                    nextState.score != previousState.score ||
-                                    nextState.lives != previousState.lives ||
-                                    nextState.comboCount != previousState.comboCount ||
-                                    nextState.comboMultiplier != previousState.comboMultiplier ||
-                                    nextState.difficultyLevel != previousState.difficultyLevel ||
-                                    nextState.activeTimedPowerup != previousState.activeTimedPowerup ||
-                                    nextState.shieldAvailable != previousState.shieldAvailable ||
-                                    nextState.timeRemainingMs?.div(1_000L) !=
-                                    previousState.timeRemainingMs?.div(1_000L)
-
-                            // Target lifetimes and effect timers do not need a
-                            // full-screen recomposition every display frame.
-                            // Publish timer changes at 10 Hz, and gameplay events
-                            // immediately, so input and visible target changes stay crisp.
-                            if (immediateUiChange || uiUpdateElapsedMs >= GAME_UI_UPDATE_INTERVAL_MS) {
-                                gameState = nextState
-                                uiUpdateElapsedMs = 0L
-                            }
+                    val update = gameLoop.onFrame(frameNanos, gameState, controller)
+                    if (update != null) {
+                        audioCoordinator.playEvents(update.action.events)
+                        feedbackCoordinator.handle(update.action.events)?.let { feedback ->
+                            actionFeedback = feedback.message
+                            actionFeedbackColor = feedback.color
+                            feedbackToken++
+                        }
+                        if (update.shouldPublishState) {
+                            gameState = update.action.state
                         }
                     }
-                    previousFrameNanos = frameNanos
                 }
             }
         }
@@ -310,7 +251,7 @@ fun GameScreen(
                     )
                     GameMode.CLASSIC, GameMode.SURVIVAL -> Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
-                            "LIVES  ${gameState.lives}/${engine.config.startingLives}",
+                            "LIVES  ${gameState.lives}/${controller.config.startingLives}",
                             color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.72f),
                             fontSize = 9.sp,
                             fontWeight = FontWeight.Bold,
@@ -441,39 +382,14 @@ fun GameScreen(
                             y = (maxHeight * target.y - targetSize / 2).coerceIn(0.dp, maxHeight - targetSize)
                         ),
                         onClick = {
-                            val nextState = engine.tapTarget(target.id)
-                            val events = engine.drainEvents()
-                            audioManager.playEvents(events)
-                            val hitEvent = events.firstOrNull {
-                                it is GameplayEvent.GoodTargetHit ||
-                                    it is GameplayEvent.DangerTargetHit ||
-                                    it is GameplayEvent.PowerupCollected
-                            }
-                            when (hitEvent) {
-                                is GameplayEvent.GoodTargetHit -> {
-                                    actionFeedback = "+${hitEvent.pointsAwarded}"
-                                    actionFeedbackColor = RushGreen
-                                }
-                                is GameplayEvent.DangerTargetHit -> {
-                                    actionFeedback = "−${hitEvent.pointsDeducted}"
-                                    actionFeedbackColor = RushRed
-                                }
-                                is GameplayEvent.PowerupCollected -> {
-                                    actionFeedback = when (hitEvent.powerup) {
-                                        PowerupType.GOLDEN_STAR -> "+50 BONUS"
-                                        PowerupType.DOUBLE_POINTS -> "DOUBLE POINTS!"
-                                        PowerupType.SLOW_TIME -> "SLOW TIME!"
-                                        PowerupType.SHIELD -> "SHIELD READY!"
-                                    }
-                                    actionFeedbackColor = RushAmber
-                                }
-                                else -> Unit
-                            }
-                            if (hitEvent != null) {
+                            val action = controller.tapTarget(target.id)
+                            audioCoordinator.playEvents(action.events)
+                            feedbackCoordinator.handle(action.events)?.let { feedback ->
+                                actionFeedback = feedback.message
+                                actionFeedbackColor = feedback.color
                                 feedbackToken++
-                                performGameVibration(context)
                             }
-                            gameState = nextState
+                            gameState = action.state
                         }
                     )
                     }
@@ -531,31 +447,19 @@ fun GameScreen(
                 score = gameState.score,
                 bestScore = bestScore,
                 newBestAchieved = newBestAchieved,
-                bestCombo = engine.completedSessionSummary?.bestCombo ?: 0,
-                hits = engine.completedSessionSummary?.goodTargetsHit ?: 0,
-                misses = engine.completedSessionSummary?.targetsMissed ?: 0,
-                level = engine.completedSessionSummary?.levelReached ?: gameState.difficultyLevel,
+                bestCombo = controller.completedSessionSummary?.bestCombo ?: 0,
+                hits = controller.completedSessionSummary?.goodTargetsHit ?: 0,
+                misses = controller.completedSessionSummary?.targetsMissed ?: 0,
+                level = controller.completedSessionSummary?.levelReached ?: gameState.difficultyLevel,
                 mode = mode,
                 onPlayAgain = {
                     newBestAchieved = false
-                    gameState = engine.start()
-                    engine.drainEvents()
+                    gameState = controller.start().state
                 },
                 onHome = onHome
             )
         }
     }
-}
-
-private const val GAME_TICK_INTERVAL_MS = 33L
-private const val GAME_UI_UPDATE_INTERVAL_MS = 100L
-
-private fun targetIdsChanged(previous: List<GameTarget>, current: List<GameTarget>): Boolean {
-    if (previous.size != current.size) return true
-    for (index in previous.indices) {
-        if (previous[index].id != current[index].id) return true
-    }
-    return false
 }
 
 @Composable
