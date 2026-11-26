@@ -78,7 +78,7 @@ data class PlayerProgression(
         )
 
         val newlyCompletedMissions = DailyMission.entries.filter { mission ->
-            mission.id !in updated.completedDailyMissionIds && updated.missionProgress(mission, summary) >= mission.target
+            mission.id !in updated.completedDailyMissionIds && updated.missionProgress(mission) >= mission.target
         }.map { it.id }.toSet()
         val completed = updated.completedDailyMissionIds + newlyCompletedMissions
 
