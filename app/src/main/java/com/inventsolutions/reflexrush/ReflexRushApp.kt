@@ -6,7 +6,7 @@ import com.inventsolutions.reflexrush.data.progression.PlayerProgressionStore
 import com.inventsolutions.reflexrush.data.scores.HighScoreStore
 import com.inventsolutions.reflexrush.data.statistics.PlayerStatisticsStore
 import com.inventsolutions.reflexrush.feature.game.GameScreen
-import com.inventsolutions.reflexrush.feature.home.HomeScreen
+import com.inventsolutions.reflexrush.feature.home.ReflexRushHome
 import com.inventsolutions.reflexrush.feature.modes.GameModeSelectionScreen
 import com.inventsolutions.reflexrush.feature.progression.PlayerProgressionScreen
 import com.inventsolutions.reflexrush.feature.settings.GameSettingsScreen
