@@ -30,13 +30,11 @@ fun HighScoresScreen(bestScores: Map<GameMode, Int>, onBack: () -> Unit) {
                 .padding(horizontal = inset, vertical = 26.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Column {
-                    Text("REFLEX RUSH", color = RushMint, fontSize = 10.sp, fontWeight = FontWeight.Black, letterSpacing = 2.sp)
-                    Text("HIGH SCORES", color = Color.White, fontSize = 26.sp, fontWeight = FontWeight.Black)
-                }
-                OutlinedButton(onClick = onBack) { Text("BACK") }
-            }
+            ArcadeScreenHeader(
+                eyebrow = "REFLEX RUSH",
+                title = "HIGH SCORES",
+                onBack = onBack
+            )
             Spacer(Modifier.height(28.dp))
             bestScores.entries.sortedByDescending { it.value }.forEachIndexed { index, entry ->
                 ArcadePanel(Modifier.fillMaxWidth(), accent = if (index == 0) RushAmber else RushGreen, radius = 20.dp) {
