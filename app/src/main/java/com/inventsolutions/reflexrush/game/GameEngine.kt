@@ -123,30 +123,20 @@ class GameEngine(
             }
         }
 
-        var updatedLives = state.lives
-        expiredTargets.forEach { target ->
-            sessionTracker.recordTargetMissed(target.type)
-            targetsResolved++
-            pendingEvents += GameplayEvent.TargetMissed(target.id, target.type)
-            if (target.type == TargetType.GOOD) {
-                breakCombo()
-                if (sessionConfig.mode == GameMode.PRECISION) {
-                    val penalty = minOf(state.score, sessionConfig.precisionMissPenalty)
-                    if (penalty > 0) {
-                        state = state.copy(score = state.score - penalty)
-                        pendingEvents += GameplayEvent.PrecisionMissPenalty(penalty, state.score)
-                    }
-                } else if (state.shieldAvailable) {
-                    state = state.copy(shieldAvailable = false)
-                    pendingEvents += GameplayEvent.ShieldConsumed
-                } else {
-                    updatedLives = (updatedLives - 1).coerceAtLeast(0)
-                    pendingEvents += GameplayEvent.LifeLost(updatedLives)
-                }
-            }
-        }
+        val missResolution = MissedTargetResolver.resolve(
+            initialState = state,
+            expiredTargets = expiredTargets,
+            mode = sessionConfig.mode,
+            precisionMissPenalty = sessionConfig.precisionMissPenalty,
+            sessionTracker = sessionTracker,
+            comboTransitionResolver = comboTransitionResolver
+        )
+        state = missResolution.state
+        targetsResolved += expiredTargets.size
+        pendingEvents += missResolution.events
+        val updatedLives = state.lives
 
-        if (updatedLives == 0) {
+        if (missResolution.gameOver) {
             timeSinceLastSpawnMs = 0L
             state = state.copy(
                 status = GameStatus.GAME_OVER,
@@ -216,10 +206,6 @@ class GameEngine(
             return state
         }
 
-        val target = state.targets.firstOrNull { it.id == targetId } ?: return state
-        val previousLevel = state.difficultyLevel
-        val previousComboCount = state.comboCount
-        val previousMultiplier = state.comboMultiplier
         if (target.type == TargetType.POWERUP) {
             targetsResolved++
             collectPowerup(target)
@@ -228,56 +214,15 @@ class GameEngine(
             return state
         }
 
-        val comboTransition = if (target.type == TargetType.GOOD) {
-            comboTransitionResolver.afterGoodHit(previousComboCount, previousMultiplier)
-        } else {
-            comboTransitionResolver.breakCombo(previousComboCount, previousMultiplier)
-        }
-        val nextComboCount = comboTransition.comboCount
-        val nextMultiplier = comboTransition.multiplier
-        val scoreChange = targetScoring.score(
-            currentScore = state.score,
-            targetType = target.type,
-            comboMultiplier = nextMultiplier,
-            doublePointsActive = state.activeTimedPowerup == PowerupType.DOUBLE_POINTS
-        )
-
-        when (target.type) {
-            TargetType.GOOD -> {
-                sessionTracker.recordGoodTargetHit(nextComboCount)
-                pendingEvents += GameplayEvent.GoodTargetHit(
-                    targetId = target.id,
-                    pointsAwarded = scoreChange.pointsDelta,
-                    totalScore = scoreChange.newScore
-                )
-            }
-            TargetType.DANGER -> {
-                sessionTracker.recordDangerTargetHit()
-                pendingEvents += GameplayEvent.DangerTargetHit(
-                    targetId = target.id,
-                    pointsDeducted = -scoreChange.pointsDelta,
-                    totalScore = scoreChange.newScore
-                )
-            }
-            TargetType.POWERUP -> error("Powerup targets are handled before normal scoring.")
-        }
-
+        val resolution = TargetHitResolver(
+            sessionTracker = sessionTracker,
+            targetScoring = targetScoring,
+            comboTransitionResolver = comboTransitionResolver,
+            modeDifficultyResolver = modeDifficultyResolver
+        ).resolve(state, target)
+        state = resolution.state
         targetsResolved++
-        val newLevel = modeDifficultyResolver.forScore(scoreChange.newScore).level
-        state = state.copy(
-            score = scoreChange.newScore,
-            targets = state.targets.filterNot { it.id == targetId },
-            targetsResolved = targetsResolved,
-            difficultyLevel = newLevel,
-            comboCount = nextComboCount,
-            comboMultiplier = nextMultiplier,
-            bestCombo = sessionTracker.bestCombo
-        )
-
-        pendingEvents += comboTransition.events
-        if (newLevel != previousLevel) {
-            pendingEvents += GameplayEvent.LevelChanged(previousLevel, newLevel)
-        }
+        pendingEvents += resolution.events
         finishPrecisionIfComplete()
         return state
     }
