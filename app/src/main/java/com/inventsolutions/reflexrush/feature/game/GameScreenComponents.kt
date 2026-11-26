@@ -328,3 +328,89 @@ internal fun GameOverOverlay(
         }
     }
 }
+
+@Composable
+internal fun GamePauseOverlay(
+    score: Int,
+    onResume: () -> Unit,
+    onHome: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xE6050A12))
+            .clickable(enabled = true, onClick = {}),
+        contentAlignment = Alignment.Center
+    ) {
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 28.dp),
+            shape = RoundedCornerShape(26.dp),
+            color = RushSurface,
+            border = BorderStroke(1.5.dp, RushGreen.copy(alpha = 0.78f)),
+            shadowElevation = 26.dp
+        ) {
+            Column(
+                modifier = Modifier.padding(horizontal = 26.dp, vertical = 30.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    "SESSION PAUSED",
+                    color = RushMint,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    letterSpacing = 2.4.sp
+                )
+                Spacer(Modifier.height(12.dp))
+                Text(
+                    "Take a breath.",
+                    color = Color.White,
+                    fontSize = 29.sp,
+                    fontWeight = FontWeight.Black
+                )
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    "Your game is safely paused.",
+                    color = RushMint.copy(alpha = 0.75f),
+                    fontSize = 12.sp
+                )
+                Spacer(Modifier.height(20.dp))
+                Text(
+                    "CURRENT SCORE",
+                    color = RushMint.copy(alpha = 0.65f),
+                    fontSize = 9.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.6.sp
+                )
+                Text(
+                    score.toString(),
+                    color = RushAmber,
+                    fontSize = 38.sp,
+                    fontWeight = FontWeight.Black
+                )
+                Spacer(Modifier.height(24.dp))
+                Button(
+                    onClick = onResume,
+                    modifier = Modifier.fillMaxWidth().height(54.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = RushGreen,
+                        contentColor = RushBackground
+                    )
+                ) {
+                    Text("RESUME GAME", fontWeight = FontWeight.ExtraBold, letterSpacing = 1.2.sp)
+                }
+                Spacer(Modifier.height(10.dp))
+                OutlinedButton(
+                    onClick = onHome,
+                    modifier = Modifier.fillMaxWidth().height(50.dp),
+                    border = BorderStroke(1.dp, RushSurfaceVariant),
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Text("QUIT TO HOME", color = RushMint, fontWeight = FontWeight.Bold)
+                }
+            }
+        }
+    }
+}
