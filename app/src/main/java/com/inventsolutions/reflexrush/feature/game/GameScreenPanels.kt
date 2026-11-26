@@ -16,6 +16,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -37,7 +38,8 @@ import com.inventsolutions.reflexrush.ui.theme.RushSurfaceVariant
 @Composable
 internal fun GameHeader(
     mode: GameMode,
-    onHome: () -> Unit
+    onHome: () -> Unit,
+    onPause: () -> Unit
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -65,13 +67,18 @@ internal fun GameHeader(
                 letterSpacing = 1.2.sp
             )
         }
-        OutlinedButton(
-            onClick = onHome,
-            border = BorderStroke(1.dp, RushMint.copy(alpha = 0.55f)),
-            shape = RoundedCornerShape(11.dp),
-            colors = ButtonDefaults.outlinedButtonColors(contentColor = RushMint)
-        ) {
-            Text("EXIT", fontSize = 9.sp, fontWeight = FontWeight.Black, letterSpacing = 1.sp)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            IconButton(onClick = onPause) {
+                Text("Ⅱ", color = RushMint, fontSize = 25.sp, fontWeight = FontWeight.Black)
+            }
+            OutlinedButton(
+                onClick = onHome,
+                border = BorderStroke(1.dp, RushMint.copy(alpha = 0.55f)),
+                shape = RoundedCornerShape(11.dp),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = RushMint)
+            ) {
+                Text("EXIT", fontSize = 9.sp, fontWeight = FontWeight.Black, letterSpacing = 1.sp)
+            }
         }
     }
 }
