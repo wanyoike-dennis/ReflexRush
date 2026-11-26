@@ -8,6 +8,8 @@ import com.inventsolutions.reflexrush.game.GameMode
 
 enum class AppDestination {
     HOME,
+    PLAYER_PROFILE,
+    HIGH_SCORES,
     MODE_SELECTION,
     GAME,
     STATISTICS,
