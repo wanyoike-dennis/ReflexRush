@@ -65,7 +65,7 @@ fun ReflexRushHome(
         Column(
             Modifier.fillMaxSize().safeDrawingPadding()
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = inset, vertical = 18.dp),
+                .padding(horizontal = inset, vertical = 26.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -98,16 +98,16 @@ fun ReflexRushHome(
                 }
             }
 
-            Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(34.dp))
             Column(Modifier.fillMaxWidth()) {
                 Text("WELCOME BACK", color = RushMint, fontSize = 10.sp, fontWeight = FontWeight.Black, letterSpacing = 2.5.sp)
                 Text("Ready to beat your best?", color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.Black)
                 Text("Every round is a chance to sharpen your reflexes.", color = Color.White.copy(alpha = .62f), fontSize = 11.sp)
             }
 
-            Spacer(Modifier.height(18.dp))
+            Spacer(Modifier.height(26.dp))
             ArcadePanel(Modifier.fillMaxWidth(), accent = RushGreen, radius = 22.dp) {
-                Column(Modifier.fillMaxWidth().padding(18.dp)) {
+                Column(Modifier.fillMaxWidth().padding(22.dp)) {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                         Column {
                             Text("PERSONAL BEST", color = RushMint.copy(alpha = .75f), fontSize = 9.sp, fontWeight = FontWeight.Black, letterSpacing = 1.4.sp)
@@ -118,7 +118,7 @@ fun ReflexRushHome(
                             Text("⚡", color = RushMint, fontSize = 39.sp)
                         }
                     }
-                    Spacer(Modifier.height(15.dp))
+                    Spacer(Modifier.height(22.dp))
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         HomeMetric("GAMES PLAYED", totalGamesPlayed.toString(), RushMint)
                         HomeMetric("ACCURACY", if (totalGamesPlayed > 0) "$accuracyPercent%" else "—", RushGreen)
@@ -127,10 +127,10 @@ fun ReflexRushHome(
                 }
             }
 
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(24.dp))
             Button(
                 onClick = onPlayClick,
-                modifier = Modifier.fillMaxWidth().height(62.dp)
+                modifier = Modifier.fillMaxWidth().height(70.dp)
                     .shadow(17.dp, RoundedCornerShape(18.dp), ambientColor = Color(0x9927E6A1)),
                 shape = RoundedCornerShape(18.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = RushGreen, contentColor = Color(0xFF04170F))
@@ -142,7 +142,7 @@ fun ReflexRushHome(
 
             Spacer(Modifier.height(18.dp))
             ArcadePanel(Modifier.fillMaxWidth(), accent = RushAmber, radius = 18.dp) {
-                Column(Modifier.fillMaxWidth().padding(16.dp)) {
+                Column(Modifier.fillMaxWidth().padding(20.dp)) {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                         Column {
                             Text("YOUR PROGRESSION", color = RushMint, fontSize = 9.sp, fontWeight = FontWeight.Black, letterSpacing = 1.3.sp)
@@ -150,22 +150,22 @@ fun ReflexRushHome(
                         }
                         Text("$xpIntoLevel / $xpForNextLevel XP", color = RushAmber, fontSize = 10.sp, fontWeight = FontWeight.ExtraBold)
                     }
-                    Spacer(Modifier.height(11.dp))
+                    Spacer(Modifier.height(15.dp))
                     Box(Modifier.fillMaxWidth().height(8.dp).clip(CircleShape).background(Color.White.copy(alpha = .1f))) {
                         Box(Modifier.fillMaxWidth(progress).height(8.dp).clip(CircleShape).background(Brush.horizontalGradient(listOf(RushGreen, RushMint))))
                     }
-                    Spacer(Modifier.height(8.dp))
+                    Spacer(Modifier.height(12.dp))
                     Text("Earn XP by completing rounds, daily missions and achievements.", color = Color.White.copy(alpha = .55f), fontSize = 9.sp)
                 }
             }
 
-            Spacer(Modifier.height(20.dp))
+            Spacer(Modifier.height(30.dp))
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Text("EXPLORE", color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Black, letterSpacing = 1.8.sp)
                 Text("YOUR GAME HUB", color = RushMint.copy(alpha = .6f), fontSize = 8.sp, fontWeight = FontWeight.Bold)
             }
-            Spacer(Modifier.height(10.dp))
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            Spacer(Modifier.height(14.dp))
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
                 ExploreTile("▥", "STATISTICS", "Your performance", RushMint, onStatisticsClick, Modifier.weight(1f))
                 ExploreTile("★", "ACHIEVEMENTS", "Missions & rewards", RushAmber, onProgressionClick, Modifier.weight(1f))
             }
@@ -200,7 +200,7 @@ private fun ExploreTile(
 ) {
     OutlinedButton(
         onClick = onClick,
-        modifier = modifier.height(82.dp),
+        modifier = modifier.height(96.dp),
         shape = RoundedCornerShape(16.dp),
         border = androidx.compose.foundation.BorderStroke(1.dp, accent.copy(alpha = .48f)),
         colors = ButtonDefaults.outlinedButtonColors(contentColor = accent)
