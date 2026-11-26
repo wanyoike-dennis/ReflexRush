@@ -58,6 +58,8 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.compose.runtime.withFrameNanos
 import com.inventsolutions.reflexrush.game.GameMode
 import com.inventsolutions.reflexrush.game.GameController
+import com.inventsolutions.reflexrush.game.GameEngine
+import com.inventsolutions.reflexrush.game.GameSessionConfig
 import com.inventsolutions.reflexrush.game.GameLoop
 import com.inventsolutions.reflexrush.game.GameStatus
 import com.inventsolutions.reflexrush.game.GameTarget
