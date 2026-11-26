@@ -28,6 +28,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.inventsolutions.reflexrush.game.GameMode
@@ -41,6 +42,9 @@ fun GameModeSelectionScreen(
     onModeSelected: (GameMode) -> Unit,
     onBack: () -> Unit
 ) {
+    val screenWidthDp = LocalConfiguration.current.screenWidthDp
+    val horizontalInset = ((screenWidthDp - 960) / 2).coerceAtLeast(20).dp
+    val isTabletLayout = screenWidthDp >= 700
     val modes = listOf(
         ModeOption(GameMode.CLASSIC, "01", "⚡", "CLASSIC", "THE ORIGINAL TEST", "Three lives. Build combos, collect powerups and beat your personal best.", RushGreen, "3 LIVES  •  ENDLESS ROUND"),
         ModeOption(GameMode.TIME_ATTACK, "02", "⏱", "TIME ATTACK", "RACE THE CLOCK", "You have 60 seconds. Every good hit counts before time runs out.", RushAmber, "60 SECONDS  •  POWERUPS"),
@@ -51,7 +55,7 @@ fun GameModeSelectionScreen(
     Box(Modifier.fillMaxSize()) {
         ArcadeBackdrop(Modifier.fillMaxSize(), RushMint)
         Column(
-            modifier = Modifier.fillMaxSize().safeDrawingPadding().padding(horizontal = 20.dp, vertical = 16.dp),
+            modifier = Modifier.fillMaxSize().safeDrawingPadding().padding(horizontal = horizontalInset, vertical = if (isTabletLayout) 24.dp else 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
@@ -66,7 +70,7 @@ fun GameModeSelectionScreen(
                 ) { Text("EXIT", fontSize = 9.sp, fontWeight = FontWeight.Black, letterSpacing = 1.sp) }
             }
 
-            Spacer(Modifier.height(22.dp))
+            Spacer(Modifier.height(if (isTabletLayout) 30.dp else 22.dp))
             Text("CHOOSE YOUR", color = RushMint, fontSize = 11.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 3.sp)
             Text("CHALLENGE", color = Color.White, fontSize = 31.sp, fontWeight = FontWeight.Black, letterSpacing = 1.5.sp, textAlign = TextAlign.Center)
             Text("Four ways to test your reaction speed.", color = Color.White.copy(alpha = 0.6f), fontSize = 11.sp)
