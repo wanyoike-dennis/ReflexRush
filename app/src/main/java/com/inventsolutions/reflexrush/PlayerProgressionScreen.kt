@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.inventsolutions.reflexrush.game.DailyMission
@@ -43,10 +44,12 @@ fun PlayerProgressionScreen(
     progression: PlayerProgression,
     onBack: () -> Unit
 ) {
+    val screenWidthDp = LocalConfiguration.current.screenWidthDp
+    val horizontalInset = ((screenWidthDp - 900) / 2).coerceAtLeast(20).dp
     Column(
         modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(Color(0xFF050914), Color(0xFF0B1727), RushBackground)))
             .safeDrawingPadding()
-            .verticalScroll(rememberScrollState()).padding(horizontal = 20.dp, vertical = 22.dp),
+            .verticalScroll(rememberScrollState()).padding(horizontal = horizontalInset, vertical = 22.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Row(
