@@ -34,6 +34,7 @@ class GameEngine(
     private val targetLifecycle = TargetLifecycle()
     private val sessionTracker = GameSessionTracker(sessionConfig.mode)
     private val targetScoring = TargetScoring(sessionConfig.scoreRules)
+    private val powerupEffectResolver = PowerupEffectResolver(config, ::difficultyForCurrentMode)
     private var nextTargetId = 1L
     private var timeSinceLastSpawnMs = 0L
     private var targetsCreated = 0
@@ -287,33 +288,9 @@ class GameEngine(
         val powerup = target.powerupType ?: return
         state = state.copy(targets = state.targets.filterNot { it.id == target.id })
         sessionTracker.recordPowerupCollected()
-        pendingEvents += GameplayEvent.PowerupCollected(powerup)
-        when (powerup) {
-            PowerupType.GOLDEN_STAR -> {
-                val newScore = state.score + 50
-                val previousLevel = state.difficultyLevel
-                val newLevel = difficultyForCurrentMode(newScore).level
-                state = state.copy(
-                    score = newScore,
-                    difficultyLevel = newLevel
-                )
-                pendingEvents += GameplayEvent.PowerupActivated(powerup)
-                if (newLevel != previousLevel) {
-                    pendingEvents += GameplayEvent.LevelChanged(previousLevel, newLevel)
-                }
-            }
-            PowerupType.SHIELD -> {
-                state = state.copy(shieldAvailable = true)
-                pendingEvents += GameplayEvent.PowerupActivated(powerup)
-            }
-            PowerupType.DOUBLE_POINTS, PowerupType.SLOW_TIME -> {
-                state = state.copy(
-                    activeTimedPowerup = powerup,
-                    powerupRemainingMs = config.powerupDurationMs
-                )
-                pendingEvents += GameplayEvent.PowerupActivated(powerup)
-            }
-        }
+        val result = powerupEffectResolver.apply(state, powerup)
+        state = result.state
+        pendingEvents += result.events
     }
 
     private fun completeSession() {
