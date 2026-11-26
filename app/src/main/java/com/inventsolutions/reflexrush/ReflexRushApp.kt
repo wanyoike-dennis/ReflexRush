@@ -12,6 +12,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.LifecycleOwner
 import com.inventsolutions.reflexrush.game.GameMode
 import com.inventsolutions.reflexrush.ui.theme.ReflexRushTheme
@@ -20,11 +21,11 @@ import com.inventsolutions.reflexrush.ui.theme.ReflexRushTheme
 fun ReflexRushApp(lifecycleOwner: LifecycleOwner) {
     ReflexRushTheme {
         val navigation = remember { AppNavigationState() }
-        val highScoreStore = remember { HighScoreStore(lifecycleOwner.let { (it as? android.content.Context)?.applicationContext ?: throw IllegalStateException("Lifecycle owner must be an Android context.") }) }
+        val appContext = LocalContext.current.applicationContext
+        val highScoreStore = remember { HighScoreStore(appContext) }
         var bestScores by remember {
             mutableStateOf(GameMode.entries.associateWith { highScoreStore.load(it) })
         }
-        val appContext = (lifecycleOwner as android.content.Context).applicationContext
         val audioSettingsStore = remember { AudioSettingsStore(appContext) }
         val backupManager = remember { GameBackupManager(appContext) }
         val progressionStore = remember { PlayerProgressionStore(appContext) }
