@@ -67,7 +67,7 @@ internal object PreferenceBackupCodec {
         is Set<*> -> {
             require(value.all { it is String }) { "Unsupported preference set value." }
             val array = JSONArray()
-            value.filterIsInstance<String>().sorted().forEach(array::put)
+            value.filterIsInstance<String>().sorted().forEach { item -> array.put(item) }
             JSONObject().put("type", "string_set").put("value", array)
         }
         else -> throw IllegalArgumentException("A stored value cannot be included in the backup.")
