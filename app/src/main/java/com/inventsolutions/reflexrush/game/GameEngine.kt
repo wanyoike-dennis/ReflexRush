@@ -31,6 +31,7 @@ class GameEngine(
 
     private val pendingEvents = mutableListOf<GameplayEvent>()
     private val targetFactory = TargetFactory(config, sessionConfig, random)
+    private val targetLifecycle = TargetLifecycle()
     private var nextTargetId = 1L
     private var timeSinceLastSpawnMs = 0L
     private var elapsedSessionMs = 0L
@@ -115,12 +116,9 @@ class GameEngine(
             (roundElapsedMs * config.slowTimeFactor).toLong().coerceAtLeast(1L)
         } else roundElapsedMs
 
-        val expiredTargets = state.targets.filter {
-            it.remainingLifetimeMs <= gameplayElapsedMs
-        }
-        val remainingTargets = state.targets
-            .filter { it.remainingLifetimeMs > gameplayElapsedMs }
-            .map { it.copy(remainingLifetimeMs = it.remainingLifetimeMs - gameplayElapsedMs) }
+        val lifecycleResult = targetLifecycle.advance(state.targets, gameplayElapsedMs)
+        val expiredTargets = lifecycleResult.expiredTargets
+        val remainingTargets = lifecycleResult.remainingTargets
 
         if (state.activeTimedPowerup != null) {
             val remainingEffectMs = state.powerupRemainingMs - roundElapsedMs
