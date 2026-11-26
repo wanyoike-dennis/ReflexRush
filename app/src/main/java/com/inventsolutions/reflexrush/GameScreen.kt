@@ -171,22 +171,57 @@ fun GameScreen(
     LaunchedEffect(gameState.status, isResumed) {
         if (gameState.status == GameStatus.RUNNING && isResumed) {
             var previousFrameNanos = 0L
+            var accumulatedFrameMs = 0L
+            var uiUpdateElapsedMs = 0L
+
             while (isActive && gameState.status == GameStatus.RUNNING) {
                 withFrameNanos { frameNanos ->
                     if (previousFrameNanos != 0L) {
-                        val elapsedMs = ((frameNanos - previousFrameNanos) / 1_000_000L)
+                        val frameElapsedMs = ((frameNanos - previousFrameNanos) / 1_000_000L)
                             .coerceAtLeast(1L)
-                        val nextState = engine.advanceTime(elapsedMs)
-                        val events = engine.drainEvents()
-                        audioManager.playEvents(events)
-                        val livesLost = events.count { it is GameplayEvent.LifeLost }
-                        if (livesLost > 0) {
-                            actionFeedback = if (livesLost == 1) "−1 LIFE" else "−$livesLost LIVES"
-                            actionFeedbackColor = RushRed
-                            feedbackToken++
-                            performGameVibration(context, missedLife = true)
+                        accumulatedFrameMs += frameElapsedMs
+
+                        // The game simulation only needs a 30 Hz tick. Taps still
+                        // update state immediately in the target click handler.
+                        if (accumulatedFrameMs >= GAME_TICK_INTERVAL_MS) {
+                            val elapsedMs = accumulatedFrameMs
+                            accumulatedFrameMs = 0L
+                            val previousState = gameState
+                            val nextState = engine.advanceTime(elapsedMs)
+                            val events = engine.drainEvents()
+                            audioManager.playEvents(events)
+
+                            val livesLost = events.count { it is GameplayEvent.LifeLost }
+                            if (livesLost > 0) {
+                                actionFeedback = if (livesLost == 1) "−1 LIFE" else "−$livesLost LIVES"
+                                actionFeedbackColor = RushRed
+                                feedbackToken++
+                                performGameVibration(context, missedLife = true)
+                            }
+
+                            uiUpdateElapsedMs += elapsedMs
+                            val immediateUiChange =
+                                nextState.status != previousState.status ||
+                                    targetIdsChanged(previousState.targets, nextState.targets) ||
+                                    nextState.score != previousState.score ||
+                                    nextState.lives != previousState.lives ||
+                                    nextState.comboCount != previousState.comboCount ||
+                                    nextState.comboMultiplier != previousState.comboMultiplier ||
+                                    nextState.difficultyLevel != previousState.difficultyLevel ||
+                                    nextState.activeTimedPowerup != previousState.activeTimedPowerup ||
+                                    nextState.shieldAvailable != previousState.shieldAvailable ||
+                                    nextState.timeRemainingMs?.div(1_000L) !=
+                                    previousState.timeRemainingMs?.div(1_000L)
+
+                            // Target lifetimes and effect timers do not need a
+                            // full-screen recomposition every display frame.
+                            // Publish timer changes at 10 Hz, and gameplay events
+                            // immediately, so input and visible target changes stay crisp.
+                            if (immediateUiChange || uiUpdateElapsedMs >= GAME_UI_UPDATE_INTERVAL_MS) {
+                                gameState = nextState
+                                uiUpdateElapsedMs = 0L
+                            }
                         }
-                        gameState = nextState
                     }
                     previousFrameNanos = frameNanos
                 }
@@ -386,28 +421,7 @@ fun GameScreen(
                     )
                     .border(1.5.dp, RushGreen.copy(alpha = 0.48f), RoundedCornerShape(26.dp))
             ) {
-                Canvas(Modifier.fillMaxSize()) {
-                    val step = 38.dp.toPx()
-                    var gridX = 0f
-                    while (gridX < size.width) {
-                        drawLine(Color(0x1427E6A1), androidx.compose.ui.geometry.Offset(gridX, 0f), androidx.compose.ui.geometry.Offset(gridX, size.height), 1.dp.toPx())
-                        gridX += step
-                    }
-                    var gridY = 0f
-                    while (gridY < size.height) {
-                        drawLine(Color(0x1427E6A1), androidx.compose.ui.geometry.Offset(0f, gridY), androidx.compose.ui.geometry.Offset(size.width, gridY), 1.dp.toPx())
-                        gridY += step
-                    }
-                    drawCircle(
-                        brush = Brush.radialGradient(
-                            listOf(Color(0x2227E6A1), Color.Transparent),
-                            center = androidx.compose.ui.geometry.Offset(size.width / 2f, size.height / 2f),
-                            radius = size.minDimension * 0.7f
-                        ),
-                        radius = size.minDimension * 0.7f,
-                        center = androidx.compose.ui.geometry.Offset(size.width / 2f, size.height / 2f)
-                    )
-                }
+                GameArenaBackground()
                 val targetSize = 66.dp
                 gameState.targets.forEach { target ->
                     key(target.id) {
@@ -521,6 +535,53 @@ fun GameScreen(
                 onHome = onHome
             )
         }
+    }
+}
+
+private const val GAME_TICK_INTERVAL_MS = 33L
+private const val GAME_UI_UPDATE_INTERVAL_MS = 100L
+
+private fun targetIdsChanged(previous: List<GameTarget>, current: List<GameTarget>): Boolean {
+    if (previous.size != current.size) return true
+    for (index in previous.indices) {
+        if (previous[index].id != current[index].id) return true
+    }
+    return false
+}
+
+@Composable
+private fun GameArenaBackground() {
+    Canvas(Modifier.fillMaxSize()) {
+        val step = 38.dp.toPx()
+        var gridX = 0f
+        while (gridX < size.width) {
+            drawLine(
+                Color(0x1427E6A1),
+                androidx.compose.ui.geometry.Offset(gridX, 0f),
+                androidx.compose.ui.geometry.Offset(gridX, size.height),
+                1.dp.toPx()
+            )
+            gridX += step
+        }
+        var gridY = 0f
+        while (gridY < size.height) {
+            drawLine(
+                Color(0x1427E6A1),
+                androidx.compose.ui.geometry.Offset(0f, gridY),
+                androidx.compose.ui.geometry.Offset(size.width, gridY),
+                1.dp.toPx()
+            )
+            gridY += step
+        }
+        drawCircle(
+            brush = Brush.radialGradient(
+                listOf(Color(0x2227E6A1), Color.Transparent),
+                center = androidx.compose.ui.geometry.Offset(size.width / 2f, size.height / 2f),
+                radius = size.minDimension * 0.7f
+            ),
+            radius = size.minDimension * 0.7f,
+            center = androidx.compose.ui.geometry.Offset(size.width / 2f, size.height / 2f)
+        )
     }
 }
 
