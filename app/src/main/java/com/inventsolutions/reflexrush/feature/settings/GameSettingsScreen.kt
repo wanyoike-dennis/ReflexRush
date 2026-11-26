@@ -1,25 +1,12 @@
 package com.inventsolutions.reflexrush.feature.settings
 
 import com.inventsolutions.reflexrush.core.ui.*
-
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Switch
-import androidx.compose.material3.Text
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -43,111 +30,88 @@ fun GameSettingsScreen(
     onImportBackup: () -> Unit,
     onBack: () -> Unit
 ) {
-    val screenWidthDp = LocalConfiguration.current.screenWidthDp
-    val horizontalInset = ((screenWidthDp - 760) / 2).coerceAtLeast(20).dp
+    val width = LocalConfiguration.current.screenWidthDp
+    val inset = ((width - 760) / 2).coerceAtLeast(20).dp
     Box(Modifier.fillMaxSize()) {
-        ArcadeBackdrop(Modifier.fillMaxSize(), RushAmber, intensity = 0.42f)
+        ArcadeBackdrop(Modifier.fillMaxSize(), RushAmber, intensity = .42f)
         Column(
-            modifier = Modifier.fillMaxSize().safeDrawingPadding().verticalScroll(rememberScrollState()).padding(horizontal = horizontalInset, vertical = 24.dp),
+            Modifier.fillMaxSize().safeDrawingPadding().verticalScroll(rememberScrollState())
+                .padding(horizontal = inset, vertical = 22.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            ArcadeScreenHeader(
-                eyebrow = "REFLEX RUSH",
-                title = "GAME SETTINGS",
-                onBack = onBack
-            )
-            Spacer(Modifier.height(24.dp))
-            ArcadePanel(modifier = Modifier.fillMaxWidth(), accent = RushGreen, radius = 20.dp) {
-                Column(Modifier.fillMaxWidth().padding(18.dp)) {
-                    Text("AUDIO", color = RushAmber, fontSize = 11.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 2.sp)
-                    Spacer(Modifier.height(8.dp))
-                    Text(
-                        "Choose the sounds you want during gameplay. Your choices are saved on this device.",
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.65f),
-                        fontSize = 11.sp
-                    )
-                    Spacer(Modifier.height(18.dp))
-                    AudioSettingRow(
-                        title = "Sound effects",
-                        subtitle = "Hits, combos, powerups and game events",
-                        enabled = soundEffectsEnabled,
-                        onChange = onSoundEffectsChange,
-                        accent = RushGreen
-                    )
-                    Spacer(Modifier.height(12.dp))
-                    AudioSettingRow(
-                        title = "Background music",
-                        subtitle = "Ambient music while a round is active",
-                        enabled = musicEnabled,
-                        onChange = onMusicChange,
-                        accent = RushAmber
-                    )
+            ArcadeScreenHeader("REFLEX RUSH", "GAME SETTINGS", onBack)
+            Spacer(Modifier.height(22.dp))
+            SettingsSectionHeader("SOUND & AUDIO", "Tune the arena to your preference", RushGreen)
+            ArcadePanel(Modifier.fillMaxWidth(), RushGreen, 21.dp) {
+                Column(Modifier.fillMaxWidth().padding(16.dp)) {
+                    AudioSettingRow("Sound effects", "Hits, combos, powerups and game events", soundEffectsEnabled, onSoundEffectsChange, RushGreen)
+                    Spacer(Modifier.height(10.dp))
+                    AudioSettingRow("Background music", "Ambient music while a round is active", musicEnabled, onMusicChange, RushAmber)
                 }
             }
-            Spacer(Modifier.height(18.dp))
-            ArcadePanel(modifier = Modifier.fillMaxWidth(), accent = RushAmber, radius = 20.dp) {
-                Column(Modifier.fillMaxWidth().padding(18.dp)) {
-                    Text("BACKUP & RESTORE", color = RushAmber, fontSize = 11.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 2.sp)
-                    Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(22.dp))
+            SettingsSectionHeader("BACKUP & RESTORE", "Keep your progress safe when changing devices", RushAmber)
+            ArcadePanel(Modifier.fillMaxWidth(), RushAmber, 21.dp) {
+                Column(Modifier.fillMaxWidth().padding(17.dp)) {
+                    Text("YOUR GAME DATA", color = RushMint, fontSize = 11.sp, fontWeight = FontWeight.Black, letterSpacing = 1.3.sp)
+                    Spacer(Modifier.height(7.dp))
                     Text(
-                        "Save your scores, statistics, missions, achievements, XP and audio settings to a file, or restore them on this device.",
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.65f),
-                        fontSize = 11.sp
+                        "Export scores, statistics, missions, achievements, XP and audio settings to a backup file. Restore a previous backup on this device.",
+                        color = Color.White.copy(alpha = .65f), fontSize = 10.sp, lineHeight = 15.sp
                     )
-                    Spacer(Modifier.height(14.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        OutlinedButton(onClick = onExportBackup, modifier = Modifier.weight(1f)) {
-                            Text("EXPORT", fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                        }
-                        OutlinedButton(onClick = onImportBackup, modifier = Modifier.weight(1f)) {
-                            Text("RESTORE", fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                        }
+                    Spacer(Modifier.height(15.dp))
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        Button(
+                            onClick = onExportBackup, modifier = Modifier.weight(1f).height(48.dp),
+                            shape = RoundedCornerShape(13.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = RushGreen, contentColor = Color(0xFF04251B))
+                        ) { Text("EXPORT BACKUP", fontSize = 9.sp, fontWeight = FontWeight.Black) }
+                        OutlinedButton(
+                            onClick = onImportBackup, modifier = Modifier.weight(1f).height(48.dp),
+                            shape = RoundedCornerShape(13.dp)
+                        ) { Text("RESTORE", fontSize = 10.sp, fontWeight = FontWeight.Black, color = RushMint) }
                     }
                     if (!backupStatus.isNullOrBlank()) {
-                        Spacer(Modifier.height(10.dp))
-                        Text(
-                            backupStatus,
-                            color = RushMint,
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.SemiBold
-                        )
+                        Spacer(Modifier.height(12.dp))
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text("●", color = RushGreen, fontSize = 10.sp)
+                            Spacer(Modifier.width(7.dp))
+                            Text(backupStatus, color = RushMint, fontSize = 10.sp, fontWeight = FontWeight.SemiBold)
+                        }
                     }
                 }
             }
-            Spacer(Modifier.height(16.dp))
-            Text(
-                "Android automatic backup is also available when enabled on your device.",
-                color = RushMint.copy(alpha = 0.6f),
-                fontSize = 10.sp
-            )
-            Spacer(Modifier.height(22.dp))
-            Text("TRUST YOUR REFLEXES.", color = RushMint.copy(alpha = 0.42f), fontSize = 9.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.4.sp)
+            Spacer(Modifier.height(13.dp))
+            Text("Restoring replaces the current local game progress. Export a backup first if you want to keep it.", Modifier.fillMaxWidth(), color = Color.White.copy(alpha = .42f), fontSize = 9.sp, lineHeight = 14.sp)
+            Spacer(Modifier.height(19.dp))
+            Text("TRUST YOUR REFLEXES.", color = RushMint.copy(alpha = .42f), fontSize = 9.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.4.sp)
+            Spacer(Modifier.height(15.dp))
         }
     }
 }
 
 @Composable
-private fun AudioSettingRow(
-    title: String,
-    subtitle: String,
-    enabled: Boolean,
-    onChange: (Boolean) -> Unit,
-    accent: Color
-) {
+private fun SettingsSectionHeader(title: String, subtitle: String, tint: Color) {
+    Column(Modifier.fillMaxWidth()) {
+        Text(title, color = tint, fontSize = 10.sp, fontWeight = FontWeight.Black, letterSpacing = 1.7.sp)
+        Spacer(Modifier.height(3.dp))
+        Text(subtitle, color = Color.White.copy(alpha = .48f), fontSize = 10.sp)
+    }
+    Spacer(Modifier.height(10.dp))
+}
+
+@Composable
+private fun AudioSettingRow(title: String, subtitle: String, enabled: Boolean, onChange: (Boolean) -> Unit, accent: Color) {
     Row(
-        modifier = Modifier.fillMaxWidth()
-            .background(Color(0xCC0A1728), RoundedCornerShape(16.dp))
-            .padding(horizontal = 14.dp, vertical = 12.dp),
+        Modifier.fillMaxWidth().background(Color(0xCC0A1728), RoundedCornerShape(16.dp)).padding(horizontal = 14.dp, vertical = 13.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(Modifier.weight(1f)) {
-            Text(title, color = if (enabled) accent else RushMint, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+            Text(title, color = if (enabled) accent else RushMint, fontSize = 13.sp, fontWeight = FontWeight.Bold)
             Spacer(Modifier.height(4.dp))
-            Text(subtitle, color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.55f), fontSize = 10.sp)
-            Text(if (enabled) "ON" else "OFF", color = if (enabled) accent else RushMint.copy(alpha = 0.45f), fontSize = 9.sp, fontWeight = FontWeight.ExtraBold)
+            Text(subtitle, color = Color.White.copy(alpha = .53f), fontSize = 9.sp, lineHeight = 13.sp)
+            Spacer(Modifier.height(4.dp))
+            Text(if (enabled) "ON" else "OFF", color = if (enabled) accent else RushMint.copy(alpha = .42f), fontSize = 8.sp, fontWeight = FontWeight.Black, letterSpacing = 1.sp)
         }
         Switch(checked = enabled, onCheckedChange = onChange)
     }

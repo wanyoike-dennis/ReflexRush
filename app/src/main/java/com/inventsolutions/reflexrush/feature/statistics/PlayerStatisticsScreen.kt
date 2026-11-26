@@ -1,29 +1,16 @@
 package com.inventsolutions.reflexrush.feature.statistics
 
 import com.inventsolutions.reflexrush.core.ui.*
-
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
@@ -32,108 +19,93 @@ import com.inventsolutions.reflexrush.game.GameMode
 import com.inventsolutions.reflexrush.game.ModeStatistics
 import com.inventsolutions.reflexrush.game.PlayerStatistics
 import com.inventsolutions.reflexrush.ui.theme.RushAmber
-import com.inventsolutions.reflexrush.ui.theme.RushBackground
 import com.inventsolutions.reflexrush.ui.theme.RushGreen
 import com.inventsolutions.reflexrush.ui.theme.RushMint
 import com.inventsolutions.reflexrush.ui.theme.RushRed
-import com.inventsolutions.reflexrush.ui.theme.RushSurface
-import com.inventsolutions.reflexrush.ui.theme.RushSurfaceVariant
 
 @Composable
-fun PlayerStatisticsScreen(
-    statistics: PlayerStatistics,
-    onBack: () -> Unit
-) {
-    val screenWidthDp = LocalConfiguration.current.screenWidthDp
-    val horizontalInset = ((screenWidthDp - 900) / 2).coerceAtLeast(20).dp
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .arcadeBackdrop(accent = RushMint, intensity = 0.38f)
-            .safeDrawingPadding()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = horizontalInset, vertical = 22.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        ArcadeScreenHeader(
-            eyebrow = "PLAYER PROFILE",
-            title = "YOUR RECORDS",
-            onBack = onBack
-        )
-        Spacer(Modifier.height(20.dp))
-        Text("◈  LIFETIME OVERVIEW", modifier = Modifier.fillMaxWidth(), color = RushMint, fontSize = 10.sp, fontWeight = FontWeight.Black, letterSpacing = 1.6.sp)
-        Spacer(Modifier.height(10.dp))
-        StatsPanel {
-            StatsRow("Games played", statistics.totalGamesPlayed.toString(), RushMint)
-            StatsRow("Total play time", formatPlayTime(statistics.totalPlayTimeMs), RushMint)
-            StatsRow("Target accuracy", "${statistics.accuracyPercent}%", RushGreen)
-            StatsRow("Highest score", statistics.highestScore.toString(), RushAmber)
-            StatsRow("Highest level", statistics.highestLevel.toString(), RushMint)
-            StatsRow("Best combo", "${statistics.bestCombo}×", RushAmber)
+fun PlayerStatisticsScreen(statistics: PlayerStatistics, onBack: () -> Unit) {
+    val width = LocalConfiguration.current.screenWidthDp
+    val inset = ((width - 900) / 2).coerceAtLeast(20).dp
+    Box(Modifier.fillMaxSize()) {
+        ArcadeBackdrop(Modifier.fillMaxSize(), RushMint, intensity = .38f)
+        Column(
+            Modifier.fillMaxSize().safeDrawingPadding().verticalScroll(rememberScrollState())
+                .padding(horizontal = inset, vertical = 22.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            ArcadeScreenHeader("PLAYER PROFILE", "YOUR STATISTICS", onBack)
+            Spacer(Modifier.height(18.dp))
+            Text("LIFETIME OVERVIEW", Modifier.fillMaxWidth(), color = RushMint, fontSize = 10.sp, fontWeight = FontWeight.Black, letterSpacing = 1.7.sp)
+            Spacer(Modifier.height(10.dp))
+            ArcadePanel(Modifier.fillMaxWidth(), RushMint, 21.dp) {
+                Column(Modifier.fillMaxWidth().padding(16.dp)) {
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(9.dp)) {
+                        StatHighlight("GAMES", statistics.totalGamesPlayed.toString(), RushMint, Modifier.weight(1f))
+                        StatHighlight("ACCURACY", "${statistics.accuracyPercent}%", RushGreen, Modifier.weight(1f))
+                        StatHighlight("BEST SCORE", statistics.highestScore.toString(), RushAmber, Modifier.weight(1f))
+                    }
+                    Spacer(Modifier.height(15.dp))
+                    StatsRow("Total play time", formatPlayTime(statistics.totalPlayTimeMs), RushMint)
+                    StatsRow("Highest level", statistics.highestLevel.toString(), RushMint)
+                    StatsRow("Best combo", "${statistics.bestCombo}×", RushAmber)
+                }
+            }
+            Spacer(Modifier.height(20.dp))
+            Text("GAMEPLAY TOTALS", Modifier.fillMaxWidth(), color = RushAmber, fontSize = 10.sp, fontWeight = FontWeight.Black, letterSpacing = 1.7.sp)
+            Spacer(Modifier.height(10.dp))
+            ArcadePanel(Modifier.fillMaxWidth(), RushAmber, 21.dp) {
+                Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp)) {
+                    StatsRow("Good targets hit", statistics.totalGoodTargetsHit.toString(), RushGreen)
+                    StatsRow("Danger targets hit", statistics.totalDangerTargetsHit.toString(), RushRed)
+                    StatsRow("Targets missed", statistics.totalTargetsMissed.toString(), RushRed)
+                    StatsRow("Powerups collected", statistics.totalPowerupsCollected.toString(), RushAmber)
+                }
+            }
+            Spacer(Modifier.height(20.dp))
+            Text("RECORDS BY GAME MODE", Modifier.fillMaxWidth(), color = RushMint, fontSize = 10.sp, fontWeight = FontWeight.Black, letterSpacing = 1.7.sp)
+            Spacer(Modifier.height(10.dp))
+            GameMode.entries.forEach { mode ->
+                ModeStatsCard(mode, statistics.forMode(mode))
+                Spacer(Modifier.height(10.dp))
+            }
+            Text(
+                "Accuracy = good hits ÷ (good hits + danger hits + missed targets). Powerups are tracked separately.",
+                Modifier.fillMaxWidth(), color = Color.White.copy(alpha = .43f), fontSize = 9.sp, lineHeight = 14.sp
+            )
+            Spacer(Modifier.height(18.dp))
         }
-        Spacer(Modifier.height(18.dp))
-        Text("⚡  GAMEPLAY TOTALS", modifier = Modifier.fillMaxWidth(), color = RushAmber, fontSize = 10.sp, fontWeight = FontWeight.Black, letterSpacing = 1.6.sp)
-        Spacer(Modifier.height(10.dp))
-        StatsPanel {
-            StatsRow("Good targets hit", statistics.totalGoodTargetsHit.toString(), RushGreen)
-            StatsRow("Danger targets hit", statistics.totalDangerTargetsHit.toString(), RushRed)
-            StatsRow("Targets missed", statistics.totalTargetsMissed.toString(), RushRed)
-            StatsRow("Powerups collected", statistics.totalPowerupsCollected.toString(), RushAmber)
-        }
-        Spacer(Modifier.height(18.dp))
-        Text("▣  MODE RECORDS", modifier = Modifier.fillMaxWidth(), color = RushAmber, fontSize = 10.sp, fontWeight = FontWeight.Black, letterSpacing = 1.6.sp)
-        Spacer(Modifier.height(10.dp))
-        GameMode.entries.forEach { mode ->
-            ModeStatsCard(mode, statistics.forMode(mode))
-            Spacer(Modifier.height(9.dp))
-        }
-        Spacer(Modifier.height(12.dp))
-        Text(
-            "Accuracy = good hits ÷ (good hits + danger hits + missed targets). Powerups are tracked separately.",
-            modifier = Modifier.fillMaxWidth(),
-            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.48f),
-            fontSize = 10.sp,
-            lineHeight = 15.sp
-        )
-        Spacer(Modifier.height(20.dp))
     }
 }
 
 @Composable
-private fun StatsPanel(content: @Composable () -> Unit) {
-    ArcadePanel(
-        modifier = Modifier.fillMaxWidth(),
-        accent = RushMint,
-        radius = 20.dp
-    ) {
-        Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp)) { content() }
+private fun StatHighlight(label: String, value: String, tint: Color, modifier: Modifier = Modifier) {
+    Column(modifier.clip(RoundedCornerShape(14.dp)).padding(vertical = 10.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(value, color = tint, fontSize = 20.sp, fontWeight = FontWeight.Black)
+        Text(label, color = Color.White.copy(alpha = .48f), fontSize = 8.sp, fontWeight = FontWeight.Bold, letterSpacing = .3.sp)
     }
 }
 
 @Composable
 private fun StatsRow(label: String, value: String, tint: Color) {
-    Row(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 7.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(label, color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.68f), fontSize = 12.sp)
-        Text(value, color = tint, fontSize = 14.sp, fontWeight = FontWeight.ExtraBold)
+    Row(Modifier.fillMaxWidth().padding(vertical = 7.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+        Text(label, color = Color.White.copy(alpha = .68f), fontSize = 11.sp)
+        Text(value, color = tint, fontSize = 13.sp, fontWeight = FontWeight.ExtraBold)
     }
 }
 
 @Composable
 private fun ModeStatsCard(mode: GameMode, stats: ModeStatistics) {
-    ArcadePanel(modifier = Modifier.fillMaxWidth(), accent = RushAmber, radius = 18.dp) {
+    ArcadePanel(Modifier.fillMaxWidth(), RushGreen, 18.dp) {
         Column(Modifier.fillMaxWidth().padding(15.dp)) {
-            Text(mode.name.replace('_', ' '), color = RushMint, fontSize = 13.sp, fontWeight = FontWeight.Black, letterSpacing = 1.4.sp)
-            Spacer(Modifier.height(7.dp))
+            Text(mode.name.replace('_', ' '), color = RushMint, fontSize = 12.sp, fontWeight = FontWeight.Black, letterSpacing = 1.2.sp)
+            Spacer(Modifier.height(10.dp))
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 MiniStat("GAMES", stats.gamesPlayed.toString())
                 MiniStat("BEST SCORE", stats.highestScore.toString())
                 MiniStat("ACCURACY", "${stats.accuracyPercent}%")
             }
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(10.dp))
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 MiniStat("LEVEL", stats.highestLevel.toString())
                 MiniStat("BEST COMBO", "${stats.bestCombo}×")
@@ -146,13 +118,13 @@ private fun ModeStatsCard(mode: GameMode, stats: ModeStatistics) {
 @Composable
 private fun MiniStat(label: String, value: String) {
     Column {
-        Text(label, color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.42f), fontSize = 8.sp, fontWeight = FontWeight.Bold, letterSpacing = 0.7.sp)
-        Text(value, color = RushAmber, fontSize = 13.sp, fontWeight = FontWeight.ExtraBold)
+        Text(label, color = Color.White.copy(alpha = .42f), fontSize = 7.sp, fontWeight = FontWeight.Bold, letterSpacing = .6.sp)
+        Text(value, color = RushAmber, fontSize = 12.sp, fontWeight = FontWeight.ExtraBold)
     }
 }
 
 private fun formatPlayTime(durationMs: Long): String {
-    val totalSeconds = (durationMs.coerceAtLeast(0L) / 1_000L)
+    val totalSeconds = durationMs.coerceAtLeast(0L) / 1_000L
     val hours = totalSeconds / 3_600L
     val minutes = (totalSeconds % 3_600L) / 60L
     return if (hours > 0L) "${hours}h ${minutes}m" else "${minutes}m ${totalSeconds % 60L}s"
