@@ -46,13 +46,11 @@ fun PlayerProfileScreen(
                 .padding(horizontal = inset, vertical = 26.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Column {
-                    Text("REFLEX RUSH", color = RushMint, fontSize = 10.sp, fontWeight = FontWeight.Black, letterSpacing = 2.sp)
-                    Text("PLAYER PROFILE", color = Color.White, fontSize = 25.sp, fontWeight = FontWeight.Black)
-                }
-                OutlinedButton(onClick = onBack) { Text("BACK") }
-            }
+            ArcadeScreenHeader(
+                eyebrow = "REFLEX RUSH",
+                title = "PLAYER PROFILE",
+                onBack = onBack
+            )
             Spacer(Modifier.height(28.dp))
             Box(
                 Modifier.size(104.dp).clip(CircleShape)
