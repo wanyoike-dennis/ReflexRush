@@ -3,9 +3,7 @@ package com.inventsolutions.reflexrush.feature.game
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.weight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.key
@@ -18,7 +16,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.font.FontWeight
-import com.inventsolutions.reflexrush.game.GameState
 import com.inventsolutions.reflexrush.game.GameStatus
 import com.inventsolutions.reflexrush.game.GameTarget
 import com.inventsolutions.reflexrush.ui.theme.RushGreen
@@ -28,6 +25,7 @@ import com.inventsolutions.reflexrush.ui.theme.RushSurface
 /** Renders the live playfield and forwards target taps to the active session. */
 @Composable
 internal fun GameArenaSurface(
+    modifier: Modifier,
     targets: List<GameTarget>,
     status: GameStatus,
     isTabletLayout: Boolean,
@@ -37,9 +35,7 @@ internal fun GameArenaSurface(
     onTargetTap: (Long) -> Unit
 ) {
     BoxWithConstraints(
-        modifier = Modifier
-            .fillMaxWidth()
-            .weight(1f)
+        modifier = modifier
             .clip(RoundedCornerShape(26.dp))
             .background(
                 Brush.verticalGradient(

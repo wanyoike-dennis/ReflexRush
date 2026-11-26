@@ -208,6 +208,7 @@ fun GameScreen(
             Spacer(Modifier.height(if (compactLandscape) 5.dp else 12.dp))
 
             GameArenaSurface(
+                modifier = Modifier.fillMaxWidth().weight(1f),
                 targets = gameState.targets,
                 status = gameState.status,
                 isTabletLayout = isTabletLayout,
