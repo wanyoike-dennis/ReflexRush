@@ -1,6 +1,7 @@
 package com.inventsolutions.reflexrush.data.scores
 
 import android.content.Context
+import com.inventsolutions.reflexrush.data.preferences.PreferenceStoreRegistry
 import com.inventsolutions.reflexrush.game.BestScore
 import com.inventsolutions.reflexrush.game.GameMode
 
@@ -10,8 +11,8 @@ import com.inventsolutions.reflexrush.game.GameMode
  * SharedPreferences keeps this small piece of data local and available offline.
  */
 class HighScoreStore(context: Context) {
-    private val preferences = context.getSharedPreferences(
-        PREFERENCES_NAME,
+    private val preferences = context.applicationContext.getSharedPreferences(
+        PreferenceStoreRegistry.HIGH_SCORES,
         Context.MODE_PRIVATE
     )
 
@@ -36,7 +37,6 @@ class HighScoreStore(context: Context) {
         if (mode == GameMode.CLASSIC) KEY_BEST_SCORE else "${KEY_BEST_SCORE}_${mode.name.lowercase()}"
 
     private companion object {
-        const val PREFERENCES_NAME = "reflex_rush_preferences"
         const val KEY_BEST_SCORE = "best_score"
     }
 }

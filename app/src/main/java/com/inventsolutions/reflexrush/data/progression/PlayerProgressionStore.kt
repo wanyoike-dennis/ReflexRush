@@ -1,6 +1,7 @@
 package com.inventsolutions.reflexrush.data.progression
 
 import android.content.Context
+import com.inventsolutions.reflexrush.data.preferences.PreferenceStoreRegistry
 import com.inventsolutions.reflexrush.game.GameMode
 import com.inventsolutions.reflexrush.game.GameSessionSummary
 import com.inventsolutions.reflexrush.game.PlayerProgression
@@ -15,7 +16,10 @@ class PlayerProgressionStore(
         SimpleDateFormat("yyyy-MM-dd", Locale.ROOT).format(Date())
     }
 ) {
-    private val preferences = context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
+    private val preferences = context.applicationContext.getSharedPreferences(
+        PreferenceStoreRegistry.PROGRESSION,
+        Context.MODE_PRIVATE
+    )
 
     fun load(): PlayerProgression {
         val today = todayKeyProvider()
@@ -68,7 +72,6 @@ class PlayerProgressionStore(
     }
 
     private companion object {
-        const val PREFERENCES_NAME = "reflex_rush_player_progression"
         const val KEY_XP = "experience_points"
         const val KEY_GAMES = "total_games"
         const val KEY_GOOD_HITS = "total_good_hits"

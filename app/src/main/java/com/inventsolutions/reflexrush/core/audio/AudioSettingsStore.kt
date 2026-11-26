@@ -1,6 +1,7 @@
 package com.inventsolutions.reflexrush.core.audio
 
 import android.content.Context
+import com.inventsolutions.reflexrush.data.preferences.PreferenceStoreRegistry
 
 /**
  * Lightweight persistent audio preferences shared by the settings screen and gameplay.
@@ -8,7 +9,7 @@ import android.content.Context
  */
 class AudioSettingsStore(context: Context) {
     private val preferences = context.applicationContext.getSharedPreferences(
-        PREFERENCES_NAME,
+        PreferenceStoreRegistry.AUDIO,
         Context.MODE_PRIVATE
     )
 
@@ -27,7 +28,6 @@ class AudioSettingsStore(context: Context) {
     }
 
     private companion object {
-        const val PREFERENCES_NAME = "reflex_rush_audio"
         const val KEY_SOUND_EFFECTS = "sound_effects_enabled"
         const val KEY_MUSIC = "music_enabled"
     }

@@ -1,6 +1,7 @@
 package com.inventsolutions.reflexrush.data.statistics
 
 import android.content.Context
+import com.inventsolutions.reflexrush.data.preferences.PreferenceStoreRegistry
 import com.inventsolutions.reflexrush.game.GameMode
 import com.inventsolutions.reflexrush.game.GameSessionSummary
 import com.inventsolutions.reflexrush.game.ModeStatistics
@@ -8,7 +9,10 @@ import com.inventsolutions.reflexrush.game.PlayerStatistics
 
 /** Offline lifetime statistics, stored independently for each game mode. */
 class PlayerStatisticsStore(context: Context) {
-    private val preferences = context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
+    private val preferences = context.applicationContext.getSharedPreferences(
+        PreferenceStoreRegistry.STATISTICS,
+        Context.MODE_PRIVATE
+    )
 
     fun load(): PlayerStatistics = PlayerStatistics(
         modes = GameMode.entries.associateWith { mode ->
@@ -28,8 +32,7 @@ class PlayerStatisticsStore(context: Context) {
     )
 
     fun record(summary: GameSessionSummary): PlayerStatistics {
-        val current = load()
-        val updated = current.include(summary)
+        val updated = load().include(summary)
         val mode = updated.forMode(summary.mode)
         val prefix = summary.mode.name.lowercase()
         preferences.edit()
@@ -47,8 +50,4 @@ class PlayerStatisticsStore(context: Context) {
     }
 
     private fun key(mode: String, field: String) = "${mode}_${field}"
-
-    private companion object {
-        const val PREFERENCES_NAME = "reflex_rush_player_statistics"
-    }
 }
