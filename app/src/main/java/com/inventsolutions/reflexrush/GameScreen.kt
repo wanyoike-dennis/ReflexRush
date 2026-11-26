@@ -50,6 +50,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -105,6 +106,11 @@ fun GameScreen(
     mode: GameMode = GameMode.CLASSIC,
     onSessionCompleted: (com.inventsolutions.reflexrush.game.GameSessionSummary) -> Unit = {}
 ) {
+    val configuration = LocalConfiguration.current
+    val screenWidthDp = configuration.screenWidthDp
+    val screenHeightDp = configuration.screenHeightDp
+    val isTabletLayout = screenWidthDp >= 700
+    val compactLandscape = screenWidthDp > screenHeightDp && screenHeightDp < 700
     val engine = remember(mode) { GameEngine(GameSessionConfig.forMode(mode)) }
     val context = LocalContext.current
     val audioManager = remember(context) { GameAudioManager(context.applicationContext) }
@@ -232,7 +238,10 @@ fun GameScreen(
     Box(modifier = Modifier.fillMaxSize()) {
         ArcadeBackdrop(Modifier.fillMaxSize(), RushGreen)
         Column(
-            modifier = Modifier.fillMaxSize().safeDrawingPadding().padding(horizontal = 16.dp, vertical = 12.dp),
+            modifier = Modifier.fillMaxSize().safeDrawingPadding().padding(
+                horizontal = if (isTabletLayout) 28.dp else 16.dp,
+                vertical = if (compactLandscape) 6.dp else 12.dp
+            ),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Row(
@@ -271,7 +280,7 @@ fun GameScreen(
                 }
             }
 
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(if (compactLandscape) 6.dp else 12.dp))
 
             Row(
                 modifier = Modifier
@@ -318,7 +327,7 @@ fun GameScreen(
                 GameStat(label = "LEVEL", value = gameState.difficultyLevel.toString(), tint = RushGreen)
             }
 
-            Spacer(Modifier.height(10.dp))
+            Spacer(Modifier.height(if (compactLandscape) 5.dp else 10.dp))
 
             Row(
                 modifier = Modifier
@@ -407,7 +416,7 @@ fun GameScreen(
                 letterSpacing = 1.5.sp
             )
 
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(if (compactLandscape) 5.dp else 12.dp))
 
             BoxWithConstraints(
                 modifier = Modifier
@@ -422,7 +431,7 @@ fun GameScreen(
                     .border(1.5.dp, RushGreen.copy(alpha = 0.48f), RoundedCornerShape(26.dp))
             ) {
                 GameArenaBackground()
-                val targetSize = 66.dp
+                val targetSize = if (isTabletLayout) 78.dp else 66.dp
                 gameState.targets.forEach { target ->
                     key(target.id) {
                     GameTargetButton(
