@@ -206,6 +206,7 @@ class GameEngine(
             return state
         }
 
+        val target = state.targets.firstOrNull { it.id == targetId } ?: return state
         if (target.type == TargetType.POWERUP) {
             targetsResolved++
             collectPowerup(target)
@@ -259,20 +260,6 @@ class GameEngine(
         if (state.status == GameStatus.GAME_OVER) return
         state = state.copy(status = GameStatus.GAME_OVER, targets = emptyList())
         completeSession()
-    }
-
-    private fun breakCombo() {
-        val transition = comboTransitionResolver.breakCombo(
-            previousCount = state.comboCount,
-            previousMultiplier = state.comboMultiplier
-        )
-        if (transition.events.isEmpty()) return
-
-        state = state.copy(
-            comboCount = transition.comboCount,
-            comboMultiplier = transition.multiplier
-        )
-        pendingEvents += transition.events
     }
 
 }
