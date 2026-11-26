@@ -1,8 +1,7 @@
 package com.inventsolutions.reflexrush.feature.home
 
-import com.inventsolutions.reflexrush.core.ui.*
-
-import androidx.compose.foundation.Canvas
+import com.inventsolutions.reflexrush.core.ui.ArcadeBackdrop
+import com.inventsolutions.reflexrush.core.ui.ArcadePanel
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -17,34 +16,31 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.inventsolutions.reflexrush.ui.theme.ReflexRushTheme
 import com.inventsolutions.reflexrush.ui.theme.RushAmber
 import com.inventsolutions.reflexrush.ui.theme.RushGreen
 import com.inventsolutions.reflexrush.ui.theme.RushMint
-import com.inventsolutions.reflexrush.ui.theme.RushRed
 
 @Composable
 fun ReflexRushHome(
@@ -52,227 +48,167 @@ fun ReflexRushHome(
     onStatisticsClick: () -> Unit = {},
     onProgressionClick: () -> Unit = {},
     onSettingsClick: () -> Unit = {},
-    bestScore: Int = 0
+    onProfileClick: () -> Unit = onStatisticsClick,
+    bestScore: Int = 0,
+    totalGamesPlayed: Int = 0,
+    accuracyPercent: Int = 0,
+    level: Int = 1,
+    xpIntoLevel: Int = 0,
+    xpForNextLevel: Int = 250
 ) {
-    val screenWidthDp = LocalConfiguration.current.screenWidthDp
-    val horizontalInset = ((screenWidthDp - 720) / 2).coerceAtLeast(22).dp
-    val isTabletLayout = screenWidthDp >= 700
+    val width = LocalConfiguration.current.screenWidthDp
+    val inset = ((width - 720) / 2).coerceAtLeast(20).dp
+    val progress = if (xpForNextLevel > 0) (xpIntoLevel.toFloat() / xpForNextLevel).coerceIn(0f, 1f) else 0f
+
     Box(Modifier.fillMaxSize()) {
         ArcadeBackdrop(Modifier.fillMaxSize(), intensity = 1.05f)
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .safeDrawingPadding()
-                .then(Modifier.padding(horizontal = horizontalInset, vertical = 18.dp))
-                .verticalScroll(androidx.compose.foundation.rememberScrollState()),
+            Modifier.fillMaxSize().safeDrawingPadding()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = inset, vertical = 18.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    BrandMark()
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        Modifier.size(42.dp).clip(RoundedCornerShape(13.dp))
+                            .background(Brush.linearGradient(listOf(Color(0xFF7BFFD0), RushGreen))),
+                        contentAlignment = Alignment.Center
+                    ) { Text("R", color = Color(0xFF062116), fontSize = 25.sp, fontWeight = FontWeight.Black) }
                     Spacer(Modifier.width(10.dp))
                     Column {
-                        Text("REFLEX RUSH", color = Color.White, fontSize = 17.sp, fontWeight = FontWeight.Black, letterSpacing = 2.sp)
-                        Text("ARCADE REACTION CHALLENGE", color = RushMint, fontSize = 8.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 1.4.sp)
+                        Text("REFLEX RUSH", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Black, letterSpacing = 1.8.sp)
+                        Text("ARCADE REACTION CHALLENGE", color = RushMint, fontSize = 8.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 1.sp)
                     }
                 }
-                androidx.compose.material3.IconButton(
+                IconButton(
                     onClick = onSettingsClick,
-                    modifier = Modifier
-                        .size(42.dp)
-                        .clip(CircleShape)
-                        .background(Color(0xFF172438))
-                        .border(1.dp, RushMint.copy(alpha = 0.55f), CircleShape)
-                ) {
-                    Text(
-                        "⚙",
-                        color = RushMint,
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
+                    modifier = Modifier.size(42.dp).clip(CircleShape)
+                        .background(Color(0xFF172438)).border(1.dp, RushMint.copy(alpha = .55f), CircleShape)
+                ) { Text("⚙", color = RushMint, fontSize = 21.sp) }
+                Spacer(Modifier.width(8.dp))
+                IconButton(
+                    onClick = onProfileClick,
+                    modifier = Modifier.size(42.dp).clip(CircleShape)
+                        .background(Color(0xFF172438)).border(1.dp, RushGreen.copy(alpha = .7f), CircleShape)
+                ) { Text("●", color = RushMint, fontSize = 21.sp) }
             }
 
-            Spacer(Modifier.height(22.dp))
-
-            Box(
-                modifier = Modifier.fillMaxWidth().height(if (isTabletLayout) 250.dp else 218.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Canvas(Modifier.fillMaxSize()) {
-                    val center = Offset(size.width / 2f, size.height / 2f)
-                    listOf(0.46f, 0.34f, 0.22f).forEachIndexed { index, fraction ->
-                        drawCircle(
-                            color = RushGreen.copy(alpha = 0.12f + index * 0.04f),
-                            radius = size.minDimension * fraction,
-                            center = center,
-                            style = Stroke(width = (1.2f + index * 0.5f).dp.toPx())
-                        )
-                    }
-                    drawCircle(
-                        brush = Brush.radialGradient(
-                            listOf(Color(0x6632F5B0), Color(0x1132F5B0), Color.Transparent),
-                            center = center,
-                            radius = size.minDimension * 0.34f
-                        ),
-                        radius = size.minDimension * 0.34f,
-                        center = center
-                    )
-                }
-                Box(
-                    modifier = Modifier
-                        .size(if (isTabletLayout) 118.dp else 104.dp)
-                        .shadow(28.dp, CircleShape, ambientColor = Color(0xAA27E6A1))
-                        .clip(CircleShape)
-                        .background(Brush.linearGradient(listOf(Color(0xFF7BFFD0), Color(0xFF08A875)))),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text("⚡", color = Color(0xFF062116), fontSize = 58.sp, fontWeight = FontWeight.Black)
-                }
-                TargetDot(Modifier.align(Alignment.TopEnd).padding(top = 34.dp, end = 54.dp), RushRed)
-                TargetDot(Modifier.align(Alignment.BottomStart).padding(start = 48.dp, bottom = 30.dp), RushGreen)
-                TargetDot(Modifier.align(Alignment.CenterEnd).padding(end = 36.dp).size(12.dp), RushAmber)
-            }
-
-            Text("TRUST YOUR", color = RushMint, fontSize = 12.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 4.sp)
-            Text(
-                "REFLEXES.",
-                color = Color.White,
-                fontSize = 39.sp,
-                lineHeight = 43.sp,
-                fontWeight = FontWeight.Black,
-                letterSpacing = 1.2.sp,
-                textAlign = TextAlign.Center
-            )
-            Spacer(Modifier.height(8.dp))
-            Text(
-                "Hit green. Dodge red. Chase the perfect combo.",
-                color = Color.White.copy(alpha = 0.66f),
-                fontSize = 12.sp,
-                textAlign = TextAlign.Center
-            )
-
-            Spacer(Modifier.height(22.dp))
-
-            ArcadePanel(
-                modifier = Modifier.fillMaxWidth(),
-                accent = RushGreen,
-                radius = 20.dp
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 14.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column {
-                        Text("CLASSIC RECORD", color = RushMint.copy(alpha = 0.72f), fontSize = 9.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.3.sp)
-                        Text(if (bestScore > 0) bestScore.toString() else "—", color = RushAmber, fontSize = 30.sp, fontWeight = FontWeight.Black)
-                    }
-                    Column(horizontalAlignment = Alignment.End) {
-                        Text("YOUR MISSION", color = RushMint.copy(alpha = 0.72f), fontSize = 9.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.3.sp)
-                        Text("BEAT YOUR BEST", color = RushGreen, fontSize = 12.sp, fontWeight = FontWeight.Black)
-                    }
-                }
+            Spacer(Modifier.height(24.dp))
+            Column(Modifier.fillMaxWidth()) {
+                Text("WELCOME BACK", color = RushMint, fontSize = 10.sp, fontWeight = FontWeight.Black, letterSpacing = 2.5.sp)
+                Text("Ready to beat your best?", color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.Black)
+                Text("Every round is a chance to sharpen your reflexes.", color = Color.White.copy(alpha = .62f), fontSize = 11.sp)
             }
 
             Spacer(Modifier.height(18.dp))
+            ArcadePanel(Modifier.fillMaxWidth(), accent = RushGreen, radius = 22.dp) {
+                Column(Modifier.fillMaxWidth().padding(18.dp)) {
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                        Column {
+                            Text("PERSONAL BEST", color = RushMint.copy(alpha = .75f), fontSize = 9.sp, fontWeight = FontWeight.Black, letterSpacing = 1.4.sp)
+                            Text(if (bestScore > 0) bestScore.toString() else "—", color = RushAmber, fontSize = 35.sp, fontWeight = FontWeight.Black)
+                            Text("CLASSIC MODE", color = Color.White.copy(alpha = .5f), fontSize = 8.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                        }
+                        Box(Modifier.size(72.dp).clip(CircleShape).background(RushGreen.copy(alpha = .13f)).border(1.dp, RushGreen.copy(alpha = .55f), CircleShape), contentAlignment = Alignment.Center) {
+                            Text("⚡", color = RushMint, fontSize = 39.sp)
+                        }
+                    }
+                    Spacer(Modifier.height(15.dp))
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        HomeMetric("GAMES PLAYED", totalGamesPlayed.toString(), RushMint)
+                        HomeMetric("ACCURACY", if (totalGamesPlayed > 0) "$accuracyPercent%" else "—", RushGreen)
+                        HomeMetric("PLAYER LEVEL", level.toString(), RushAmber)
+                    }
+                }
+            }
 
+            Spacer(Modifier.height(16.dp))
             Button(
                 onClick = onPlayClick,
-                modifier = Modifier.fillMaxWidth().height(if (isTabletLayout) 70.dp else 64.dp)
-                    .shadow(18.dp, RoundedCornerShape(20.dp), ambientColor = Color(0x9927E6A1)),
-                shape = RoundedCornerShape(20.dp),
+                modifier = Modifier.fillMaxWidth().height(62.dp)
+                    .shadow(17.dp, RoundedCornerShape(18.dp), ambientColor = Color(0x9927E6A1)),
+                shape = RoundedCornerShape(18.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = RushGreen, contentColor = Color(0xFF04170F))
             ) {
-                Text("PLAY", fontSize = 19.sp, fontWeight = FontWeight.Black, letterSpacing = 3.sp)
+                Text("PLAY NOW", fontSize = 18.sp, fontWeight = FontWeight.Black, letterSpacing = 2.2.sp)
                 Spacer(Modifier.width(12.dp))
-                Text("▶", fontSize = 17.sp, fontWeight = FontWeight.Black)
-            }
-
-            Spacer(Modifier.height(12.dp))
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                androidx.compose.material3.OutlinedButton(
-                    onClick = onProgressionClick,
-                    modifier = Modifier.weight(1f).height(54.dp),
-                    shape = RoundedCornerShape(16.dp),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, RushAmber.copy(alpha = 0.65f)),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = RushAmber)
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("★", fontSize = 16.sp)
-                        Text("MISSIONS", fontSize = 9.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 1.sp)
-                    }
-                }
-                androidx.compose.material3.OutlinedButton(
-                    onClick = onStatisticsClick,
-                    modifier = Modifier.weight(1f).height(54.dp),
-                    shape = RoundedCornerShape(16.dp),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, RushMint.copy(alpha = 0.55f)),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = RushMint)
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("▥", fontSize = 16.sp)
-                        Text("STATS", fontSize = 9.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 1.sp)
-                    }
-                }
+                Text("▶", fontSize = 16.sp, fontWeight = FontWeight.Black)
             }
 
             Spacer(Modifier.height(18.dp))
-            Text("4 GAME MODES  •  COMBOS  •  POWERUPS  •  DAILY MISSIONS", color = Color.White.copy(alpha = 0.4f), fontSize = 8.sp, fontWeight = FontWeight.Bold, letterSpacing = 0.8.sp, textAlign = TextAlign.Center)
-            Spacer(Modifier.height(12.dp))
+            ArcadePanel(Modifier.fillMaxWidth(), accent = RushAmber, radius = 18.dp) {
+                Column(Modifier.fillMaxWidth().padding(16.dp)) {
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                        Column {
+                            Text("YOUR PROGRESSION", color = RushMint, fontSize = 9.sp, fontWeight = FontWeight.Black, letterSpacing = 1.3.sp)
+                            Text("Level $level · Sharpshooter", color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                        }
+                        Text("$xpIntoLevel / $xpForNextLevel XP", color = RushAmber, fontSize = 10.sp, fontWeight = FontWeight.ExtraBold)
+                    }
+                    Spacer(Modifier.height(11.dp))
+                    Box(Modifier.fillMaxWidth().height(8.dp).clip(CircleShape).background(Color.White.copy(alpha = .1f))) {
+                        Box(Modifier.fillMaxWidth(progress).height(8.dp).clip(CircleShape).background(Brush.horizontalGradient(listOf(RushGreen, RushMint))))
+                    }
+                    Spacer(Modifier.height(8.dp))
+                    Text("Earn XP by completing rounds, daily missions and achievements.", color = Color.White.copy(alpha = .55f), fontSize = 9.sp)
+                }
+            }
+
+            Spacer(Modifier.height(20.dp))
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                Text("EXPLORE", color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Black, letterSpacing = 1.8.sp)
+                Text("YOUR GAME HUB", color = RushMint.copy(alpha = .6f), fontSize = 8.sp, fontWeight = FontWeight.Bold)
+            }
+            Spacer(Modifier.height(10.dp))
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                ExploreTile("▥", "STATISTICS", "Your performance", RushMint, onStatisticsClick, Modifier.weight(1f))
+                ExploreTile("★", "ACHIEVEMENTS", "Missions & rewards", RushAmber, onProgressionClick, Modifier.weight(1f))
+            }
+            Spacer(Modifier.height(10.dp))
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                ExploreTile("🏆", "HIGH SCORES", "Mode records", RushGreen, onStatisticsClick, Modifier.weight(1f))
+                ExploreTile("⚙", "SETTINGS", "Audio & backup", RushMint, onSettingsClick, Modifier.weight(1f))
+            }
+            Spacer(Modifier.height(18.dp))
+            Text("TRUST YOUR REFLEXES.", color = RushMint.copy(alpha = .42f), fontSize = 9.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.5.sp)
+            Spacer(Modifier.height(8.dp))
         }
     }
 }
 
 @Composable
-private fun BrandMark() {
-    Box(
-        modifier = Modifier
-            .size(38.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .background(MaterialTheme.colorScheme.primary),
-        contentAlignment = Alignment.Center
+private fun HomeMetric(label: String, value: String, tint: Color) {
+    Column(horizontalAlignment = Alignment.Start) {
+        Text(value, color = tint, fontSize = 19.sp, fontWeight = FontWeight.Black)
+        Text(label, color = Color.White.copy(alpha = .48f), fontSize = 7.sp, fontWeight = FontWeight.Bold, letterSpacing = .6.sp)
+    }
+}
+
+@Composable
+private fun ExploreTile(
+    icon: String,
+    title: String,
+    subtitle: String,
+    accent: Color,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    OutlinedButton(
+        onClick = onClick,
+        modifier = modifier.height(82.dp),
+        shape = RoundedCornerShape(16.dp),
+        border = androidx.compose.foundation.BorderStroke(1.dp, accent.copy(alpha = .48f)),
+        colors = ButtonDefaults.outlinedButtonColors(contentColor = accent)
     ) {
-        Text("R", color = Color(0xFF062116), fontSize = 22.sp, fontWeight = FontWeight.Black)
-    }
-}
-
-@Composable
-private fun TargetDot(modifier: Modifier = Modifier, color: Color) {
-    Box(
-        modifier = modifier
-            .size(16.dp)
-            .shadow(8.dp, CircleShape)
-            .background(color, CircleShape)
-            .border(2.dp, Color.White.copy(alpha = 0.45f), CircleShape)
-    )
-}
-
-@Composable
-private fun StatPreview(value: String, label: String, tint: Color) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(value, color = tint, fontSize = 13.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 1.sp)
-        Spacer(Modifier.height(4.dp))
-        Text(
-            label,
-            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.48f),
-            fontSize = 8.sp,
-            fontWeight = FontWeight.Bold,
-            letterSpacing = 0.8.sp
-        )
-    }
-}
-
-@Preview(showBackground = true, backgroundColor = 0xFF080E19)
-@Composable
-private fun ReflexRushHomePreview() {
-    ReflexRushTheme {
-        Surface {
-            ReflexRushHome()
+        Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.Start, verticalArrangement = Arrangement.Center) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(icon, fontSize = 15.sp)
+                Spacer(Modifier.width(7.dp))
+                Text(title, fontSize = 9.sp, fontWeight = FontWeight.Black, letterSpacing = .5.sp, maxLines = 1)
+            }
+            Spacer(Modifier.height(4.dp))
+            Text(subtitle, color = Color.White.copy(alpha = .48f), fontSize = 8.sp, textAlign = TextAlign.Start)
         }
     }
 }
