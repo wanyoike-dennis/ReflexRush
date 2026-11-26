@@ -32,15 +32,9 @@ class GameEngine(
     private val pendingEvents = mutableListOf<GameplayEvent>()
     private val targetFactory = TargetFactory(config, sessionConfig, random)
     private val targetLifecycle = TargetLifecycle()
+    private val sessionTracker = GameSessionTracker(sessionConfig.mode)
     private var nextTargetId = 1L
     private var timeSinceLastSpawnMs = 0L
-    private var elapsedSessionMs = 0L
-    private var goodTargetsHit = 0
-    private var dangerTargetsHit = 0
-    private var targetsMissed = 0
-    private var goodTargetsMissed = 0
-    private var bestCombo = 0
-    private var powerupsCollected = 0
     private var targetsCreated = 0
     private var targetsResolved = 0
 
@@ -61,13 +55,7 @@ class GameEngine(
     fun start(): GameState {
         nextTargetId = 1L
         timeSinceLastSpawnMs = 0L
-        elapsedSessionMs = 0L
-        goodTargetsHit = 0
-        dangerTargetsHit = 0
-        targetsMissed = 0
-        goodTargetsMissed = 0
-        bestCombo = 0
-        powerupsCollected = 0
+        sessionTracker.reset()
         targetsCreated = 0
         targetsResolved = 0
         completedSessionSummary = null
@@ -108,7 +96,7 @@ class GameEngine(
         val roundElapsedMs = if (sessionConfig.mode == GameMode.TIME_ATTACK) {
             minOf(elapsedMs, state.timeRemainingMs ?: sessionConfig.timeAttackDurationMs)
         } else elapsedMs
-        elapsedSessionMs += roundElapsedMs
+        sessionTracker.recordElapsedTime(roundElapsedMs)
         val nextTimeRemaining = state.timeRemainingMs?.let { (it - roundElapsedMs).coerceAtLeast(0L) }
 
         val slowTimeActive = state.activeTimedPowerup == PowerupType.SLOW_TIME
@@ -133,11 +121,10 @@ class GameEngine(
 
         var updatedLives = state.lives
         expiredTargets.forEach { target ->
-            targetsMissed++
+            sessionTracker.recordTargetMissed(target.type)
             targetsResolved++
             pendingEvents += GameplayEvent.TargetMissed(target.id, target.type)
             if (target.type == TargetType.GOOD) {
-                goodTargetsMissed++
                 breakCombo()
                 if (sessionConfig.mode == GameMode.PRECISION) {
                     val penalty = minOf(state.score, sessionConfig.precisionMissPenalty)
@@ -248,8 +235,7 @@ class GameEngine(
 
         when (target.type) {
             TargetType.GOOD -> {
-                goodTargetsHit++
-                bestCombo = maxOf(bestCombo, nextComboCount)
+                sessionTracker.recordGoodTargetHit(nextComboCount)
                 pendingEvents += GameplayEvent.GoodTargetHit(
                     targetId = target.id,
                     pointsAwarded = scoreChange.pointsDelta,
@@ -257,7 +243,7 @@ class GameEngine(
                 )
             }
             TargetType.DANGER -> {
-                dangerTargetsHit++
+                sessionTracker.recordDangerTargetHit()
                 pendingEvents += GameplayEvent.DangerTargetHit(
                     targetId = target.id,
                     pointsDeducted = -scoreChange.pointsDelta,
@@ -276,7 +262,7 @@ class GameEngine(
             difficultyLevel = newLevel,
             comboCount = nextComboCount,
             comboMultiplier = nextMultiplier,
-            bestCombo = bestCombo
+            bestCombo = sessionTracker.bestCombo
         )
 
         if (nextComboCount != previousComboCount) {
@@ -299,7 +285,7 @@ class GameEngine(
     private fun collectPowerup(target: GameTarget) {
         val powerup = target.powerupType ?: return
         state = state.copy(targets = state.targets.filterNot { it.id == target.id })
-        powerupsCollected++
+        sessionTracker.recordPowerupCollected()
         pendingEvents += GameplayEvent.PowerupCollected(powerup)
         when (powerup) {
             PowerupType.GOLDEN_STAR -> {
@@ -332,19 +318,7 @@ class GameEngine(
     private fun completeSession() {
         if (completedSessionSummary != null) return
 
-        val summary = GameSessionSummary(
-            mode = sessionConfig.mode,
-            finalScore = state.score,
-            levelReached = state.difficultyLevel,
-            livesRemaining = state.lives,
-            goodTargetsHit = goodTargetsHit,
-            dangerTargetsHit = dangerTargetsHit,
-            targetsMissed = targetsMissed,
-            goodTargetsMissed = goodTargetsMissed,
-            bestCombo = bestCombo,
-            durationMs = elapsedSessionMs,
-            powerupsCollected = powerupsCollected
-        )
+        val summary = sessionTracker.createSummary(state)
         completedSessionSummary = summary
         pendingEvents += GameplayEvent.RoundCompleted(summary)
     }
