@@ -100,6 +100,7 @@ fun GameScreen(
     val initialGameState = remember(sessionRuntime) { sessionRuntime.start().action.state }
     var gameState by remember { mutableStateOf(initialGameState) }
     var newBestAchieved by remember { mutableStateOf(false) }
+    var isPaused by remember { mutableStateOf(false) }
     var isResumed by remember {
         mutableStateOf(lifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED))
     }
@@ -108,8 +109,8 @@ fun GameScreen(
         onDispose { sessionRuntime.release() }
     }
 
-    LaunchedEffect(gameState.status, isResumed) {
-        sessionRuntime.setGameActive(gameState.status, isResumed)
+    LaunchedEffect(gameState.status, isResumed, isPaused) {
+        sessionRuntime.setGameActive(gameState.status, isResumed && !isPaused)
     }
 
     DisposableEffect(lifecycleOwner) {
@@ -132,6 +133,14 @@ fun GameScreen(
     }
 
     LaunchedEffect(gameState.status) {
+        if (isPaused && gameState.status == GameStatus.RUNNING) {
+            GamePauseOverlay(
+                score = gameState.score,
+                onResume = { isPaused = false },
+                onHome = onHome
+            )
+        }
+
         if (gameState.status == GameStatus.GAME_OVER) {
             controller.completedSessionSummary?.let(onSessionCompleted)
         }
@@ -149,8 +158,8 @@ fun GameScreen(
         }
     }
 
-    LaunchedEffect(gameState.status, isResumed) {
-        if (gameState.status == GameStatus.RUNNING && isResumed) {
+    LaunchedEffect(gameState.status, isResumed, isPaused) {
+        if (gameState.status == GameStatus.RUNNING && isResumed && !isPaused) {
             sessionRuntime.resetLoop()
             while (isActive && gameState.status == GameStatus.RUNNING) {
                 withFrameNanos { frameNanos ->
@@ -179,7 +188,7 @@ fun GameScreen(
             ),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            GameHeader(mode = mode, onHome = onHome)
+            GameHeader(mode = mode, onHome = onHome, onPause = { isPaused = true })
 
             Spacer(Modifier.height(if (compactLandscape) 6.dp else 12.dp))
 
@@ -255,6 +264,7 @@ fun GameScreen(
                 mode = mode,
                 onPlayAgain = {
                     newBestAchieved = false
+                    isPaused = false
                     gameState = sessionRuntime.start().action.state
                 },
                 onHome = onHome
