@@ -81,17 +81,21 @@ fun ReflexRushHome(
                         Text("ARCADE REACTION CHALLENGE", color = RushMint, fontSize = 8.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 1.sp)
                     }
                 }
-                IconButton(
-                    onClick = onSettingsClick,
-                    modifier = Modifier.size(42.dp).clip(CircleShape)
-                        .background(Color(0xFF172438)).border(1.dp, RushMint.copy(alpha = .55f), CircleShape)
-                ) { Text("⚙", color = RushMint, fontSize = 21.sp) }
-                Spacer(Modifier.width(8.dp))
-                IconButton(
+                OutlinedButton(
                     onClick = onProfileClick,
-                    modifier = Modifier.size(42.dp).clip(CircleShape)
-                        .background(Color(0xFF172438)).border(1.dp, RushGreen.copy(alpha = .7f), CircleShape)
-                ) { Text("●", color = RushMint, fontSize = 21.sp) }
+                    shape = RoundedCornerShape(22.dp),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, RushGreen.copy(alpha = .7f)),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = RushMint),
+                    contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 12.dp, vertical = 7.dp)
+                ) {
+                    Box(
+                        Modifier.size(30.dp).clip(CircleShape)
+                            .background(Color(0xFF172438)).border(1.dp, RushGreen.copy(alpha = .7f), CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) { Text("●", color = RushMint, fontSize = 16.sp) }
+                    Spacer(Modifier.width(8.dp))
+                    Text("PLAYER PROFILE", color = RushMint, fontSize = 9.sp, fontWeight = FontWeight.Black, letterSpacing = .7.sp)
+                }
             }
 
             Spacer(Modifier.height(24.dp))
