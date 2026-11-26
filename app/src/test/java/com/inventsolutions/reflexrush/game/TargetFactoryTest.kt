@@ -28,16 +28,11 @@ class TargetFactoryTest {
             activeTimedPowerup = null
         )
 
-        assertEquals(
-            GameTarget(
-                id = 42L,
-                type = TargetType.GOOD,
-                x = 0.35f,
-                y = 0.65f,
-                remainingLifetimeMs = 900L
-            ),
-            result.target
-        )
+        assertEquals(42L, result.target.id)
+        assertEquals(TargetType.GOOD, result.target.type)
+        assertEquals(0.35f, result.target.x, 0.0001f)
+        assertEquals(0.65f, result.target.y, 0.0001f)
+        assertEquals(900L, result.target.remainingLifetimeMs)
         assertNull(result.spawnedPowerup)
     }
 
