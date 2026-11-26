@@ -33,6 +33,7 @@ class GameEngine(
     private val targetFactory = TargetFactory(config, sessionConfig, random)
     private val targetLifecycle = TargetLifecycle()
     private val sessionTracker = GameSessionTracker(sessionConfig.mode)
+    private val targetScoring = TargetScoring(sessionConfig.scoreRules)
     private var nextTargetId = 1L
     private var timeSinceLastSpawnMs = 0L
     private var targetsCreated = 0
@@ -226,12 +227,12 @@ class GameEngine(
 
         val nextComboCount = if (target.type == TargetType.GOOD) previousComboCount + 1 else 0
         val nextMultiplier = sessionConfig.comboRules.multiplierFor(nextComboCount)
-        val timedMultiplier = if (state.activeTimedPowerup == PowerupType.DOUBLE_POINTS) 2 else 1
-        val scoreChange = when (target.type) {
-            TargetType.GOOD -> sessionConfig.scoreRules.awardGoodHit(state.score, nextMultiplier * timedMultiplier)
-            TargetType.DANGER -> sessionConfig.scoreRules.applyDangerPenalty(state.score)
-            TargetType.POWERUP -> error("Powerup targets are handled before normal scoring.")
-        }
+        val scoreChange = targetScoring.score(
+            currentScore = state.score,
+            targetType = target.type,
+            comboMultiplier = nextMultiplier,
+            doublePointsActive = state.activeTimedPowerup == PowerupType.DOUBLE_POINTS
+        )
 
         when (target.type) {
             TargetType.GOOD -> {
