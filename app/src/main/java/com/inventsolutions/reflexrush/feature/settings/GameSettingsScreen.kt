@@ -1,4 +1,6 @@
-package com.inventsolutions.reflexrush
+package com.inventsolutions.reflexrush.feature.settings
+
+import com.inventsolutions.reflexrush.core.ui.*
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement

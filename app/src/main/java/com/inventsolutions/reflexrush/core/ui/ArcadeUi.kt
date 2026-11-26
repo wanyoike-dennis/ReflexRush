@@ -1,4 +1,4 @@
-package com.inventsolutions.reflexrush
+package com.inventsolutions.reflexrush.core.ui
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background

@@ -1,4 +1,6 @@
-package com.inventsolutions.reflexrush
+package com.inventsolutions.reflexrush.feature.game
+
+import com.inventsolutions.reflexrush.core.ui.*
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring

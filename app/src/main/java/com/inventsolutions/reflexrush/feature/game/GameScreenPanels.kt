@@ -1,4 +1,6 @@
-package com.inventsolutions.reflexrush
+package com.inventsolutions.reflexrush.feature.game
+
+import com.inventsolutions.reflexrush.core.ui.*
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background

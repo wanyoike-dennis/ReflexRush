@@ -1,4 +1,4 @@
-package com.inventsolutions.reflexrush
+package com.inventsolutions.reflexrush.data.statistics
 
 import android.content.Context
 import com.inventsolutions.reflexrush.game.GameMode

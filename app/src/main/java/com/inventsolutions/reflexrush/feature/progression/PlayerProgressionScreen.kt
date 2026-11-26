@@ -1,4 +1,6 @@
-package com.inventsolutions.reflexrush
+package com.inventsolutions.reflexrush.feature.progression
+
+import com.inventsolutions.reflexrush.core.ui.*
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border

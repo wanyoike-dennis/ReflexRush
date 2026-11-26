@@ -1,4 +1,4 @@
-package com.inventsolutions.reflexrush
+package com.inventsolutions.reflexrush.core.feedback
 
 import android.content.Context
 import android.os.Build

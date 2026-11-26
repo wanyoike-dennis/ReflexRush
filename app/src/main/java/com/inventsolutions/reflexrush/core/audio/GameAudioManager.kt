@@ -1,4 +1,4 @@
-package com.inventsolutions.reflexrush
+package com.inventsolutions.reflexrush.core.audio
 
 import android.content.Context
 import android.media.AudioAttributes
