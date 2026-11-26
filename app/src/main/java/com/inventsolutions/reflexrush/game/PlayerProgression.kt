@@ -34,6 +34,9 @@ data class PlayerProgression(
     val dailyGoodTargetsHit: Int = 0,
     val dailyPowerupsCollected: Int = 0,
     val dailyBestCombo: Int = 0,
+    val dailyDangerFreeRounds: Int = 0,
+    val dailyBestTimeAttackScore: Int = 0,
+    val dailyBestClassicLevel: Int = 0,
     val completedDailyMissionIds: Set<String> = emptySet()
 ) {
     val level: Int get() = experiencePoints / XP_PER_LEVEL + 1
@@ -54,6 +57,9 @@ data class PlayerProgression(
             dailyGoodTargetsHit = 0,
             dailyPowerupsCollected = 0,
             dailyBestCombo = 0,
+            dailyDangerFreeRounds = 0,
+            dailyBestTimeAttackScore = 0,
+            dailyBestClassicLevel = 0,
             completedDailyMissionIds = emptySet()
         )
         val updated = dayBase.copy(
@@ -65,7 +71,10 @@ data class PlayerProgression(
             playedModes = dayBase.playedModes + summary.mode,
             dailyGoodTargetsHit = dayBase.dailyGoodTargetsHit + summary.goodTargetsHit,
             dailyPowerupsCollected = dayBase.dailyPowerupsCollected + summary.powerupsCollected,
-            dailyBestCombo = maxOf(dayBase.dailyBestCombo, summary.bestCombo)
+            dailyBestCombo = maxOf(dayBase.dailyBestCombo, summary.bestCombo),
+            dailyDangerFreeRounds = dayBase.dailyDangerFreeRounds + if (summary.dangerTargetsHit == 0) 1 else 0,
+            dailyBestTimeAttackScore = maxOf(dayBase.dailyBestTimeAttackScore, if (summary.mode == GameMode.TIME_ATTACK) summary.finalScore else 0),
+            dailyBestClassicLevel = maxOf(dayBase.dailyBestClassicLevel, if (summary.mode == GameMode.CLASSIC) summary.levelReached else 0)
         )
 
         val newlyCompletedMissions = DailyMission.entries.filter { mission ->
@@ -87,14 +96,14 @@ data class PlayerProgression(
         )
     }
 
-    fun missionProgress(mission: DailyMission, latest: GameSessionSummary? = null): Int {
+    fun missionProgress(mission: DailyMission): Int {
         if (mission.id in completedDailyMissionIds) return mission.target
         return when (mission) {
         DailyMission.FIRST_STRIKE -> dailyGoodTargetsHit
         DailyMission.COMBO_MASTER -> dailyBestCombo
-        DailyMission.DANGER_DODGER -> if (latest != null && latest.dangerTargetsHit == 0) 1 else 0
-        DailyMission.SPEED_DEMON -> if (latest?.mode == GameMode.TIME_ATTACK) latest.finalScore else 0
-        DailyMission.SURVIVOR -> if (latest?.mode == GameMode.CLASSIC) latest.levelReached else 0
+        DailyMission.DANGER_DODGER -> dailyDangerFreeRounds
+        DailyMission.SPEED_DEMON -> dailyBestTimeAttackScore
+        DailyMission.SURVIVOR -> dailyBestClassicLevel
         DailyMission.POWER_COLLECTOR -> dailyPowerupsCollected
         }.coerceAtMost(mission.target)
     }

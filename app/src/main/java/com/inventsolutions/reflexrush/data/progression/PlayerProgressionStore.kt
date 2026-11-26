@@ -39,6 +39,9 @@ class PlayerProgressionStore(
             dailyGoodTargetsHit = if (sameDay) preferences.getInt(KEY_DAILY_GOOD, 0) else 0,
             dailyPowerupsCollected = if (sameDay) preferences.getInt(KEY_DAILY_POWERUPS, 0) else 0,
             dailyBestCombo = if (sameDay) preferences.getInt(KEY_DAILY_BEST_COMBO, 0) else 0,
+            dailyDangerFreeRounds = if (sameDay) preferences.getInt(KEY_DAILY_DANGER_FREE_ROUNDS, 0) else 0,
+            dailyBestTimeAttackScore = if (sameDay) preferences.getInt(KEY_DAILY_TIME_ATTACK_BEST, 0) else 0,
+            dailyBestClassicLevel = if (sameDay) preferences.getInt(KEY_DAILY_CLASSIC_LEVEL, 0) else 0,
             completedDailyMissionIds = if (sameDay) {
                 preferences.getStringSet(KEY_DAILY_COMPLETED, mutableSetOf()).orEmpty().toSet()
             } else emptySet()
@@ -67,6 +70,9 @@ class PlayerProgressionStore(
             .putInt(KEY_DAILY_GOOD, value.dailyGoodTargetsHit)
             .putInt(KEY_DAILY_POWERUPS, value.dailyPowerupsCollected)
             .putInt(KEY_DAILY_BEST_COMBO, value.dailyBestCombo)
+            .putInt(KEY_DAILY_DANGER_FREE_ROUNDS, value.dailyDangerFreeRounds)
+            .putInt(KEY_DAILY_TIME_ATTACK_BEST, value.dailyBestTimeAttackScore)
+            .putInt(KEY_DAILY_CLASSIC_LEVEL, value.dailyBestClassicLevel)
             .putStringSet(KEY_DAILY_COMPLETED, value.completedDailyMissionIds)
             .apply()
     }
@@ -84,6 +90,9 @@ class PlayerProgressionStore(
         const val KEY_DAILY_GOOD = "daily_good_hits"
         const val KEY_DAILY_POWERUPS = "daily_powerups"
         const val KEY_DAILY_BEST_COMBO = "daily_best_combo"
+        const val KEY_DAILY_DANGER_FREE_ROUNDS = "daily_danger_free_rounds"
+        const val KEY_DAILY_TIME_ATTACK_BEST = "daily_time_attack_best_score"
+        const val KEY_DAILY_CLASSIC_LEVEL = "daily_classic_best_level"
         const val KEY_DAILY_COMPLETED = "daily_completed_missions"
     }
 }

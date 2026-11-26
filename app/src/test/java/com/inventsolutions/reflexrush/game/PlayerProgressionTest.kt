@@ -110,10 +110,29 @@ class PlayerProgressionTest {
     }
 
     @Test
-    fun dangerDodgerRequiresNoDangerHitsInTheCompletedRound() {
+    fun dangerDodgerProgressIsRetainedAcrossCompletedRounds() {
         val failed = PlayerProgression().include(summary(dangerHits = 1), "day")
+        assertEquals(0, failed.missionProgress(DailyMission.DANGER_DODGER))
         val passed = failed.include(summary(dangerHits = 0), "day")
-
+        assertEquals(1, passed.missionProgress(DailyMission.DANGER_DODGER))
         assertTrue(passed.completedDailyMissionIds.contains(DailyMission.DANGER_DODGER.id))
+    }
+
+    @Test
+    fun modeSpecificDailyMissionBestResultsAccumulateAcrossRounds() {
+        val first = PlayerProgression().include(summary(mode = GameMode.TIME_ATTACK, score = 180), "day")
+        val second = first.include(summary(mode = GameMode.CLASSIC, level = 3), "day")
+        val third = second.include(summary(mode = GameMode.TIME_ATTACK, score = 100), "day")
+        val fourth = third.include(summary(mode = GameMode.CLASSIC, level = 2), "day")
+        assertEquals(180, fourth.missionProgress(DailyMission.SPEED_DEMON))
+        assertEquals(3, fourth.missionProgress(DailyMission.SURVIVOR))
+    }
+
+    @Test
+    fun modeSpecificDailyMissionProgressResetsOnNewDay() {
+        val first = PlayerProgression().include(summary(mode = GameMode.TIME_ATTACK, score = 220), "day-one")
+        val nextDay = first.include(summary(mode = GameMode.CLASSIC, level = 2), "day-two")
+        assertEquals(0, nextDay.missionProgress(DailyMission.SPEED_DEMON))
+        assertEquals(2, nextDay.missionProgress(DailyMission.SURVIVOR))
     }
 }
