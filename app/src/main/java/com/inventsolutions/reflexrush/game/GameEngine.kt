@@ -34,6 +34,7 @@ class GameEngine(
     private val targetLifecycle = TargetLifecycle()
     private val sessionTracker = GameSessionTracker(sessionConfig.mode)
     private val targetScoring = TargetScoring(sessionConfig.scoreRules)
+    private val comboTransitionResolver = ComboTransitionResolver(sessionConfig.comboRules)
     private val powerupEffectResolver = PowerupEffectResolver(config, ::difficultyForCurrentMode)
     private var nextTargetId = 1L
     private var timeSinceLastSpawnMs = 0L
@@ -226,8 +227,13 @@ class GameEngine(
             return state
         }
 
-        val nextComboCount = if (target.type == TargetType.GOOD) previousComboCount + 1 else 0
-        val nextMultiplier = sessionConfig.comboRules.multiplierFor(nextComboCount)
+        val comboTransition = if (target.type == TargetType.GOOD) {
+            comboTransitionResolver.afterGoodHit(previousComboCount, previousMultiplier)
+        } else {
+            comboTransitionResolver.breakCombo(previousComboCount, previousMultiplier)
+        }
+        val nextComboCount = comboTransition.comboCount
+        val nextMultiplier = comboTransition.multiplier
         val scoreChange = targetScoring.score(
             currentScore = state.score,
             targetType = target.type,
@@ -267,16 +273,7 @@ class GameEngine(
             bestCombo = sessionTracker.bestCombo
         )
 
-        if (nextComboCount != previousComboCount) {
-            pendingEvents += GameplayEvent.ComboChanged(
-                previousCount = previousComboCount,
-                newCount = nextComboCount,
-                multiplier = nextMultiplier
-            )
-        }
-        if (nextMultiplier > previousMultiplier) {
-            pendingEvents += GameplayEvent.ComboMilestone(nextComboCount, nextMultiplier)
-        }
+        pendingEvents += comboTransition.events
         if (newLevel != previousLevel) {
             pendingEvents += GameplayEvent.LevelChanged(previousLevel, newLevel)
         }
@@ -330,15 +327,17 @@ class GameEngine(
     }
 
     private fun breakCombo() {
-        if (state.comboCount == 0) return
-
-        val previousCount = state.comboCount
-        state = state.copy(comboCount = 0, comboMultiplier = 1)
-        pendingEvents += GameplayEvent.ComboChanged(
-            previousCount = previousCount,
-            newCount = 0,
-            multiplier = 1
+        val transition = comboTransitionResolver.breakCombo(
+            previousCount = state.comboCount,
+            previousMultiplier = state.comboMultiplier
         )
+        if (transition.events.isEmpty()) return
+
+        state = state.copy(
+            comboCount = transition.comboCount,
+            comboMultiplier = transition.multiplier
+        )
+        pendingEvents += transition.events
     }
 
 }
