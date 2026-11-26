@@ -208,7 +208,7 @@ fun ReflexRushApp(lifecycleOwner: LifecycleOwner) {
                 },
                 bestScore = bestScores[GameMode.CLASSIC] ?: 0,
                 totalGamesPlayed = playerStatistics.totalGamesPlayed,
-                accuracyPercent = playerStatistics.accuracyPercent,
+                bestStreak = playerStatistics.bestCombo,
                 level = playerProgression.level,
                 xpIntoLevel = playerProgression.xpIntoLevel,
                 xpForNextLevel = playerProgression.xpForNextLevel
