@@ -30,6 +30,7 @@ class GameEngine(
         private set
 
     private val pendingEvents = mutableListOf<GameplayEvent>()
+    private val targetFactory = TargetFactory(config, sessionConfig, random)
     private var nextTargetId = 1L
     private var timeSinceLastSpawnMs = 0L
     private var elapsedSessionMs = 0L
@@ -180,7 +181,16 @@ class GameEngine(
             val precisionLimitReached = sessionConfig.mode == GameMode.PRECISION &&
                 targetsCreated >= sessionConfig.precisionTargetCount
             if (!precisionLimitReached && updatedTargets.size < config.maxActiveTargets) {
-                updatedTargets = updatedTargets + createTarget(difficulty)
+                targetsCreated++
+                val spawn = targetFactory.create(
+                    id = nextTargetId++,
+                    difficulty = difficulty,
+                    activeTimedPowerup = state.activeTimedPowerup
+                )
+                updatedTargets = updatedTargets + spawn.target
+                spawn.spawnedPowerup?.let { powerup ->
+                    pendingEvents += GameplayEvent.PowerupSpawned(powerup)
+                }
             }
             if (precisionLimitReached) {
                 timeSinceLastSpawnMs = 0L
@@ -381,43 +391,4 @@ class GameEngine(
         )
     }
 
-    private fun createTarget(difficulty: DifficultyProfile): GameTarget {
-        val roll = random.nextFloat()
-        targetsCreated++
-        val canSpawnTimedPowerup = state.activeTimedPowerup == null
-        val availablePowerups = PowerupType.entries.filter { powerup ->
-            powerup in sessionConfig.enabledPowerups &&
-                (canSpawnTimedPowerup || powerup == PowerupType.GOLDEN_STAR || powerup == PowerupType.SHIELD)
-        }
-        val powerupChance = when {
-            availablePowerups.isEmpty() -> 0f
-            canSpawnTimedPowerup -> config.powerupSpawnChance
-            else -> config.powerupSpawnChance * 0.5f
-        }
-        val type = when {
-            roll < difficulty.dangerTargetChance -> TargetType.DANGER
-            roll < difficulty.dangerTargetChance + powerupChance -> TargetType.POWERUP
-            else -> TargetType.GOOD
-        }
-        val powerupType = if (type == TargetType.POWERUP) {
-            availablePowerups[(random.nextFloat() * availablePowerups.size).toInt()
-                .coerceIn(0, availablePowerups.lastIndex)]
-        } else null
-        val positionRange = config.minTargetPosition..config.maxTargetPosition
-
-        if (powerupType != null) {
-            pendingEvents += GameplayEvent.PowerupSpawned(powerupType)
-        }
-
-        return GameTarget(
-            id = nextTargetId++,
-            type = type,
-            x = random.nextFloat() * (positionRange.endInclusive - positionRange.start) +
-                positionRange.start,
-            y = random.nextFloat() * (positionRange.endInclusive - positionRange.start) +
-                positionRange.start,
-            remainingLifetimeMs = difficulty.targetLifetimeMs,
-            powerupType = powerupType
-        )
-    }
 }
