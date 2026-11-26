@@ -32,7 +32,7 @@ internal data class SessionFrame(
  * The Compose screen observes state and renders it; this runtime routes session commands.
  */
 internal class GameSessionRuntime(context: Context, mode: GameMode) {
-    val controller = GameController(GameEngine(GameSessionConfig.forMode(mode))))
+    val controller = GameController(GameEngine(GameSessionConfig.forMode(mode)))
 
     private val audioCoordinator = GameAudioCoordinator(context.applicationContext)
     private val feedbackCoordinator = GameFeedbackCoordinator(context.applicationContext)
