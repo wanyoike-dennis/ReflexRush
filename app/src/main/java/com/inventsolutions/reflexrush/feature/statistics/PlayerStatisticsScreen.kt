@@ -55,17 +55,11 @@ fun PlayerStatisticsScreen(
             .padding(horizontal = horizontalInset, vertical = 22.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column {
-                Text("PLAYER PROFILE", color = RushMint, fontSize = 9.sp, fontWeight = FontWeight.Black, letterSpacing = 2.2.sp)
-                Text("YOUR RECORDS", color = Color.White, fontSize = 25.sp, fontWeight = FontWeight.Black, letterSpacing = 1.sp)
-            }
-            OutlinedButton(onClick = onBack) { Text("BACK") }
-        }
+        ArcadeScreenHeader(
+            eyebrow = "PLAYER PROFILE",
+            title = "YOUR RECORDS",
+            onBack = onBack
+        )
         Spacer(Modifier.height(20.dp))
         Text("◈  LIFETIME OVERVIEW", modifier = Modifier.fillMaxWidth(), color = RushMint, fontSize = 10.sp, fontWeight = FontWeight.Black, letterSpacing = 1.6.sp)
         Spacer(Modifier.height(10.dp))
