@@ -179,7 +179,16 @@ fun ReflexRushApp(lifecycleOwner: LifecycleOwner) {
                     navigation.navigateTo(AppDestination.PROGRESSION)
                 },
                 onSettingsClick = { navigation.navigateTo(AppDestination.SETTINGS) },
-                bestScore = bestScores[GameMode.CLASSIC] ?: 0
+                onProfileClick = {
+                    playerStatistics = statisticsStore.load()
+                    navigation.navigateTo(AppDestination.STATISTICS)
+                },
+                bestScore = bestScores[GameMode.CLASSIC] ?: 0,
+                totalGamesPlayed = playerStatistics.totalGamesPlayed,
+                accuracyPercent = playerStatistics.accuracyPercent,
+                level = playerProgression.level,
+                xpIntoLevel = playerProgression.xpIntoLevel,
+                xpForNextLevel = playerProgression.xpForNextLevel
             )
         }
     }
