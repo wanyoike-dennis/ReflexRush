@@ -23,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.inventsolutions.reflexrush.ui.theme.RushAmber
@@ -40,10 +41,12 @@ fun GameSettingsScreen(
     onImportBackup: () -> Unit,
     onBack: () -> Unit
 ) {
+    val screenWidthDp = LocalConfiguration.current.screenWidthDp
+    val horizontalInset = ((screenWidthDp - 760) / 2).coerceAtLeast(20).dp
     Box(Modifier.fillMaxSize()) {
         ArcadeBackdrop(Modifier.fillMaxSize(), RushAmber)
         Column(
-            modifier = Modifier.fillMaxSize().safeDrawingPadding().verticalScroll(rememberScrollState()).padding(horizontal = 20.dp, vertical = 24.dp),
+            modifier = Modifier.fillMaxSize().safeDrawingPadding().verticalScroll(rememberScrollState()).padding(horizontal = horizontalInset, vertical = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Row(
