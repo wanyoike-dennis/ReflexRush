@@ -60,17 +60,11 @@ fun GameModeSelectionScreen(
             modifier = Modifier.fillMaxSize().safeDrawingPadding().padding(horizontal = horizontalInset, vertical = if (isTabletLayout) 24.dp else 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Column {
-                    Text("REFLEX RUSH", color = RushMint, fontSize = 11.sp, fontWeight = FontWeight.Black, letterSpacing = 2.2.sp)
-                    Text("SELECT YOUR ARENA", color = Color.White.copy(alpha = 0.55f), fontSize = 8.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.4.sp)
-                }
-                OutlinedButton(
-                    onClick = onBack,
-                    shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = RushMint)
-                ) { Text("EXIT", fontSize = 9.sp, fontWeight = FontWeight.Black, letterSpacing = 1.sp) }
-            }
+            ArcadeScreenHeader(
+                eyebrow = "REFLEX RUSH",
+                title = "SELECT YOUR ARENA",
+                onBack = onBack
+            )
 
             Spacer(Modifier.height(if (isTabletLayout) 30.dp else 22.dp))
             Text("CHOOSE YOUR", color = RushMint, fontSize = 11.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 3.sp)
