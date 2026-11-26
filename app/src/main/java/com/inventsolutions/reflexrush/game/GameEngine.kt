@@ -35,7 +35,8 @@ class GameEngine(
     private val sessionTracker = GameSessionTracker(sessionConfig.mode)
     private val targetScoring = TargetScoring(sessionConfig.scoreRules)
     private val comboTransitionResolver = ComboTransitionResolver(sessionConfig.comboRules)
-    private val powerupEffectResolver = PowerupEffectResolver(config, ::difficultyForCurrentMode)
+    private val modeDifficultyResolver = ModeDifficultyResolver(sessionConfig.mode, config)
+    private val powerupEffectResolver = PowerupEffectResolver(config, modeDifficultyResolver::forScore)
     private var nextTargetId = 1L
     private var timeSinceLastSpawnMs = 0L
     private var targetsCreated = 0
@@ -162,7 +163,7 @@ class GameEngine(
         timeSinceLastSpawnMs += gameplayElapsedMs
 
         while (true) {
-            val difficulty = difficultyForCurrentMode()
+            val difficulty = modeDifficultyResolver.forScore(state.score)
             if (timeSinceLastSpawnMs < difficulty.spawnIntervalMs) break
 
             timeSinceLastSpawnMs -= difficulty.spawnIntervalMs
@@ -262,7 +263,7 @@ class GameEngine(
         }
 
         targetsResolved++
-        val newLevel = difficultyForCurrentMode(scoreChange.newScore).level
+        val newLevel = modeDifficultyResolver.forScore(scoreChange.newScore).level
         state = state.copy(
             score = scoreChange.newScore,
             targets = state.targets.filterNot { it.id == targetId },
@@ -313,17 +314,6 @@ class GameEngine(
         if (state.status == GameStatus.GAME_OVER) return
         state = state.copy(status = GameStatus.GAME_OVER, targets = emptyList())
         completeSession()
-    }
-
-    private fun difficultyForCurrentMode(score: Int = state.score): DifficultyProfile {
-        val base = DifficultyProgression.forScore(score, config)
-        return if (sessionConfig.mode == GameMode.SURVIVAL) {
-            base.copy(
-                spawnIntervalMs = (base.spawnIntervalMs * 0.82f).toLong().coerceAtLeast(1L),
-                targetLifetimeMs = (base.targetLifetimeMs * 0.9f).toLong().coerceAtLeast(1L),
-                dangerTargetChance = (base.dangerTargetChance + 0.04f).coerceAtMost(0.5f)
-            )
-        } else base
     }
 
     private fun breakCombo() {
