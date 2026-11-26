@@ -9,7 +9,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -36,7 +35,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -60,7 +58,6 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.compose.runtime.withFrameNanos
 import com.inventsolutions.reflexrush.game.GameMode
 import com.inventsolutions.reflexrush.game.GameStatus
-import com.inventsolutions.reflexrush.game.GameTarget
 import com.inventsolutions.reflexrush.game.PowerupType
 import com.inventsolutions.reflexrush.game.TargetType
 import com.inventsolutions.reflexrush.ui.theme.RushAmber
@@ -210,70 +207,23 @@ fun GameScreen(
 
             Spacer(Modifier.height(if (compactLandscape) 5.dp else 12.dp))
 
-            BoxWithConstraints(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-                    .clip(RoundedCornerShape(26.dp))
-                    .background(
-                        Brush.verticalGradient(
-                            listOf(Color(0xFF071322), Color(0xFF0B1B2D), Color(0xFF07111F))
-                        )
-                    )
-                    .border(1.5.dp, RushGreen.copy(alpha = 0.48f), RoundedCornerShape(26.dp))
-            ) {
-                GameArenaBackground()
-                val targetSize = if (isTabletLayout) 78.dp else 66.dp
-                gameState.targets.forEach { target ->
-                    key(target.id) {
-                    GameTargetButton(
-                        target = target,
-                        modifier = Modifier.offset(
-                            x = (maxWidth * target.x - targetSize / 2).coerceIn(0.dp, maxWidth - targetSize),
-                            y = (maxHeight * target.y - targetSize / 2).coerceIn(0.dp, maxHeight - targetSize)
-                        ),
-                        onClick = {
-                            val result = sessionRuntime.tapTarget(target.id)
-                            result.feedback?.let { feedback ->
-                                actionFeedback = feedback.message
-                                actionFeedbackColor = feedback.color
-                                feedbackToken++
-                            }
-                            gameState = result.action.state
-                        }
-                    )
+            GameArenaSurface(
+                targets = gameState.targets,
+                status = gameState.status,
+                isTabletLayout = isTabletLayout,
+                feedbackMessage = actionFeedback,
+                feedbackColor = actionFeedbackColor,
+                feedbackAlpha = feedbackAlpha,
+                onTargetTap = { targetId ->
+                    val result = sessionRuntime.tapTarget(targetId)
+                    result.feedback?.let { feedback ->
+                        actionFeedback = feedback.message
+                        actionFeedbackColor = feedback.color
+                        feedbackToken++
                     }
+                    gameState = result.action.state
                 }
-
-                if (actionFeedback != null) {
-                    Text(
-                        text = actionFeedback.orEmpty(),
-                        modifier = Modifier
-                            .align(Alignment.TopCenter)
-                            .padding(top = 18.dp)
-                            .graphicsLayer { alpha = feedbackAlpha; translationY = (1f - feedbackAlpha) * 10.dp.toPx() }
-                            .clip(RoundedCornerShape(14.dp))
-                            .background(RushSurface.copy(alpha = 0.94f))
-                            .border(1.dp, actionFeedbackColor.copy(alpha = 0.7f), RoundedCornerShape(14.dp))
-                            .padding(horizontal = 18.dp, vertical = 9.dp),
-                        color = actionFeedbackColor,
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Black,
-                        letterSpacing = 1.2.sp
-                    )
-                }
-
-                if (gameState.targets.isEmpty() && gameState.status == GameStatus.RUNNING) {
-                    Text(
-                        "GET READY…",
-                        modifier = Modifier.align(Alignment.Center),
-                        color = RushMint.copy(alpha = 0.35f),
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 2.sp
-                    )
-                }
-            }
+            )
 
             Spacer(Modifier.height(14.dp))
             Text(
