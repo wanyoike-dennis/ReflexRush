@@ -51,17 +51,11 @@ fun GameSettingsScreen(
             modifier = Modifier.fillMaxSize().safeDrawingPadding().verticalScroll(rememberScrollState()).padding(horizontal = horizontalInset, vertical = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column {
-                    Text("REFLEX RUSH", color = RushMint, fontSize = 10.sp, fontWeight = FontWeight.Black, letterSpacing = 2.sp)
-                    Text("GAME SETTINGS", color = Color.White, fontSize = 26.sp, fontWeight = FontWeight.Black, letterSpacing = 1.sp)
-                }
-                OutlinedButton(onClick = onBack) { Text("BACK") }
-            }
+            ArcadeScreenHeader(
+                eyebrow = "REFLEX RUSH",
+                title = "GAME SETTINGS",
+                onBack = onBack
+            )
             Spacer(Modifier.height(24.dp))
             ArcadePanel(modifier = Modifier.fillMaxWidth(), accent = RushGreen, radius = 20.dp) {
                 Column(Modifier.fillMaxWidth().padding(18.dp)) {
