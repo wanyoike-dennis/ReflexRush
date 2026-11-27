@@ -180,7 +180,7 @@ fun GameScreen(
             ),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            GameHeader(mode = mode, onHome = onHome, onPause = { isPaused = true })
+            GameHeader(mode = mode, onPause = { isPaused = true })
 
             Spacer(Modifier.height(if (compactLandscape) 6.dp else 12.dp))
 

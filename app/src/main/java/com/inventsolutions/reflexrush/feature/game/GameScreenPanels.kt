@@ -12,7 +12,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -38,47 +40,49 @@ import com.inventsolutions.reflexrush.ui.theme.RushSurfaceVariant
 @Composable
 internal fun GameHeader(
     mode: GameMode,
-    onHome: () -> Unit,
     onPause: () -> Unit
 ) {
+    val modeTitle = when (mode) {
+        GameMode.CLASSIC -> "CLASSIC"
+        GameMode.TIME_ATTACK -> "TIME ATTACK"
+        GameMode.SURVIVAL -> "SURVIVAL"
+        GameMode.PRECISION -> "PRECISION"
+    }
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Column {
+        Column(modifier = Modifier.weight(1f)) {
             Text(
                 "REFLEX RUSH  /  ARENA",
                 color = RushMint,
-                fontSize = 11.sp,
-                fontWeight = FontWeight.ExtraBold,
-                letterSpacing = 2.sp
-            )
-            Text(
-                when (mode) {
-                    GameMode.CLASSIC -> "CLASSIC • BUILD YOUR BEST SCORE"
-                    GameMode.TIME_ATTACK -> "TIME ATTACK • 60 SECONDS"
-                    GameMode.SURVIVAL -> "SURVIVAL • THE PACE KEEPS RISING"
-                    GameMode.PRECISION -> "PRECISION • 30 TARGET CHALLENGE"
-                },
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.48f),
                 fontSize = 9.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 1.2.sp
+                fontWeight = FontWeight.ExtraBold,
+                letterSpacing = 1.8.sp
+            )
+            Spacer(Modifier.height(3.dp))
+            Text(
+                modeTitle,
+                color = Color.White,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Black,
+                letterSpacing = 1.1.sp
             )
         }
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = onPause) {
-                Text("Ⅱ", color = RushMint, fontSize = 25.sp, fontWeight = FontWeight.Black)
-            }
-            OutlinedButton(
-                onClick = onHome,
-                border = BorderStroke(1.dp, RushMint.copy(alpha = 0.55f)),
-                shape = RoundedCornerShape(11.dp),
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = RushMint)
-            ) {
-                Text("EXIT", fontSize = 9.sp, fontWeight = FontWeight.Black, letterSpacing = 1.sp)
-            }
+        Button(
+            onClick = onPause,
+            modifier = Modifier.height(54.dp),
+            shape = RoundedCornerShape(16.dp),
+            contentPadding = PaddingValues(horizontal = 20.dp, vertical = 0.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = RushGreen,
+                contentColor = Color(0xFF06131C)
+            )
+        ) {
+            Text("Ⅱ", fontSize = 22.sp, fontWeight = FontWeight.Black)
+            Spacer(Modifier.width(8.dp))
+            Text("PAUSE", fontSize = 12.sp, fontWeight = FontWeight.Black, letterSpacing = 1.2.sp)
         }
     }
 }
@@ -138,23 +142,14 @@ internal fun GameStatsPanel(
 @Composable
 internal fun GameComboPanel(gameState: GameState) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(14.dp))
-            .background(if (gameState.comboCount >= 3) Color(0xFF30291B) else Color(0xCC0A1728))
-            .border(
-                1.dp,
-                if (gameState.comboCount >= 3) RushAmber.copy(alpha = 0.72f) else RushSurfaceVariant,
-                RoundedCornerShape(14.dp)
-            )
-            .padding(horizontal = 18.dp, vertical = 10.dp),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 2.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column {
             Text(
                 "COMBO STREAK",
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.52f),
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.48f),
                 fontSize = 8.sp,
                 fontWeight = FontWeight.Bold,
                 letterSpacing = 1.3.sp
@@ -169,7 +164,7 @@ internal fun GameComboPanel(gameState: GameState) {
         Column(horizontalAlignment = Alignment.End) {
             Text(
                 "MULTIPLIER",
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.52f),
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.48f),
                 fontSize = 8.sp,
                 fontWeight = FontWeight.Bold,
                 letterSpacing = 1.3.sp

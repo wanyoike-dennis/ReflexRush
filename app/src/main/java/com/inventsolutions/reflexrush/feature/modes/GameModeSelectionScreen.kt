@@ -43,17 +43,15 @@ fun GameModeSelectionScreen(onModeSelected: (GameMode) -> Unit, onBack: () -> Un
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             ArcadeScreenHeader("REFLEX RUSH", "CHOOSE YOUR MODE", onBack)
-            Spacer(Modifier.height(19.dp))
-            ArcadePanel(Modifier.fillMaxWidth(), RushMint, 21.dp) {
-                Column(Modifier.fillMaxWidth().padding(horizontal = 17.dp, vertical = 16.dp)) {
-                    Text("ENTER THE ARENA", color = RushGreen, fontSize = 10.sp, fontWeight = FontWeight.Black, letterSpacing = 2.sp)
-                    Spacer(Modifier.height(5.dp))
-                    Text("Every mode tests a different reflex.", color = Color.White, fontSize = 17.sp, fontWeight = FontWeight.Bold)
-                    Spacer(Modifier.height(4.dp))
-                    Text("Choose a challenge and set a new personal record.", color = Color.White.copy(alpha = .55f), fontSize = 10.sp)
-                }
+            Spacer(Modifier.height(22.dp))
+            Column(Modifier.fillMaxWidth().padding(start = 4.dp, bottom = 2.dp)) {
+                Text("ENTER THE ARENA", color = RushGreen, fontSize = 10.sp, fontWeight = FontWeight.Black, letterSpacing = 2.sp)
+                Spacer(Modifier.height(6.dp))
+                Text("Every mode tests a different reflex.", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                Spacer(Modifier.height(5.dp))
+                Text("Choose a challenge and set a new personal record.", color = Color.White.copy(alpha = .58f), fontSize = 11.sp)
             }
-            Spacer(Modifier.height(17.dp))
+            Spacer(Modifier.height(18.dp))
             Column(Modifier.weight(1f).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(11.dp)) {
                 modes.forEach { option ->
                     Column(
@@ -74,14 +72,16 @@ fun GameModeSelectionScreen(onModeSelected: (GameMode) -> Unit, onBack: () -> Un
                                 Text(option.title, color = option.accent, fontSize = 14.sp, fontWeight = FontWeight.Black, letterSpacing = 1.3.sp)
                                 Text(option.subtitle, color = Color.White.copy(alpha = .62f), fontSize = 8.sp, fontWeight = FontWeight.Bold, letterSpacing = .9.sp)
                             }
-                            Text("›", color = option.accent, fontSize = 29.sp, fontWeight = FontWeight.Light)
                         }
                         Spacer(Modifier.height(12.dp))
-                        Text(option.description, color = Color.White.copy(alpha = .68f), fontSize = 10.sp, lineHeight = 15.sp)
-                        Spacer(Modifier.height(12.dp))
-                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(7.dp)) {
-                            ModeRuleChip(option.ruleOne, option.accent, Modifier.weight(1f))
-                            ModeRuleChip(option.ruleTwo, option.accent, Modifier.weight(1f))
+                        Text(option.description, color = Color.White.copy(alpha = .76f), fontSize = 11.sp, lineHeight = 16.sp)
+                        Spacer(Modifier.height(13.dp))
+                        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                            Text(option.ruleOne, color = option.accent, fontSize = 9.sp, fontWeight = FontWeight.Black, letterSpacing = .7.sp)
+                            Spacer(Modifier.width(10.dp))
+                            Text("·", color = Color.White.copy(alpha = .42f), fontSize = 13.sp)
+                            Spacer(Modifier.width(10.dp))
+                            Text(option.ruleTwo, color = Color.White.copy(alpha = .66f), fontSize = 9.sp, fontWeight = FontWeight.Bold, letterSpacing = .5.sp)
                         }
                     }
                 }
@@ -89,15 +89,6 @@ fun GameModeSelectionScreen(onModeSelected: (GameMode) -> Unit, onBack: () -> Un
             Spacer(Modifier.height(12.dp))
             Text("YOUR RECORDS ARE SAVED SEPARATELY FOR EACH MODE", color = Color.White.copy(alpha = .4f), fontSize = 7.sp, fontWeight = FontWeight.Bold, letterSpacing = .8.sp, textAlign = TextAlign.Center)
         }
-    }
-}
-
-@Composable
-private fun ModeRuleChip(label: String, tint: Color, modifier: Modifier = Modifier) {
-    Row(modifier.clip(RoundedCornerShape(8.dp)).background(tint.copy(alpha = .09f)).padding(horizontal = 9.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-        Text("•", color = tint, fontSize = 10.sp)
-        Spacer(Modifier.width(5.dp))
-        Text(label, color = tint, fontSize = 8.sp, fontWeight = FontWeight.Black, letterSpacing = .5.sp, maxLines = 1)
     }
 }
 

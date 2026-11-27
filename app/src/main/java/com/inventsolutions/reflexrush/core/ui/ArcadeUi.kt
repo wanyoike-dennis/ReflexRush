@@ -151,9 +151,9 @@ fun ArcadeScreenHeader(
             }
         ) {
             Text(
-                text = "←",
+                text = "‹",
                 color = RushMint,
-                fontSize = 30.sp,
+                fontSize = 38.sp,
                 fontWeight = FontWeight.Normal
             )
         }
